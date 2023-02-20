@@ -84,6 +84,10 @@ def geojson_from_gml_single(
 
         polygons = []
 
+        # TODO: fix
+        if not poslists:
+            return
+
         for poslist in poslists:
             chunked = utils.chunker(poslist, 3)
 
@@ -149,7 +153,12 @@ def geojson_from_gml_serial_with_quit(
             logger.debug(infile)
             with open(infile, "r") as f:
                 collection = geojson_from_gml_single(f, **opts)
-                features.extend(collection["features"])
+                # TODO: fix
+                try:
+                    features.extend(collection["features"])
+                except Exception as err:
+                    logger.debug(err)
+                    pass
             if quit.is_set():
                 return
 

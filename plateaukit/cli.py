@@ -1,49 +1,25 @@
 import glob
 import json
-from collections import defaultdict
+import os
+import tempfile
+import zipfile
 from pathlib import Path
 
 import click
+from loguru import logger
 from prettytable import PrettyTable
-from pydantic import BaseModel, PrivateAttr
 from tortoise import run_async
-from xdg import (
-    xdg_cache_home,
-    xdg_config_dirs,
-    xdg_config_home,
-    xdg_data_dirs,
-    xdg_data_home,
-    xdg_runtime_dir,
-    xdg_state_home,
-)
-
-# print(xdg_config_home(), xdg_data_home())
 
 from plateaukit import extractors, generators
+from plateaukit.config import Config
+from plateaukit.download import downloader
 
 
-class Config(BaseModel):
-    _path: str = PrivateAttr()
-    data = defaultdict(dict)
-
-    def __init__(self, path=None):
-        # Set path
-        if path is None:
-            config_dir = Path(xdg_config_home(), "plateaukit")
-            if not config_dir.exists():
-                config_dir.mkdir(parents=True)
-            path = Path(config_dir, "config.json")
-        self._path = str(Path(path).resolve())
-        # Load on init
-        with open(self._path, "r") as f:
-            data = json.load(f)
-        super().__init__(**data)
-
-    def save(self):
-        with open(self._path, "w") as f:
-            data = self.json(indent=2, ensure_ascii=False)
-            print(data)
-            f.write(data)
+def is_dataset_installed(dataset_id, format):
+    config = Config()
+    path = config.data.get(dataset_id, {}).get(format)
+    return True if path else False
+    # return path and Path(path).exists()
 
 
 def setup_property_db(infiles, db_filename):
@@ -60,7 +36,33 @@ def cli():
 
 # @cli.command("config")
 
-# TODO: Uninstall
+
+@cli.command("uninstall")
+@click.argument("dataset_id", nargs=1, required=False)
+@click.option(
+    "--format",
+    type=click.Choice(["citygml", "3dtiles"], case_sensitive=False),
+    default="citygml",
+)
+@click.option("--keep-files", is_flag=True, default=False)
+def uninstall(dataset_id, format, keep_files):
+    """Uninstall PLATEAU datasets."""
+    if not dataset_id:
+        raise Exception("Missing argument")
+
+    if not keep_files:
+        config = Config()
+        path = config.data[dataset_id][format]
+        if not path:
+            raise RuntimeError("Missing files in record")
+        if click.confirm(f'Delete "{path}"?'):
+            os.remove(path)
+
+    config = Config()
+    del config.data[dataset_id][format]
+    if len(config.data[dataset_id].items()) == 0:
+        del config.data[dataset_id]
+    config.save()
 
 
 @cli.command("install")
@@ -71,9 +73,10 @@ def cli():
     default="citygml",
 )
 @click.option("--local", help="Install local file. (without copying)")
+@click.option("--force", is_flag=True, default=False, help="Force install.")
 @click.option("--download-only", is_flag=True, default=False)
 @click.option("-l", "--list", is_flag=True, help="List all available datasets.")
-def install(dataset_id, format, local, download_only, list):
+def install(dataset_id, format, local, force, download_only, list):
     """Download and install PLATEAU datasets."""
     from plateaukit.download import city_list
 
@@ -105,10 +108,23 @@ def install(dataset_id, format, local, download_only, list):
             config.save()
             return
         else:
+            # Abort if a dataset is already installed
+            installed = is_dataset_installed(dataset_id, format)
+            if not force and installed:
+                click.echo(
+                    f'ERROR: Dataset "{dataset_id}" ({format}) is already installed.',
+                    err=True,
+                )
+                exit(-1)
             resource_id = city[format]
-            print(dataset_id, resource_id)
-            pass
-            # download.downloader.download_resource(resource_id)
+            # print(dataset_id, resource_id)
+            config = Config()
+            destfile_path = downloader.download_resource(
+                resource_id, dest=config.data_dir
+            )
+            config.data[dataset_id][format] = destfile_path
+            config.save()
+            return
 
 
 @cli.command("list")
@@ -162,7 +178,7 @@ def generate_cityjson(infiles, outfile):
 @cli.command("generate-geojson")
 @click.argument("infiles", nargs=-1)
 @click.argument("outfile", nargs=1, required=True)
-@click.option("--dataset")
+@click.option("--dataset", help='Dataset ID (e.g. "plateau-tokyo23ku")')
 @click.option(
     "--type",
     "-t",
@@ -170,6 +186,7 @@ def generate_cityjson(infiles, outfile):
         ["bldg", "brid", "dem", "fld", "frn", "lsld", "luse", "tran", "urf"],
         case_sensitive=True,
     ),
+    default="bldg",
 )
 @click.option("--split", default=10)
 def generate_geojson(infiles, outfile, dataset, type, split):
@@ -180,80 +197,92 @@ def generate_geojson(infiles, outfile, dataset, type, split):
     if infiles and dataset:
         raise Exception("Too many argument")
 
-    if dataset:
-        if not type:
-            raise Exception("Missing type")
-        config = Config()
-        record = config.data[dataset]
-        if "citygml" not in record:
-            raise Exception("Missing CityGML data")
-        infiles = [str(Path(record["citygml"], "udx", type, "*.gml"))]
-        print(infiles, outfile)
+    # NOTE: this is intentional but to be refactored in future
+    with tempfile.TemporaryDirectory() as tdir:
+        if dataset:
+            if not type:
+                raise Exception("Missing type")
+            config = Config()
+            record = config.data[dataset]
+            if "citygml" not in record:
+                raise Exception("Missing CityGML data")
+            file_path = Path(record["citygml"])
+            # TODO: fix
+            if zipfile.is_zipfile(file_path):
+                with zipfile.ZipFile(file_path) as f:
+                    f.extractall(tdir)
+                    # TODO: fix
+                    infiles = [
+                        str(Path(tdir, Path(file_path).stem, "udx", type, "*.gml"))
+                    ]
+            else:
+                infiles = [str(Path(file_path, "udx", type, "*.gml"))]
+            logger.debug([infiles, outfile])
 
-    expanded_infiles = []
-    for infile in infiles:
-        expanded_infiles.extend(glob.glob(infile))
+        expanded_infiles = []
+        for infile in infiles:
+            expanded_infiles.extend(glob.glob(infile))
 
-    if type == "bldg":
-        generators.geojson_from_gml(
-            expanded_infiles,
-            outfile,
-            split=split,
-            lod=[0],
-            altitude=True,
-            allow_geometry_collection=False,
-        )
-    elif type == "brid":
-        generators.geojson_from_gml(
-            expanded_infiles,
-            outfile,
-            split=split,
-            lod=[1],
-            attributes=[],
-            altitude=True,
-            allow_geometry_collection=True,
-        )
-    elif type == "dem":
-        # TODO: implement
-        raise NotImplementedError("dem")
-    elif type == "fld":
-        raise NotImplementedError("fld")
-    elif type == "lsld":
-        raise NotImplementedError("lsld")
-    elif type == "luse":
-        raise NotImplementedError("luse")
-        # generate.geojson_from_gml(
-        #     expanded_infiles,
-        #     outfile,
-        #     split=split,
-        #     lod=[1],
-        #     attributes=[],
-        #     altitude=True,
-        #     allow_geometry_collection=True,
-        # )
-    elif type == "tran":
-        generators.geojson_from_gml(
-            expanded_infiles,
-            outfile,
-            split=split,
-            lod=[1],
-            attributes=[],
-            altitude=True,  # TODO: can be False
-            allow_geometry_collection=True,
-        )
-    elif type == "urf":
-        raise NotImplementedError("urf")
-        # generate.geojson_from_gml(
-        #     expanded_infiles,
-        #     outfile,
-        #     split=split,
-        #     lod=[0],
-        #     attributes=[],
-        #     altitude=True,
-        #     allow_geometry_collection=False,
-        # )
-    else:
-        raise NotImplementedError(type)
+        if type == "bldg":
+            generators.geojson_from_gml(
+                expanded_infiles,
+                outfile,
+                split=split,
+                lod=[0],
+                altitude=True,
+                allow_geometry_collection=False,
+            )
+        elif type == "brid":
+            generators.geojson_from_gml(
+                expanded_infiles,
+                outfile,
+                split=split,
+                lod=[1],
+                attributes=[],
+                altitude=True,
+                allow_geometry_collection=True,
+            )
+        elif type == "dem":
+            # TODO: implement
+            raise NotImplementedError("dem")
+        elif type == "fld":
+            raise NotImplementedError("fld")
+        elif type == "lsld":
+            raise NotImplementedError("lsld")
+        elif type == "luse":
+            raise NotImplementedError("luse")
+            # generate.geojson_from_gml(
+            #     expanded_infiles,
+            #     outfile,
+            #     split=split,
+            #     lod=[1],
+            #     attributes=[],
+            #     altitude=True,
+            #     allow_geometry_collection=True,
+            # )
+        elif type == "tran":
+            generators.geojson_from_gml(
+                expanded_infiles,
+                outfile,
+                split=split,
+                lod=[1],
+                attributes=[],
+                altitude=True,  # TODO: can be False
+                allow_geometry_collection=True,
+            )
+        elif type == "urf":
+            raise NotImplementedError("urf")
+            # generate.geojson_from_gml(
+            #     expanded_infiles,
+            #     outfile,
+            #     split=split,
+            #     lod=[0],
+            #     attributes=[],
+            #     altitude=True,
+            #     allow_geometry_collection=False,
+            # )
+        else:
+            raise NotImplementedError(type)
 
 
 # @cli.command("generate-gpkg")

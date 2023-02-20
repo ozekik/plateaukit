@@ -1,8 +1,10 @@
+import os.path
 import shutil
-from tqdm.auto import tqdm
 from pathlib import Path
+from urllib.parse import urlparse
 
 import requests
+from tqdm.auto import tqdm
 
 API_URL = "https://www.geospatial.jp/ckan/api/3"
 
@@ -13,15 +15,18 @@ def download_resource(resource_id, dest="/tmp"):
     if not data["success"]:
         raise Exception("Failed to download")
     file_url = data["result"]["url"]
+    file_name = os.path.basename(urlparse(file_url).path)
+    destfile_path = str(Path(dest, file_name))
+    print(f"Downloading as: {destfile_path}")
     with requests.get(file_url, stream=True) as r:
         total_length = int(r.headers.get("Content-Length"))
         with tqdm.wrapattr(r.raw, "read", total=total_length, desc="") as raw:
-            with open(Path(dest) / Path(resource_id), "wb") as output:
+            with open(destfile_path, "wb") as output:
                 shutil.copyfileobj(raw, output)
-    # # plateau-tokyo23ku
+    return destfile_path
 
 
-download_resource("0bab2b7f-6962-41c8-872f-66ad9b40dcb1")
+# download_resource("0bab2b7f-6962-41c8-872f-66ad9b40dcb1")
 
 # NOTE: format
 # {
