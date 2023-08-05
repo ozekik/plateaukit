@@ -50,7 +50,9 @@ extra_javascript:
 nav:
   - PlateauKitの概要: index.md
   - インストール: install.md
-  - コマンドラインでの利用: cli.md
+  - コマンドラインでの利用:
+    - PLATEAUデータの追加/削除: cli/setup.md
+    - PLATEAUデータの利用: cli/usage.md
   - 🚧 ライブラリとして使う: library.md
   # - Get Started:
   # - Usage:

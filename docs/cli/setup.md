@@ -1,9 +1,7 @@
 
-# コマンドラインでの利用
+# PLATEAUデータの追加/削除 (コマンドライン)
 
-## PLATEAUデータをインストール/アンインストール
-
-### 利用可能な都市モデルの一覧を表示
+## 利用可能な都市モデルの一覧を表示
 
 ```bash
 plateaukit install --list
@@ -72,7 +70,9 @@ plateaukit install --list
     |      plateau-44204-hita-shi-2020       |     大分県日田市     |       https://www.geospatial.jp/ckan/dataset/plateau-44204-hita-shi-2020      |
     |      plateau-47201-naha-shi-2020       |     沖縄県那覇市     |       https://www.geospatial.jp/ckan/dataset/plateau-47201-naha-shi-2020      |
 
-### 都市モデルをダウンロード・インストール
+## 都市モデルをダウンロード・追加
+
+一覧のIDを指定して都市モデルをダウンロード・追加します。
 
 ```bash title="例1: 東京都23区のデータをダウンロードして追加"
 plateaukit install plateau-tokyo23ku
@@ -95,34 +95,22 @@ Saved: {
 }
 ```
 
-データの保存場所はデフォルトでは以下の通りです ([platformdirs](https://github.com/platformdirs/platformdirs)を利用) :
+新規にダウンロードする場合、データの保存場所はデフォルトでは以下の通りです:
 
-- macOS: `/Users/<user>/Library/Application Support/plateaukit/`
-- Windows: `C:\\Users\<user>\AppData\Local\plateaukit\`
-- Linux: `/home/trentm/.local/share/plateaukit/`
+- macOS: `/Users/<username>/Library/Application Support/plateaukit/`
+- Windows: `C:\\Users\<username>\AppData\Local\plateaukit\`
+- Linux: `/home/<username>/.local/share/plateaukit/`
 
-### 追加済みのデータの一覧を表示
+ダウンロード済みのデータを追加する場合は (`--local` オプション)、そのファイルパスが参照されます。
+
+## 追加済みのデータの一覧を表示
 
 ```bash
 plateaukit list
 ```
 
-### 都市モデルをアンインストール
+## 都市モデルを削除
 
-```bash title="例: 東京都23区のデータをアンインストール"
+```bash title="例: 東京都23区のデータを削除"
 plateaukit uninstall plateau-tokyo23ku
 ```
-
-## PLATEAU CityGMLからCityJSON/GeoJSONを生成
-
-```bash title="例: 建造物 (bldg) データからLOD0/1相当のGeoJSONを生成"
-plateaukit generate-geojson --dataset plateau-tokyo23ku -t bldg /tmp/tokyo23ku-bldg.json
-```
-
-```bash title="例: 建造物 (bldg) データからLOD0/1/2相当のCityJSONを生成 (データセット指定未対応、ファイル単位)"
-plateaukit generate-cityjson ./udx/bldg/53395548_bldg_6697_2_op.gml /tmp/53395548_bldg_6697_2_op.cityjson
-```
-
-## PLATEAU CityGMLから属性情報を抽出
-
-> TODO: ドキュメントの整備

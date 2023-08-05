@@ -14,4 +14,4 @@ pip install -U plateaukit
 
 **次のステップ:**
 
-- PLATEAUデータをインストールする: [コマンドラインでの利用](cli.md)
+- PLATEAUデータを追加する: [PLATEAUデータの追加/削除](cli/setup.md)
