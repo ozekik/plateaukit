@@ -1,5 +1,8 @@
 # PlateauKit
 
+[![PyPI](https://img.shields.io/pypi/v/plateaukit.svg)](https://pypi.org/project/plateaukit/)
+<!-- [![PyPI downloads](https://img.shields.io/pypi/dm/plateaukit.svg)](https://pypistats.org/packages/plateaukit) -->
+
 > Python library and converter for 3D city models by MLIT Project PLATEAU
 
 国土交通省PLATEAU 3D都市モデルのPythonライブラリおよび変換ツール (WIP)
