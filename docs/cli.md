@@ -122,3 +122,7 @@ plateaukit generate-geojson --dataset plateau-tokyo23ku -t bldg /tmp/tokyo23ku-b
 ```bash title="例: 建造物 (bldg) データからLOD0/1/2相当のCityJSONを生成 (データセット指定未対応、ファイル単位)"
 plateaukit generate-cityjson ./udx/bldg/53395548_bldg_6697_2_op.gml /tmp/53395548_bldg_6697_2_op.cityjson
 ```
+
+## PLATEAU CityGMLから属性情報を抽出
+
+> TODO: ドキュメントの整備
