@@ -1,0 +1,119 @@
+site_name: PlateauKit
+site_description: Python library and converter for 3D city models by MLIT Project PLATEAU
+# strict: true
+site_url: https://ozekik.github.io/plateaukit/
+
+theme:
+  name: "material"
+  font:
+    text: "Noto Sans JP"
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: white
+      accent: white
+      # toggle:
+      #   icon: material/lightbulb-outline
+      #   name: "Switch to dark mode"
+    # - media: "(prefers-color-scheme: dark)"
+    #   scheme: slate
+    #   primary: blue grey
+    #   accent: blue grey
+    #   toggle:
+    #     icon: material/lightbulb
+    #     name: "Switch to light mode"
+  features:
+      - navigation.footer
+  #   - content.action.view
+  #   - content.action.edit
+  #   - content.tabs.link
+  #   - content.code.annotate
+  #   - announce.dismiss
+  #   - navigation.tabs
+  icon:
+    logo: material/map-legend
+  # favicon: "favicon.png"
+
+repo_name: ozekik/plateaukit
+repo_url: https://github.com/ozekik/plateaukit
+edit_uri: edit/master/docs/
+# extra:
+#   version:
+#     provider: mike
+
+# extra_css:
+
+extra_javascript:
+  - js/extra.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+
+nav:
+  - PlateauKitの概要: index.md
+  - インストール: install.md
+  - コマンドラインでの利用: cli.md
+  - 🚧 ライブラリとして使う: library.md
+  # - Get Started:
+  # - Usage:
+  - 開発に参加する: contributing.md
+  - 🚧 APIリファレンス: api.md
+
+markdown_extensions:
+  - tables
+  - toc:
+      permalink: true
+      title: 項目
+  - admonition
+  - pymdownx.tasklist:
+      custom_checkbox: false
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.details
+  - pymdownx.superfences
+  #   - pymdownx.highlight
+  - pymdownx.extra
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+#   - pymdownx.tabbed:
+#       alternate_style: true
+  - pymdownx.superfences:
+      custom_fences:
+      - name: python
+        class: python
+        validator: !!python/name:markdown_exec.validator
+        format: !!python/name:markdown_exec.formatter
+
+watch:
+  - plateaukit
+
+plugins:
+  # - mike:
+  #     alias_type: symlink
+  #     canonical_version: latest
+  - search
+  - markdown-exec
+  - exclude:
+      glob:
+        - plugins/*
+        - __pycache__/*
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [.]
+          options:
+            members_order: source
+            separate_signature: true
+            filters: ["!^_"]
+            docstring_options:
+              ignore_init_summary: true
+            merge_init_into_class: true
+            # extensions:
+            #   - docs/plugins/griffe_doclinks.py
+  # - mkdocs-simple-hooks:
+  #     hooks:
+  #       on_pre_build: "docs.plugins.main:on_pre_build"
+  #       on_files: "docs.plugins.main:on_files"
+  #       on_page_markdown: "docs.plugins.main:on_page_markdown"
+  # - redirects:
+  #     redirect_maps:
+  # - external-markdown:
