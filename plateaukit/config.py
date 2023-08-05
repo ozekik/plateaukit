@@ -3,28 +3,23 @@ from collections import defaultdict
 from pathlib import Path
 
 from pydantic import BaseModel, PrivateAttr
-from xdg import (
-    # xdg_cache_home,
-    # xdg_config_dirs,
-    xdg_config_home,
-    # xdg_data_dirs, # eg. [PosixPath('/usr/local/share'), PosixPath('/usr/share')]
-    xdg_data_home,  # eg. /.local/share
-    # xdg_runtime_dir,
-    # xdg_state_home,
+from platformdirs import (
+    user_config_dir,
+    user_data_dir,
 )
 
-# print(xdg_config_home(), xdg_data_home())
+# print(user_config_dir(), user_data_dir())
 
 
 class Config(BaseModel):
     _path: str = PrivateAttr()
-    _data_dir: str = str(Path(xdg_data_home(), "plateaukit"))
+    _data_dir: str = str(user_data_dir("plateaukit"))
     data = defaultdict(dict)
 
     def __init__(self, path=None):
         # Set path
         if path is None:
-            config_dir = Path(xdg_config_home(), "plateaukit")
+            config_dir = Path(user_config_dir("plateaukit"))
             if not config_dir.exists():
                 config_dir.mkdir(parents=True)
             path = Path(config_dir, "config.json")
@@ -32,8 +27,11 @@ class Config(BaseModel):
         # Ensure data dir
         Path(self._data_dir).mkdir(parents=True, exist_ok=True)
         # Load on init
-        with open(self._path, "r") as f:
-            data = json.load(f)
+        if Path(self._path).exists():
+            with open(self._path, "r") as f:
+                data = json.load(f)
+        else:
+            data = {}
         super().__init__(**data)
         # TODO: fix
         self.data = defaultdict(dict, self.data)
