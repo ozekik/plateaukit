@@ -5,11 +5,11 @@
 
 > Python library and converter for 3D city models by MLIT Project PLATEAU
 
-<a href="https://www.mlit.go.jp/plateau/" target="_blank">国土交通省PLATEAUプロジェクト</a>3D都市モデルのPythonライブラリおよび変換ツール (WIP)
+PlateauKit は、<a href="https://www.mlit.go.jp/plateau/" target="_blank">国土交通省PLATEAUプロジェクト</a> 3D都市モデルのPythonライブラリおよび変換ツールです。(WIP)
 
 **ドキュメント Documentation:** <https://ozekik.github.io/plateaukit/>
 
-## 特徴 Features
+## 機能 Features
 
 - [x] PLATEAUデータセットのインストール・管理
 - [x] 並列処理でのデータ変換
@@ -18,7 +18,7 @@
 
 ## インストール Install
 
-→ [**PlateauKitのインストール**](https://ozekik.github.io/plateaukit/install/)
+- [**PlateauKitのインストール**](https://ozekik.github.io/plateaukit/install/)
 
 ## ロードマップ Roadmap
 
