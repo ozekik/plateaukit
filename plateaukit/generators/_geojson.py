@@ -143,13 +143,17 @@ def geojson_from_gml_single(
 def geojson_from_gml_serial_with_quit(
     infiles,
     outfile,
-    quit,
+    group_num=None,
+    quit=None,
     **opts,
 ):
     features = []
 
-    with tqdm(infiles) as pbar:
+    with tqdm(infiles, position=group_num) as pbar:
         for infile in pbar:
+            if quit and quit.is_set():
+                return
+
             logger.debug(infile)
             with open(infile, "r") as f:
                 collection = geojson_from_gml_single(f, **opts)
@@ -159,8 +163,6 @@ def geojson_from_gml_serial_with_quit(
                 except Exception as err:
                     logger.debug(err)
                     pass
-            if quit.is_set():
-                return
 
     collection = FeatureCollection(features)
 
@@ -189,8 +191,9 @@ def geojson_from_gml(infiles, outfile, split, **opts):
                         geojson_from_gml_serial_with_quit,
                         infile_group,
                         group_outfile,
-                        quit,
-                        **opts,
+                        group_num=i,
+                        quit=None,
+                        # **opts,
                     )
                 )
             with tqdm(

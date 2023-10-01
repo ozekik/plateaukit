@@ -1,6 +1,7 @@
 import glob
 import json
 import os
+import re
 import tempfile
 import zipfile
 from pathlib import Path
@@ -155,24 +156,74 @@ def cmd_list():
 @cli.command("generate-cityjson")
 @click.argument("infiles", nargs=-1)
 @click.argument("outfile", nargs=1, required=True)
-# @click.option("--dataset")
-# @click.option("--split", default=10)
+@click.option("--dataset", help='Dataset ID (e.g. "plateau-tokyo23ku")')
+@click.option("--split", default=10)
 # # @click.option(
 # #     "--precision",
 # #     help="Number of decimal places to keep for geometry vertices (default: 16).",
 # )
-def generate_cityjson(infiles, outfile):
+def generate_cityjson(infiles, outfile, dataset, split):
     """Generate CityJSON from PLATEAU CityGML."""
-    # print(files)
+    # print(infiles)
+
+    if not infiles and not dataset:
+        raise Exception("Missing argument")
+
+    if infiles and dataset:
+        raise Exception("Too many argument")
 
     params = {}
 
     # if precision:
     #     params["precision"] = precision
 
-    data = generators.simplecityjson.cityjson_from_gml(infiles, **params)
-    with open(outfile, "w") as f:
-        json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
+    type = "bldg"
+
+    if dataset:
+        with tempfile.TemporaryDirectory() as tdir:
+            config = Config()
+            record = config.data[dataset]
+            if "citygml" not in record:
+                raise Exception("Missing CityGML data")
+            file_path = Path(record["citygml"])
+            # TODO: fix
+            pat = re.compile(rf".*udx\/{type}\/.*\.gml$")
+            if zipfile.is_zipfile(file_path):
+                with zipfile.ZipFile(file_path) as f:
+                    namelist = f.namelist()
+                    targets = list(filter(lambda x: pat.match(x), namelist))
+                    # print(targets, tdir)
+                    f.extractall(tdir, members=targets)
+                    # TODO: fix
+                    infiles = [
+                        str(Path(tdir, Path(file_path).stem, "udx", type, "*.gml"))
+                    ]
+            else:
+                infiles = [str(Path(file_path, "udx", type, "*.gml"))]
+            logger.debug([infiles, outfile])
+
+            expanded_infiles = []
+            for infile in infiles:
+                expanded_infiles.extend(glob.glob(infile))
+
+            expanded_infiles = sorted(expanded_infiles)
+
+            # print(infiles, expanded_infiles)
+
+            generators.simplecityjson.cityjson_from_gml(
+                expanded_infiles,
+                outfile,
+                split=split,
+                lod=[1],
+            )
+
+            # with open(outfile, "w") as f:
+            #     json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
+
+    else:
+        generators.simplecityjson.cityjson_from_gml(infiles, outfile, **params)
+        # with open(outfile, "w") as f:
+        #     json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
 
 
 @cli.command("generate-geojson")
@@ -197,7 +248,7 @@ def generate_geojson(infiles, outfile, dataset, type, split):
     if infiles and dataset:
         raise Exception("Too many argument")
 
-    # NOTE: this is intentional but to be refactored in future
+    # NOTE: this is intentional but to be refactored in the future
     with tempfile.TemporaryDirectory() as tdir:
         if dataset:
             if not type:
@@ -208,9 +259,13 @@ def generate_geojson(infiles, outfile, dataset, type, split):
                 raise Exception("Missing CityGML data")
             file_path = Path(record["citygml"])
             # TODO: fix
+            pat = re.compile(rf".*udx\/{type}\/.*\.gml$")
             if zipfile.is_zipfile(file_path):
                 with zipfile.ZipFile(file_path) as f:
-                    f.extractall(tdir)
+                    namelist = f.namelist()
+                    targets = list(filter(lambda x: pat.match(x), namelist))
+                    # print(targets, tdir)
+                    f.extractall(tdir, members=targets)
                     # TODO: fix
                     infiles = [
                         str(Path(tdir, Path(file_path).stem, "udx", type, "*.gml"))
@@ -222,6 +277,8 @@ def generate_geojson(infiles, outfile, dataset, type, split):
         expanded_infiles = []
         for infile in infiles:
             expanded_infiles.extend(glob.glob(infile))
+
+        expanded_infiles = sorted(expanded_infiles)
 
         if type == "bldg":
             generators.geojson_from_gml(
