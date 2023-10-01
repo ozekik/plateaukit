@@ -18,4 +18,6 @@ PlateauKitは、<a href="https://www.mlit.go.jp/plateau/" target="_blank">国土
 
 ## ライセンス License
 
-MIT
+MIT License
+
+<div style="margin-bottom:10rem"></div>
