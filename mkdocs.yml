@@ -5,6 +5,7 @@ site_url: https://ozekik.github.io/plateaukit/
 
 theme:
   name: "material"
+  language: ja
   font:
     text: "Noto Sans JP"
   palette:
@@ -24,15 +25,17 @@ theme:
     #     name: "Switch to light mode"
   features:
       - navigation.footer
-  #   - content.action.view
-  #   - content.action.edit
-  #   - content.tabs.link
-  #   - content.code.annotate
-  #   - announce.dismiss
-  #   - navigation.tabs
+      - navigation.expand
+      # - toc.integrate
+      # - content.action.view
+      # - content.action.edit
+      # - content.tabs.link
+      # - content.code.annotate
+      # - announce.dismiss
+      # - navigation.tabs
   icon:
     logo: material/map-legend
-  # favicon: "favicon.png"
+    # favicon: "favicon.png"
 
 repo_name: ozekik/plateaukit
 repo_url: https://github.com/ozekik/plateaukit
