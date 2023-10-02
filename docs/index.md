@@ -14,7 +14,7 @@ PlateauKitは、<a href="https://www.mlit.go.jp/plateau/" target="_blank">国土
 
 ## インストール Install
 
-→ [**PlateauKitのインストール**](install.md)
+- [**PlateauKitのインストール**](install.md)
 
 ## ライセンス License
 

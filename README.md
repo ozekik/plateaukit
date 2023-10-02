@@ -18,7 +18,9 @@ PlateauKit は、<a href="https://www.mlit.go.jp/plateau/" target="_blank">国�
 
 ## インストール Install
 
-- [**PlateauKitのインストール**](https://ozekik.github.io/plateaukit/install/)
+```sh
+pip install plateaukit
+```
 
 ## ロードマップ Roadmap
 
