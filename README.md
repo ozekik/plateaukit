@@ -5,7 +5,7 @@
 
 > Python library and converter for 3D city models by MLIT Project PLATEAU
 
-PlateauKit は、<a href="https://www.mlit.go.jp/plateau/" target="_blank">国土交通省PLATEAUプロジェクト</a> 3D都市モデルのPythonライブラリおよび変換ツールです。(WIP)
+PlateauKit は、<a href="https://www.mlit.go.jp/plateau/" target="_blank">国土交通省PLATEAUプロジェクト</a> 3D都市モデルを利用するためのPythonライブラリおよび変換ツールです。(WIP)
 
 **ドキュメント Documentation:** <https://ozekik.github.io/plateaukit/>
 
@@ -16,7 +16,7 @@ PlateauKit は、<a href="https://www.mlit.go.jp/plateau/" target="_blank">国�
 - [x] citygml-tools / citygml4j (Java) に依存せずCityJSONを生成 (一部)
 - [ ] JupyterLab / Jupyer Notebookでの3D都市モデル表示 (LOD1/2)
 
-## インストール Install
+## インストール Installation
 
 ```sh
 pip install plateaukit
