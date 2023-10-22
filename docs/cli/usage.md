@@ -4,7 +4,7 @@
 
 ### GeoJSON
 
-`plateaukit generate-geojson` コマンドを使用して、PLATEAU CityGML から <a href="https://gis-oer.github.io/gitbook/book/materials/web_gis/GeoJSON/GeoJSON.html" target="_blank">GeoJSON</a> を生成することができます。
+`plateaukit generate-geojson` コマンドを使用することで、PLATEAU の CityGML ファイルを <a href="https://gis-oer.github.io/gitbook/book/materials/web_gis/GeoJSON/GeoJSON.html" target="_blank">GeoJSON</a> ファイルに変換することができます。
 
 ```bash title="例: 建造物 (bldg) データからLOD0/1相当のGeoJSONを生成"
 plateaukit generate-geojson --dataset plateau-tokyo23ku -t bldg /tmp/tokyo23ku-bldg.json
@@ -50,7 +50,7 @@ plateaukit generate-geojson --dataset plateau-tokyo23ku -t bldg /tmp/tokyo23ku-b
 
 ### CityJSON
 
-`plateaukit generate-cityjson` コマンドを使用して、PLATEAU CityGML から <a href="https://www.cityjson.org/" target="_blank">CityJSON</a> を生成することができます。(現在 LOD1 をサポート)
+`plateaukit generate-cityjson` コマンドを使用することで、PLATEAU の CityGML ファイルを <a href="https://www.cityjson.org/" target="_blank">CityJSON</a> ファイルに変換することができます。(現在 LOD1 をサポート)
 
 ```bash title="例: 建造物 (bldg) データからLOD1相当のCityJSONを生成"
 plateaukit generate-cityjson --dataset plateau-tokyo23ku /tmp/tokyo23ku-bldg.city.json
