@@ -1,5 +1,6 @@
 site_name: PlateauKit
-site_description: Python library and converter for 3D city models by MLIT Project PLATEAU
+site_description:
+  "PlateauKit: 国土交通省PLATEAUプロジェクト3D都市モデルのオープンソースPythonライブラリおよび変換ツール"
 # strict: true
 site_url: https://ozekik.github.io/plateaukit/
 

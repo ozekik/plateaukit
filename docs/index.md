@@ -3,7 +3,7 @@
 [![PyPI](https://img.shields.io/pypi/v/plateaukit.svg)](https://pypi.org/project/plateaukit/)
 <!-- [![PyPI downloads](https://img.shields.io/pypi/dm/plateaukit.svg)](https://pypistats.org/packages/plateaukit) -->
 
-PlateauKit は、<a href="https://www.mlit.go.jp/plateau/" target="_blank">国土交通省PLATEAUプロジェクト</a>の3D都市モデルを扱うための Python ライブラリおよび変換ツールです。
+PlateauKit は、<a href="https://www.mlit.go.jp/plateau/" target="_blank">国土交通省PLATEAUプロジェクト</a>の3D都市モデルを扱うためのオープンソース Python ライブラリおよび変換ツールです。
 
 ## 機能 Features
 
@@ -12,9 +12,13 @@ PlateauKit は、<a href="https://www.mlit.go.jp/plateau/" target="_blank">国�
 - [x] citygml-tools / citygml4j (Java) に依存せずCityJSONを生成 (一部)
 - [ ] JupyterLab / Jupyer Notebookでの3D都市モデル表示 (LOD1/2)
 
-## インストール Install
+## インストール Installation
 
 - [**PlateauKitのインストール**](install.md)
+
+```bash
+pip install plateaukit
+```
 
 ## ライセンス License
 

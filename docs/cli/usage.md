@@ -1,4 +1,3 @@
-
 # PLATEAUデータの利用 (コマンドライン)
 
 ## CityGMLからGeoJSON/CityJSONを生成

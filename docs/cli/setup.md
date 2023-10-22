@@ -101,7 +101,7 @@ Saved: {
 - Windows: `C:\\Users\<username>\AppData\Local\plateaukit\`
 - Linux: `/home/<username>/.local/share/plateaukit/`
 
-ダウンロード済みのデータを追加する場合は (`--local` オプション)、そのファイルパスが参照されます。
+`--local` オプションを使ってダウンロード済みのデータを追加する場合は、そのファイルパスへの参照が追加されます。
 
 ## 追加済みのデータの一覧を表示
 
@@ -109,7 +109,7 @@ Saved: {
 plateaukit list
 ```
 
-## 都市モデルを削除
+## 都市モデルの削除
 
 ```bash title="例: 東京都23区のデータを削除"
 plateaukit uninstall plateau-tokyo23ku
