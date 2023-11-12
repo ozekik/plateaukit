@@ -1,13 +1,15 @@
 
-# PLATEAUデータの追加/削除 (コマンドライン)
+# PLATEAUデータの追加と削除 (CLI)
 
 ## 利用可能な都市モデルの一覧を表示
+
+利用可能な都市モデルの一覧を表示するには、`plateaukit install --list` コマンドを使用します。
 
 ```bash
 plateaukit install --list
 ```
 
-??? note "一覧"
+??? note "現在の都市一覧"
 
     |                   id                   |         name         |                                    homepage                                   |
     |----------------------------------------|----------------------|-------------------------------------------------------------------------------|
@@ -72,17 +74,15 @@ plateaukit install --list
 
 ## 都市モデルをダウンロード・追加
 
-一覧のIDを指定して都市モデルをダウンロード・追加します。
+都市モデルをダウンロード・追加するには、`plateaukit install` コマンドで都市モデルのIDを指定します。
 
-```bash title="例1: 東京都23区のデータをダウンロードして追加"
+```bash title="例: 東京都23区のデータをダウンロードして追加"
 plateaukit install plateau-tokyo23ku
 ```
 
-```bash title="例2: 事前にダウンロード済みの東京都23区のデータを追加 (CityGML)"
-plateaukit install plateau-tokyo23ku --local ./13100_tokyo23-ku_2020_citygml_3_2_op/ --format citygml
-```
+<div class="result" markdown>
 
-```title="実行例 (例1)"
+```bash title="実行例"
 $ plateaukit install plateau-tokyo23ku
 Downloading as: /.../plateaukit/13100_tokyo23-ku_2020_citygml_3_2_op.zip
 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4.18G/4.18G [03:18<00:00, 14.1MB/s]
@@ -95,15 +95,27 @@ Saved: {
 }
 ```
 
-新規にダウンロードする場合、データの保存場所はデフォルトでは以下の通りです:
+</div>
 
-- macOS: `/Users/<username>/Library/Application Support/plateaukit/`
-- Windows: `C:\\Users\<username>\AppData\Local\plateaukit\`
-- Linux: `/home/<username>/.local/share/plateaukit/`
+または、事前にデータをダウンロードしておき、`--local` オプションにファイルを指定して追加することもできます。
 
-`--local` オプションを使ってダウンロード済みのデータを追加する場合は、そのファイルパスへの参照が追加されます。
+```bash title="例: 事前にダウンロード済みの東京都23区のデータを追加 (CityGML)"
+plateaukit install plateau-tokyo23ku --local ./13100_tokyo23-ku_2020_citygml_3_2_op/ --format citygml
+```
+
+!!! note ""
+    都市モデルのデータを新規にダウンロードする場合、データの保存場所はデフォルトでは以下の通りです:
+
+    - macOS: `/Users/<username>/Library/Application Support/plateaukit/`
+    - Windows: `C:\\Users\<username>\AppData\Local\plateaukit\`
+    - Linux: `/home/<username>/.local/share/plateaukit/`
+
+    `--local` オプションを使ってダウンロード済みのデータを追加する場合は、そのファイルパスへの参照が追加されます。
+
 
 ## 追加済みのデータの一覧を表示
+
+追加済みのデータの一覧を表示するには、`plateaukit list` コマンドを使用します。
 
 ```bash
 plateaukit list
@@ -111,6 +123,8 @@ plateaukit list
 
 ## 都市モデルの削除
 
-```bash title="例: 東京都23区のデータを削除"
-plateaukit uninstall plateau-tokyo23ku
+追加済みの都市モデルのデータを削除するには、`plateaukit uninstall` コマンドを使用します。
+
+```bash
+plateaukit uninstall plateau-tokyo23ku # 東京都23区のデータを削除
 ```

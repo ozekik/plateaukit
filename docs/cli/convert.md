@@ -1,14 +1,14 @@
-# PLATEAUデータの利用 (コマンドライン)
+# PLATEAUデータの変換 (CLI)
 
-## CityGMLからGeoJSON/CityJSONを生成
+## CityGMLからGeoJSONを生成
 
-### GeoJSON
-
-`plateaukit generate-geojson` コマンドを使用することで、PLATEAU の CityGML ファイルを <a href="https://gis-oer.github.io/gitbook/book/materials/web_gis/GeoJSON/GeoJSON.html" target="_blank">GeoJSON</a> ファイルに変換することができます。
+`plateaukit generate-geojson` コマンドを使用して、PLATEAU の CityGML ファイルを <a href="https://gis-oer.github.io/gitbook/book/materials/web_gis/GeoJSON/GeoJSON.html" target="_blank">GeoJSON</a> ファイルに変換することができます。
 
 ```bash title="例: 建造物 (bldg) データからLOD0/1相当のGeoJSONを生成"
 plateaukit generate-geojson --dataset plateau-tokyo23ku -t bldg /tmp/tokyo23ku-bldg.json
 ```
+
+<div class="result" markdown>
 
 ```json
 {
@@ -48,13 +48,17 @@ plateaukit generate-geojson --dataset plateau-tokyo23ku -t bldg /tmp/tokyo23ku-b
 }
 ```
 
-### CityJSON
+</div>
 
-`plateaukit generate-cityjson` コマンドを使用することで、PLATEAU の CityGML ファイルを <a href="https://www.cityjson.org/" target="_blank">CityJSON</a> ファイルに変換することができます。(現在 LOD1 をサポート)
+## CityGMLからCityJSONを生成
+
+`plateaukit generate-cityjson` コマンドを使用して、PLATEAU の CityGML ファイルを <a href="https://www.cityjson.org/" target="_blank">CityJSON</a> ファイルに変換することができます。(現在 LOD1 をサポート)
 
 ```bash title="例: 建造物 (bldg) データからLOD1相当のCityJSONを生成"
 plateaukit generate-cityjson --dataset plateau-tokyo23ku /tmp/tokyo23ku-bldg.city.json
 ```
+
+<div class="result" markdown>
 
 ```json
 {
@@ -94,10 +98,10 @@ plateaukit generate-cityjson --dataset plateau-tokyo23ku /tmp/tokyo23ku-bldg.cit
 }
 ```
 
+</div>
+
+データセットの代わりに、ファイルを直接指定して変換することも可能です。
+
 ```bash title="例: ファイルを指定"
 plateaukit generate-cityjson ./udx/bldg/53395548_bldg_6697_2_op.gml /tmp/53395548_bldg_6697_2_op.city.json
 ```
-
-## CityGMLから属性情報を抽出
-
-> TODO: ドキュメントの整備
