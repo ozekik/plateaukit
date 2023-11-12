@@ -49,6 +49,7 @@ mkdocs-material = "^9.1.21"
 mkdocstrings-python = "^1.2.1"
 mkdocs-exclude = "^1.0.2"
 markdown-exec = {extras = ["ansi"], version = "^1.6.0"}
+mkdocs-redirects = "^1.2.1"
 
 [build-system]
 requires = ["poetry-core"]
