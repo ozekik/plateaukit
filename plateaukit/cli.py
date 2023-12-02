@@ -1,7 +1,7 @@
 import glob
-import json
 import os
 import re
+import sys
 import tempfile
 import zipfile
 from pathlib import Path
@@ -18,7 +18,7 @@ from plateaukit.download import downloader
 
 def is_dataset_installed(dataset_id, format):
     config = Config()
-    path = config.data.get(dataset_id, {}).get(format)
+    path = config.datasets.get(dataset_id, {}).get(format)
     return True if path else False
     # return path and Path(path).exists()
 
@@ -30,12 +30,36 @@ def setup_property_db(infiles, db_filename):
     run_async(extractors.commands.extract_properties(expanded_infiles, db_filename))
 
 
-@click.group()
-def cli():
-    pass
+@click.group(
+    context_settings=dict(help_option_names=["-h", "--help"]), no_args_is_help=True
+)
+@click.option(
+    "-v", "--verbose", is_flag=True, default=False, help="Enable verbose mode."
+)
+def cli(verbose):
+    if verbose:
+        logger.remove()
+        logger.add(sys.stderr, level="DEBUG")
+    else:
+        logger.remove()
 
 
-# @cli.command("config")
+@cli.command("info")
+def info_cmd():
+    """Show PlateauKit config info."""
+    import importlib.metadata
+    import json
+
+    try:
+        __version__ = importlib.metadata.version("plateaukit")
+    except importlib.metadata.PackageNotFoundError:
+        __version__ = "unknown"
+
+    config = Config()
+    click.echo(f"Version: {__version__}")
+    click.echo(f"Config path: {config.path}")
+    click.echo(f"Data directory: {config.data_dir}")
+    click.echo(f"{json.dumps(config.datasets, indent=2, ensure_ascii=False)}")
 
 
 @cli.command("uninstall")
@@ -53,16 +77,16 @@ def uninstall(dataset_id, format, keep_files):
 
     if not keep_files:
         config = Config()
-        path = config.data[dataset_id][format]
+        path = config.datasets[dataset_id][format]
         if not path:
             raise RuntimeError("Missing files in record")
         if click.confirm(f'Delete "{path}"?'):
             os.remove(path)
 
     config = Config()
-    del config.data[dataset_id][format]
-    if len(config.data[dataset_id].items()) == 0:
-        del config.data[dataset_id]
+    del config.datasets[dataset_id][format]
+    if len(config.datasets[dataset_id].items()) == 0:
+        del config.datasets[dataset_id]
     config.save()
 
 
@@ -82,7 +106,7 @@ def install(dataset_id, format, local, force, download_only, list):
     from plateaukit.download import city_list
 
     if not dataset_id and not list:
-        raise Exception("Missing argument")
+        raise click.UsageError("No argument")
 
     if list:
         table = PrettyTable()
@@ -97,15 +121,15 @@ def install(dataset_id, format, local, force, download_only, list):
         city = next(filter(lambda x: x["dataset_id"] == dataset_id, city_list), None)
 
         if not city:
-            raise Exception("Invalid dataset name")
+            raise click.UsageError("Invalid dataset name")
 
         if local:
             local = Path(local).resolve()
             if not local.exists():
-                raise Exception("Local file not found")
+                raise click.UsageError("Local file not found")
             # print(local)
             config = Config()
-            config.data[dataset_id][format] = local
+            config.datasets[dataset_id][format] = local
             config.save()
             return
         else:
@@ -123,7 +147,7 @@ def install(dataset_id, format, local, force, download_only, list):
             destfile_path = downloader.download_resource(
                 resource_id, dest=config.data_dir
             )
-            config.data[dataset_id][format] = destfile_path
+            config.datasets[dataset_id][format] = destfile_path
             config.save()
             return
 
@@ -137,7 +161,7 @@ def cmd_list():
 
     table = PrettyTable()
     table.field_names = ["id", "name", "homepage", "formats"]
-    for dataset_id, record in config.data.items():
+    for dataset_id, record in config.datasets.items():
         city = next(filter(lambda x: x["dataset_id"] == dataset_id, city_list), None)
         if not city:
             continue
@@ -182,7 +206,7 @@ def generate_cityjson(infiles, outfile, dataset, split):
     if dataset:
         with tempfile.TemporaryDirectory() as tdir:
             config = Config()
-            record = config.data[dataset]
+            record = config.datasets[dataset]
             if "citygml" not in record:
                 raise Exception("Missing CityGML data")
             file_path = Path(record["citygml"])
@@ -226,22 +250,9 @@ def generate_cityjson(infiles, outfile, dataset, split):
         #     json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
 
 
-@cli.command("generate-geojson")
-@click.argument("infiles", nargs=-1)
-@click.argument("outfile", nargs=1, required=True)
-@click.option("--dataset", help='Dataset ID (e.g. "plateau-tokyo23ku")')
-@click.option(
-    "--type",
-    "-t",
-    type=click.Choice(
-        ["bldg", "brid", "dem", "fld", "frn", "lsld", "luse", "tran", "urf"],
-        case_sensitive=True,
-    ),
-    default="bldg",
-)
-@click.option("--split", default=10)
-def generate_geojson(infiles, outfile, dataset, type, split):
+def _generate_geojson(infiles, outfile, dataset: str, type: str, split: int):
     """Generate GeoJSON from PLATEAU CityGML."""
+
     if not infiles and not dataset:
         raise Exception("Missing argument")
 
@@ -254,7 +265,7 @@ def generate_geojson(infiles, outfile, dataset, type, split):
             if not type:
                 raise Exception("Missing type")
             config = Config()
-            record = config.data[dataset]
+            record = config.datasets[dataset]
             if "citygml" not in record:
                 raise Exception("Missing CityGML data")
             file_path = Path(record["citygml"])
@@ -340,6 +351,26 @@ def generate_geojson(infiles, outfile, dataset, type, split):
             # )
         else:
             raise NotImplementedError(type)
+
+
+@cli.command("generate-geojson")
+@click.argument("infiles", nargs=-1)
+@click.argument("outfile", nargs=1, required=True)
+@click.option("--dataset", help='Dataset ID (e.g. "plateau-tokyo23ku")')
+@click.option(
+    "--type",
+    "-t",
+    type=click.Choice(
+        ["bldg", "brid", "dem", "fld", "frn", "lsld", "luse", "tran", "urf"],
+        case_sensitive=True,
+    ),
+    default="bldg",
+)
+@click.option("--split", default=10)
+def generate_geojson(infiles, outfile, dataset: str, type: str, split: int):
+    """Generate GeoJSON from PLATEAU CityGML."""
+
+    _generate_geojson(infiles, outfile, dataset, type, split)
 
 
 # @cli.command("generate-gpkg")
