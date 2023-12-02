@@ -14,6 +14,7 @@ from tqdm.auto import tqdm
 from plateaukit import extractors, utils
 from plateaukit.constants import nsmap
 
+# TODO: Should be controlled by -v option:
 logger.remove()
 logger.add(sys.stderr, level="INFO")
 
@@ -26,14 +27,14 @@ def geojson_from_gml_single(
     attributes=["measuredHeight"],
     allow_geometry_collection=False,
 ):
-    logger.debug(infile)
+    logger.debug(f"infile: {infile}")
 
     tree = etree.parse(infile)
 
     src_epsg = extractors.utils.extract_epsg(tree)  # 6697
-    logger.debug(src_epsg)
+    # logger.debug(src_epsg)
     crs_orig = pyproj.CRS(src_epsg)
-    logger.debug(repr(crs_orig))
+    # logger.debug(repr(crs_orig))
 
     logger.debug(f"EPSG:{src_epsg} → EPSG:{target_epsg}")
 
@@ -41,8 +42,11 @@ def geojson_from_gml_single(
 
     features = []
 
+    # logger.debug(
+    #     f"""elements#: {len(list(tree.iterfind(f"./{nsmap['core']}cityObjectMember/*")))}"""
+    # )
+
     for i, el in enumerate(tree.iterfind(f"./{nsmap['core']}cityObjectMember/*")):
-        # print(el)
         # building_id = extract.utils.extract_string_attribute_value(el, "建物ID")
         try:
             building_id = extractors.utils.extract_gml_id(el)
@@ -72,6 +76,10 @@ def geojson_from_gml_single(
         if len(lod) > 1:
             raise NotImplementedError("too many LOD values")
 
+        poslists = None
+
+        logger.debug(f"lod: {lod}")
+
         if 0 in lod:
             poslists = extractors.utils.extract_lod0_poslists(el)
             # print(lod0_poslist)
@@ -83,6 +91,8 @@ def geojson_from_gml_single(
                 poslists = []
 
         polygons = []
+
+        logger.debug(f"poslists: {poslists}")
 
         # TODO: fix
         if not poslists:

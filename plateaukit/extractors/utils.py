@@ -57,19 +57,28 @@ def extract_epsg(tree):
 
 
 def extract_lod0_poslists(tree):
-    path = "/".join(
-        [
-            f"./{{*}}lod0RoofEdge",  # TODO: add namespace; should not only RoofEdge
-            f"{nsmap['gml']}MultiSurface",
-            f"{nsmap['gml']}surfaceMember",
-            f"{nsmap['gml']}Polygon",
-            f"{nsmap['gml']}exterior",
-            f"{nsmap['gml']}LinearRing",
-            f"{nsmap['gml']}posList",
-        ]
-    )
-    # print(path)
-    results = tree.findall(path)
+    def parse(tree, element_name="lod0RoofEdge"):
+        path = "/".join(
+            [
+                f"./{{*}}{element_name}",  # TODO: add namespace; should not only RoofEdge
+                f"{nsmap['gml']}MultiSurface",
+                f"{nsmap['gml']}surfaceMember",
+                f"{nsmap['gml']}Polygon",
+                f"{nsmap['gml']}exterior",
+                f"{nsmap['gml']}LinearRing",
+                f"{nsmap['gml']}posList",
+            ]
+        )
+        # print(path)
+        results = tree.findall(path)
+        return results
+
+    results = parse(tree, element_name="lod0RoofEdge")
+
+    if results is None or len(results) == 0:
+        results = parse(tree, element_name="lod0FootPrint")
+
+    # TODO: Check all lod0 elements
 
     if results is None or len(results) == 0:
         return None
