@@ -4,7 +4,8 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 import requests
-from tqdm.auto import tqdm
+# from tqdm.auto import tqdm
+from rich.progress import wrap_file
 
 API_URL = "https://www.geospatial.jp/ckan/api/3"
 
@@ -12,15 +13,21 @@ API_URL = "https://www.geospatial.jp/ckan/api/3"
 def download_resource(resource_id, dest="/tmp"):
     resp = requests.get(f"{API_URL}/action/resource_show", params={"id": resource_id})
     data = resp.json()
+
     if not data["success"]:
         raise Exception("Failed to download")
+
     file_url = data["result"]["url"]
     file_name = os.path.basename(urlparse(file_url).path)
+
     destfile_path = str(Path(dest, file_name))
-    print(f"Downloading as: {destfile_path}")
+
+    print(f"Download file as: {destfile_path}")
+
     with requests.get(file_url, stream=True) as r:
         total_length = int(r.headers.get("Content-Length"))
-        with tqdm.wrapattr(r.raw, "read", total=total_length, desc="") as raw:
+        # with tqdm.wrapattr(r.raw, "read", total=total_length, desc="") as raw:
+        with wrap_file(r.raw, total_length, description="Downloading...") as raw:
             with open(destfile_path, "wb") as output:
                 shutil.copyfileobj(raw, output)
     return destfile_path

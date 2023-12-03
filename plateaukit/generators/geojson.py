@@ -10,6 +10,7 @@ from geojson import Feature, FeatureCollection, GeometryCollection, Polygon
 from loguru import logger
 from lxml import etree
 from tqdm.auto import tqdm
+from rich.progress import Progress, track
 
 from plateaukit import extractors, utils
 from plateaukit.constants import nsmap
@@ -153,26 +154,33 @@ def geojson_from_gml_single(
 def geojson_from_gml_serial_with_quit(
     infiles,
     outfile,
-    group_num=None,
+    task_id=None,
     quit=None,
+    _progress=None,
     **opts,
 ):
     features = []
 
-    with tqdm(infiles, position=group_num) as pbar:
-        for infile in pbar:
-            if quit and quit.is_set():
-                return
+    # with tqdm(
+    #     infiles, desc=f"#{group_num + 1:>3} ", position=group_num + 1, leave=False
+    # ) as pbar:
+    total = len(infiles)
+    for i, infile in enumerate(infiles):
+        if task_id is not None and _progress is not None:
+            _progress[task_id] = {"progress": i + 1, "total": total}
 
-            logger.debug(infile)
-            with open(infile, "r") as f:
-                collection = geojson_from_gml_single(f, **opts)
-                # TODO: fix
-                try:
-                    features.extend(collection["features"])
-                except Exception as err:
-                    logger.debug(err)
-                    pass
+        if quit and quit.is_set():
+            return
+
+        logger.debug(infile)
+        with open(infile, "r") as f:
+            collection = geojson_from_gml_single(f, **opts)
+            # TODO: fix
+            try:
+                features.extend(collection["features"])
+            except Exception as err:
+                logger.debug(err)
+                pass
 
     collection = FeatureCollection(features)
 
@@ -181,37 +189,78 @@ def geojson_from_gml_serial_with_quit(
         geojson.dump(collection, f, ensure_ascii=False, separators=(",", ":"))
 
 
-def geojson_from_gml(infiles, outfile, split, **opts):
+def geojson_from_gml(infiles, outfile, split, progress={}, **opts):
     group_size = math.ceil(len(infiles) / split)
     logger.debug(f"GMLs per GeoJSON: {group_size}")
     infile_groups = utils.chunker(infiles, group_size)
 
-    with Manager() as manager:
-        quit = manager.Event()
-        with concurrent.futures.ProcessPoolExecutor(max_workers=None) as pool:
-            futures = []
-            for i, infile_group in enumerate(infile_groups):
-                stem = Path(outfile).stem
-                if split > 1:
-                    group_outfile = Path(outfile).with_stem(f"{stem}.{i + 1}")
-                else:
-                    group_outfile = outfile
-                futures.append(
-                    pool.submit(
-                        geojson_from_gml_serial_with_quit,
-                        infile_group,
-                        group_outfile,
-                        group_num=i,
-                        quit=None,
-                        # **opts,
+    with Progress() as rprogress:
+        overall_task_id = rprogress.add_task(
+            progress.get("description", "Processing...")
+        )
+
+        with Manager() as manager:
+            quit = manager.Event()
+            _progress = manager.dict()
+            with concurrent.futures.ProcessPoolExecutor(max_workers=None) as pool:
+                futures = []
+                for i, infile_group in enumerate(infile_groups):
+                    stem = Path(outfile).stem
+                    if split > 1:
+                        group_outfile = Path(outfile).with_stem(f"{stem}.{i + 1}")
+                    else:
+                        group_outfile = outfile
+                    task_id = rprogress.add_task(
+                        f"[cyan]Progress #{i + 1}", total=len(infile_group)
                     )
-                )
-            with tqdm(
-                concurrent.futures.as_completed(futures), total=len(futures)
-            ) as pbar:
+                    futures.append(
+                        pool.submit(
+                            geojson_from_gml_serial_with_quit,
+                            infile_group,
+                            group_outfile,
+                            task_id=task_id,
+                            _progress=_progress,
+                            quit=None,
+                            # **opts,
+                        )
+                    )
+                # with tqdm(
+                #     concurrent.futures.as_completed(futures), total=len(futures)
+                # ) as pbar:
                 try:
-                    for future in pbar:
-                        result = future.result()
+                    # for future in track(
+                    #     concurrent.futures.as_completed(futures), total=len(futures)
+                    # ):
+                    #     task_id = progress.add_task("", total=len(futures))
+                    #     for future in concurrent.futures.as_completed(futures):
+                    #         result = future.result()
+                    #         progress.update(task_id, advance=1)
+                    while (
+                        n_finished := sum([future.done() for future in futures])
+                    ) < len(futures):
+                        rprogress.update(
+                            overall_task_id,
+                            completed=n_finished,
+                            total=len(futures),
+                        )
+                        for task_id, status in _progress.items():
+                            latest = status["progress"]
+                            total = status["total"]
+
+                            rprogress.update(
+                                task_id,
+                                completed=latest,
+                                total=total,
+                                visible=latest < total,
+                            )
+
+                    # Finish up the overall progress bar
+                    rprogress.update(
+                        overall_task_id,
+                        completed=n_finished,
+                        total=len(futures),
+                    )
+
                 except KeyboardInterrupt:
                     quit.set()
                     pool.shutdown(wait=True, cancel_futures=True)

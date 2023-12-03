@@ -32,6 +32,7 @@ quantized-mesh-encoder = "^0.4.3"
 numpy = "^1.26.0"
 platformdirs = "^3.10.0"
 pydeck = {extras = ["jupyter"], version = "^0.8.0"}
+rich = {extras = ["jupyter"], version = "^13.7.0"}
 
 [tool.poetry.scripts]
 plateaukit = "plateaukit.cli:cli"

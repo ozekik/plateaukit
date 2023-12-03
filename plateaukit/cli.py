@@ -9,6 +9,7 @@ from pathlib import Path
 import click
 from loguru import logger
 from prettytable import PrettyTable
+from rich.console import Console
 from tortoise import run_async
 
 from plateaukit import extractors, generators
@@ -106,7 +107,7 @@ def install(dataset_id, format, local, force, download_only, list):
     from plateaukit.download import city_list
 
     if not dataset_id and not list:
-        raise click.UsageError("No argument")
+        raise click.UsageError("Missing argument/option: dataset_id or -l/--list")
 
     if list:
         table = PrettyTable()
@@ -150,6 +151,58 @@ def install(dataset_id, format, local, force, download_only, list):
             config.datasets[dataset_id][format] = destfile_path
             config.save()
             return
+
+
+@cli.command("prebuild")
+@click.argument("dataset_id", nargs=1, required=True)
+def prebuild(dataset_id):
+    """Prebuild PLATEAU datasets into GeoPackage format."""
+
+    import geopandas as gpd
+    import pandas as pd
+    from pyogrio import read_dataframe, write_dataframe
+
+    console = Console()
+
+    if not dataset_id:
+        raise Exception("Missing argument: dataset_id")
+
+    config = Config()
+    record = config.datasets.get(dataset_id)
+    # print(dataset_id, record)
+
+    # TODO: All types
+    type = "bldg"
+
+    with tempfile.TemporaryDirectory() as tdir:
+        outfile = Path(tdir, f"{dataset_id}.{type}.geojson")
+
+        _generate_geojson(
+            None,
+            outfile,
+            dataset_id,
+            type,
+            10,
+            progress={"description": "Generating GeoJSON files..."},
+        )
+
+        with console.status("Writing GeoPackage...") as status:
+            df = gpd.GeoDataFrame()
+
+            for filename in glob.glob(str(Path(tdir, "*.geojson"))):
+                subdf = read_dataframe(filename)
+                df = pd.concat([df, subdf])
+
+            # click.echo("Writing GeoPackage...")
+            dest_path = Path(config.data_dir, f"{dataset_id}.gpkg")
+            write_dataframe(df, dest_path, driver="GPKG")
+
+            config.datasets[dataset_id]["gpkg"] = dest_path
+            config.save()
+
+        console.print("Writing GeoPackage... [green]Done")
+
+        # click.echo(f"\nCreated: {dest_path}")
 
 
 @cli.command("list")
@@ -250,14 +303,14 @@ def generate_cityjson(infiles, outfile, dataset, split):
         #     json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
 
 
-def _generate_geojson(infiles, outfile, dataset: str, type: str, split: int):
+def _generate_geojson(infiles, outfile, dataset: str, type: str, split: int, **kwargs):
     """Generate GeoJSON from PLATEAU CityGML."""
 
     if not infiles and not dataset:
-        raise Exception("Missing argument")
+        raise click.UsageError("Missing argument: infiles or dataset")
 
     if infiles and dataset:
-        raise Exception("Too many argument")
+        raise click.UsageError("Too many arguments")
 
     # NOTE: this is intentional but to be refactored in the future
     with tempfile.TemporaryDirectory() as tdir:
@@ -299,6 +352,7 @@ def _generate_geojson(infiles, outfile, dataset: str, type: str, split: int):
                 lod=[0],
                 altitude=True,
                 allow_geometry_collection=False,
+                **kwargs,
             )
         elif type == "brid":
             generators.geojson_from_gml(
@@ -309,6 +363,7 @@ def _generate_geojson(infiles, outfile, dataset: str, type: str, split: int):
                 attributes=[],
                 altitude=True,
                 allow_geometry_collection=True,
+                **kwargs,
             )
         elif type == "dem":
             # TODO: implement
@@ -337,6 +392,7 @@ def _generate_geojson(infiles, outfile, dataset: str, type: str, split: int):
                 attributes=[],
                 altitude=True,  # TODO: can be False
                 allow_geometry_collection=True,
+                **kwargs,
             )
         elif type == "urf":
             raise NotImplementedError("urf")
