@@ -24,6 +24,25 @@ def is_dataset_installed(dataset_id, format):
     # return path and Path(path).exists()
 
 
+def list_available_datasets(is_all=False):
+    from plateaukit.download import city_list
+
+    table = PrettyTable()
+    table.field_names = ["id", "name", "version", "homepage"]
+    table.add_row(["all", "(全都市)", "", ""])
+    for city in city_list:
+        if city.get("latest", False) or is_all:
+            table.add_row(
+                [
+                    city["dataset_id"],
+                    city["city_name"],
+                    city["version"],
+                    city["homepage"],
+                ]
+            )
+    print(table)
+
+
 # def setup_property_db(infiles, db_filename):
 #     expanded_infiles = []
 #     for infile in infiles:
@@ -54,28 +73,43 @@ def cli(verbose):
 
 
 @cli.command("list")
-def list_cmd():
-    """List installed PLATEAU datasets."""
+@click.option(
+    "--local", is_flag=True, default=False, help="Show installed datasets only."
+)
+@click.option(
+    "--all",
+    is_flag=True,
+    default=False,
+    help="Show all versions of datasets including old ones.",
+)
+def list_cmd(local, all):
+    """List available and installed PLATEAU datasets."""
     from plateaukit.download import city_list
 
     config = Config()
 
-    table = PrettyTable()
-    table.field_names = ["id", "name", "homepage", "formats"]
-    for dataset_id, record in config.datasets.items():
-        city = next(filter(lambda x: x["dataset_id"] == dataset_id, city_list), None)
-        if not city:
-            continue
-        table.add_row(
-            [
-                dataset_id,
-                city["city_name"],
-                city["homepage"],
-                " ".join([x for x in ["citygml", "3dtiles"] if x in record]),
-            ]
-        )
-    print(table)
-    return
+    if local:
+        table = PrettyTable()
+        table.field_names = ["id", "name", "homepage", "formats"]
+        for dataset_id, record in config.datasets.items():
+            city = next(
+                filter(lambda x: x["dataset_id"] == dataset_id, city_list), None
+            )
+            if not city:
+                continue
+            table.add_row(
+                [
+                    dataset_id,
+                    city["city_name"],
+                    city["homepage"],
+                    " ".join([x for x in ["citygml", "3dtiles"] if x in record]),
+                ]
+            )
+        print(table)
+        return
+    else:
+        list_available_datasets(is_all=all)
+        return
 
 
 @cli.command("install")
@@ -88,21 +122,19 @@ def list_cmd():
 @click.option("--local", help="Install local file. (without copying)")
 @click.option("--force", is_flag=True, default=False, help="Force install.")
 @click.option("--download-only", is_flag=True, default=False)
-@click.option("-l", "--list", is_flag=True, help="List all available datasets.")
-def install_cmd(dataset_id, format, local, force, download_only, list):
+@click.option("-l", "--list", is_flag=True, help="List all latest available datasets.")
+@click.option(
+    "--list-all", is_flag=True, help="List all available datasets including old ones."
+)
+def install_cmd(dataset_id, format, local, force, download_only, list, list_all):
     """Download and install PLATEAU datasets."""
     from plateaukit.download import city_list
 
-    if not dataset_id and not list:
+    if not dataset_id and not (list or list_all):
         raise click.UsageError("Missing argument/option: dataset_id or -l/--list")
 
-    if list:
-        table = PrettyTable()
-        table.field_names = ["id", "name", "homepage"]
-        table.add_row(["all", "(全都市)", ""])
-        for city in city_list:
-            table.add_row([city["dataset_id"], city["city_name"], city["homepage"]])
-        print(table)
+    if list or list_all:
+        list_available_datasets(is_all=list_all)
         return
 
     if dataset_id:
