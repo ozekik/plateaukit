@@ -31,8 +31,16 @@ def is_dataset_installed(dataset_id, format):
 #     run_async(extractors.commands.extract_properties(expanded_infiles, db_filename))
 
 
+# https://alexdelorenzo.dev/notes/click.html
+class OrderCommands(click.Group):
+    def list_commands(self, ctx):
+        return list(self.commands)
+
+
 @click.group(
-    context_settings=dict(help_option_names=["-h", "--help"]), no_args_is_help=True
+    cls=OrderCommands,
+    context_settings=dict(help_option_names=["-h", "--help"]),
+    no_args_is_help=True,
 )
 @click.option(
     "-v", "--verbose", is_flag=True, default=False, help="Enable verbose mode."
@@ -45,50 +53,29 @@ def cli(verbose):
         logger.remove()
 
 
-@cli.command("info")
-def info_cmd():
-    """Show PlateauKit config info."""
-    import importlib.metadata
-    import json
-
-    try:
-        __version__ = importlib.metadata.version("plateaukit")
-    except importlib.metadata.PackageNotFoundError:
-        __version__ = "unknown"
+@cli.command("list")
+def list_cmd():
+    """List installed PLATEAU datasets."""
+    from plateaukit.download import city_list
 
     config = Config()
-    click.echo(f"Version: {__version__}")
-    click.echo(f"Config path: {config.path}")
-    click.echo(f"Data directory: {config.data_dir}")
-    click.echo(f"{json.dumps(config.datasets, indent=2, ensure_ascii=False)}")
 
-
-@cli.command("uninstall")
-@click.argument("dataset_id", nargs=1, required=False)
-@click.option(
-    "--format",
-    type=click.Choice(["citygml", "3dtiles"], case_sensitive=False),
-    default="citygml",
-)
-@click.option("--keep-files", is_flag=True, default=False)
-def uninstall(dataset_id, format, keep_files):
-    """Uninstall PLATEAU datasets."""
-    if not dataset_id:
-        raise Exception("Missing argument")
-
-    if not keep_files:
-        config = Config()
-        path = config.datasets[dataset_id][format]
-        if not path:
-            raise RuntimeError("Missing files in record")
-        if click.confirm(f'Delete "{path}"?'):
-            os.remove(path)
-
-    config = Config()
-    del config.datasets[dataset_id][format]
-    if len(config.datasets[dataset_id].items()) == 0:
-        del config.datasets[dataset_id]
-    config.save()
+    table = PrettyTable()
+    table.field_names = ["id", "name", "homepage", "formats"]
+    for dataset_id, record in config.datasets.items():
+        city = next(filter(lambda x: x["dataset_id"] == dataset_id, city_list), None)
+        if not city:
+            continue
+        table.add_row(
+            [
+                dataset_id,
+                city["city_name"],
+                city["homepage"],
+                " ".join([x for x in ["citygml", "3dtiles"] if x in record]),
+            ]
+        )
+    print(table)
+    return
 
 
 @cli.command("install")
@@ -102,7 +89,7 @@ def uninstall(dataset_id, format, keep_files):
 @click.option("--force", is_flag=True, default=False, help="Force install.")
 @click.option("--download-only", is_flag=True, default=False)
 @click.option("-l", "--list", is_flag=True, help="List all available datasets.")
-def install(dataset_id, format, local, force, download_only, list):
+def install_cmd(dataset_id, format, local, force, download_only, list):
     """Download and install PLATEAU datasets."""
     from plateaukit.download import city_list
 
@@ -153,10 +140,38 @@ def install(dataset_id, format, local, force, download_only, list):
             return
 
 
+@cli.command("uninstall")
+@click.argument("dataset_id", nargs=1, required=False)
+@click.option(
+    "--format",
+    type=click.Choice(["citygml", "3dtiles"], case_sensitive=False),
+    default="citygml",
+)
+@click.option("--keep-files", is_flag=True, default=False)
+def uninstall_cmd(dataset_id, format, keep_files):
+    """Uninstall PLATEAU datasets."""
+    if not dataset_id:
+        raise Exception("Missing argument")
+
+    if not keep_files:
+        config = Config()
+        path = config.datasets[dataset_id][format]
+        if not path:
+            raise RuntimeError("Missing files in record")
+        if click.confirm(f'Delete "{path}"?'):
+            os.remove(path)
+
+    config = Config()
+    del config.datasets[dataset_id][format]
+    if len(config.datasets[dataset_id].items()) == 0:
+        del config.datasets[dataset_id]
+    config.save()
+
+
 @cli.command("prebuild")
 @click.argument("dataset_id", nargs=1, required=True)
 def prebuild(dataset_id):
-    """Prebuild PLATEAU datasets into GeoPackage format."""
+    """Prebuild PLATEAU datasets."""
 
     import geopandas as gpd
     import pandas as pd
@@ -205,31 +220,6 @@ def prebuild(dataset_id):
         # click.echo(f"\nCreated: {dest_path}")
 
 
-@cli.command("list")
-def cmd_list():
-    """List installed PLATEAU datasets."""
-    from plateaukit.download import city_list
-
-    config = Config()
-
-    table = PrettyTable()
-    table.field_names = ["id", "name", "homepage", "formats"]
-    for dataset_id, record in config.datasets.items():
-        city = next(filter(lambda x: x["dataset_id"] == dataset_id, city_list), None)
-        if not city:
-            continue
-        table.add_row(
-            [
-                dataset_id,
-                city["city_name"],
-                city["homepage"],
-                " ".join([x for x in ["citygml", "3dtiles"] if x in record]),
-            ]
-        )
-    print(table)
-    return
-
-
 @cli.command("generate-cityjson")
 @click.argument("infiles", nargs=-1)
 @click.argument("outfile", nargs=1, required=True)
@@ -240,7 +230,7 @@ def cmd_list():
 # #     help="Number of decimal places to keep for geometry vertices (default: 16).",
 # )
 def generate_cityjson(infiles, outfile, dataset, split):
-    """Generate CityJSON from PLATEAU CityGML."""
+    """Generate CityJSON from PLATEAU datasets."""
     # print(infiles)
 
     if not infiles and not dataset:
@@ -304,7 +294,7 @@ def generate_cityjson(infiles, outfile, dataset, split):
 
 
 def _generate_geojson(infiles, outfile, dataset: str, type: str, split: int, **kwargs):
-    """Generate GeoJSON from PLATEAU CityGML."""
+    """Generate GeoJSON from PLATEAU datasets."""
 
     if not infiles and not dataset:
         raise click.UsageError("Missing argument: infiles or dataset")
@@ -424,7 +414,7 @@ def _generate_geojson(infiles, outfile, dataset: str, type: str, split: int, **k
 )
 @click.option("--split", default=10)
 def generate_geojson(infiles, outfile, dataset: str, type: str, split: int):
-    """Generate GeoJSON from PLATEAU CityGML."""
+    """Generate GeoJSON from PLATEAU datasets."""
 
     _generate_geojson(infiles, outfile, dataset, type, split)
 
@@ -444,7 +434,7 @@ def generate_geojson(infiles, outfile, dataset: str, type: str, split: int):
 @click.argument("infiles", nargs=-1)
 @click.argument("outfile", nargs=1, required=True)
 def generate_qmesh(infiles, outfile):
-    """Generate Quantified Mesh from PLATEAU CityGML."""
+    """Generate Quantized Mesh from PLATEAU datasets."""
     generators.triangles_from_gml(infiles)
 
 
@@ -468,6 +458,25 @@ def generate_qmesh(infiles, outfile):
 #     for infile in infiles:
 #         expanded_infiles.extend(glob.glob(infile))
 #     run_async(extractors.commands.extract_properties(expanded_infiles, outfile))
+
+
+@cli.command("info")
+def info_cmd():
+    """Show PlateauKit configuration information."""
+    import importlib.metadata
+    import json
+
+    try:
+        __version__ = importlib.metadata.version("plateaukit")
+    except importlib.metadata.PackageNotFoundError:
+        __version__ = "unknown"
+
+    config = Config()
+    click.echo(f"Version: {__version__}")
+    click.echo(f"Config path: {config.path}")
+    click.echo(f"Data directory: {config.data_dir}")
+    click.echo(f"{json.dumps(config.datasets, indent=2, ensure_ascii=False)}")
+
 
 if __name__ == "__main__":
     cli()
