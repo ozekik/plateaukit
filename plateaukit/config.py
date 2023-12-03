@@ -14,7 +14,7 @@ class Config(BaseModel):
     """Class representing the PlateauKit config."""
 
     path: str = Field(default=None, validate_default=True)
-    _data_dir: str = PrivateAttr(default=str(user_data_dir("plateaukit")))
+    _data_dir: str = PrivateAttr(default=str(Path(user_data_dir("plateaukit"), "data")))
     datasets: Optional[
         DefaultDict[str, Annotated[dict, Field(default_factory=dict)]]
     ] = None
