@@ -10,8 +10,9 @@ PlateauKit は、<a href="https://www.mlit.go.jp/plateau/" target="_blank">国�
 ## 機能 Features
 
 - [x] PLATEAUデータセットのインストール・管理
-- [x] 並列処理でのデータ変換
-- [x] citygml-tools / citygml4j (Java) に依存せずCityJSONに変換 (一部)
+- [x] GeoJSONへの変換
+- [x] CityJSONへの変換 (citygml-tools / citygml4j 非依存)
+- [x] データ変換の並列処理
 - [ ] JupyterLab / Jupyer Notebookでの3D都市モデル表示 (LOD1/2)
 
 ## インストール Installation
