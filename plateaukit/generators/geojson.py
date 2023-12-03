@@ -194,6 +194,7 @@ def geojson_from_gml(infiles, outfile, split, progress={}, **opts):
     logger.debug(f"GMLs per GeoJSON: {group_size}")
     infile_groups = utils.chunker(infiles, group_size)
 
+    # https://www.deanmontgomery.com/2022/03/24/rich-progress-and-multiprocessing/
     with Progress() as rprogress:
         overall_task_id = rprogress.add_task(
             progress.get("description", "Processing...")
