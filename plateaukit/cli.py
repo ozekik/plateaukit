@@ -13,6 +13,7 @@ from rich.console import Console
 
 from plateaukit import extractors, generators
 from plateaukit.config import Config
+from plateaukit.dataset import load_dataset
 from plateaukit.download import downloader
 
 
@@ -333,101 +334,11 @@ def _generate_geojson(infiles, outfile, dataset: str, type: str, split: int, **k
     if infiles and dataset:
         raise click.UsageError("Too many arguments")
 
-    # NOTE: this is intentional but to be refactored in the future
-    with tempfile.TemporaryDirectory() as tdir:
-        if dataset:
-            if not type:
-                raise Exception("Missing type")
-            config = Config()
-            record = config.datasets[dataset]
-            if "citygml" not in record:
-                raise Exception("Missing CityGML data")
-            file_path = Path(record["citygml"])
-            # TODO: fix
-            pat = re.compile(rf".*udx\/{type}\/.*\.gml$")
-            if zipfile.is_zipfile(file_path):
-                with zipfile.ZipFile(file_path) as f:
-                    namelist = f.namelist()
-                    targets = list(filter(lambda x: pat.match(x), namelist))
-                    # print(targets, tdir)
-                    f.extractall(tdir, members=targets)
-                    # TODO: fix
-                    infiles = [
-                        str(Path(tdir, Path(file_path).stem, "udx", type, "*.gml"))
-                    ]
-            else:
-                infiles = [str(Path(file_path, "udx", type, "*.gml"))]
-            logger.debug([infiles, outfile])
-
-        expanded_infiles = []
-        for infile in infiles:
-            expanded_infiles.extend(glob.glob(infile))
-
-        expanded_infiles = sorted(expanded_infiles)
-
-        if type == "bldg":
-            generators.geojson_from_gml(
-                expanded_infiles,
-                outfile,
-                split=split,
-                lod=[0],
-                altitude=True,
-                allow_geometry_collection=False,
-                **kwargs,
-            )
-        elif type == "brid":
-            generators.geojson_from_gml(
-                expanded_infiles,
-                outfile,
-                split=split,
-                lod=[1],
-                attributes=[],
-                altitude=True,
-                allow_geometry_collection=True,
-                **kwargs,
-            )
-        elif type == "dem":
-            # TODO: implement
-            raise NotImplementedError("dem")
-        elif type == "fld":
-            raise NotImplementedError("fld")
-        elif type == "lsld":
-            raise NotImplementedError("lsld")
-        elif type == "luse":
-            raise NotImplementedError("luse")
-            # generate.geojson_from_gml(
-            #     expanded_infiles,
-            #     outfile,
-            #     split=split,
-            #     lod=[1],
-            #     attributes=[],
-            #     altitude=True,
-            #     allow_geometry_collection=True,
-            # )
-        elif type == "tran":
-            generators.geojson_from_gml(
-                expanded_infiles,
-                outfile,
-                split=split,
-                lod=[1],
-                attributes=[],
-                altitude=True,  # TODO: can be False
-                allow_geometry_collection=True,
-                **kwargs,
-            )
-        elif type == "urf":
-            raise NotImplementedError("urf")
-            # generate.geojson_from_gml(
-            #     expanded_infiles,
-            #     outfile,
-            #     split=split,
-            #     lod=[0],
-            #     attributes=[],
-            #     altitude=True,
-            #     allow_geometry_collection=False,
-            # )
-        else:
-            raise NotImplementedError(type)
+    if dataset:
+        dataset = load_dataset(dataset)
+        dataset.to_geojson(outfile, type=type, split=split, **kwargs)
+    else:
+        generators.citygml_to_geojson(infiles, outfile, dataset, type, split, **kwargs)
 
 
 @cli.command("generate-geojson")

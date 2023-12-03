@@ -2,15 +2,16 @@ import concurrent.futures
 import math
 import sys
 from multiprocessing import Manager
+from os import PathLike
 from pathlib import Path
+from typing import List
 
 import geojson
 import pyproj
 from geojson import Feature, FeatureCollection, GeometryCollection, Polygon
 from loguru import logger
 from lxml import etree
-from tqdm.auto import tqdm
-from rich.progress import Progress, track
+from rich.progress import Progress
 
 from plateaukit import extractors, utils
 from plateaukit.constants import nsmap
@@ -260,6 +261,7 @@ def geojson_from_gml(infiles, outfile, split, progress={}, **opts):
                         overall_task_id,
                         completed=n_finished,
                         total=len(futures),
+                        description="[green]Done",
                     )
 
                 except KeyboardInterrupt:
@@ -268,3 +270,85 @@ def geojson_from_gml(infiles, outfile, split, progress={}, **opts):
                     # pool._processes.clear()
                     # concurrent.futures.thread._threads_queues.clear()
                     raise
+
+
+def citygml_to_geojson(
+    infiles: List[str | PathLike],
+    outfile: str | PathLike,
+    type: str,
+    split: int,
+    **kwargs,
+):
+    """Generate GeoJSON file(s) from CityGML files."""
+
+    import glob
+
+    expanded_infiles = []
+    for infile in infiles:
+        expanded_infiles.extend(glob.glob(infile))
+
+    expanded_infiles = sorted(expanded_infiles)
+
+    if type == "bldg":
+        geojson_from_gml(
+            expanded_infiles,
+            outfile,
+            split=split,
+            lod=[0],
+            altitude=True,
+            allow_geometry_collection=False,
+            **kwargs,
+        )
+    elif type == "brid":
+        geojson_from_gml(
+            expanded_infiles,
+            outfile,
+            split=split,
+            lod=[1],
+            attributes=[],
+            altitude=True,
+            allow_geometry_collection=True,
+            **kwargs,
+        )
+    elif type == "dem":
+        # TODO: implement
+        raise NotImplementedError("dem")
+    elif type == "fld":
+        raise NotImplementedError("fld")
+    elif type == "lsld":
+        raise NotImplementedError("lsld")
+    elif type == "luse":
+        raise NotImplementedError("luse")
+        # generate.geojson_from_gml(
+        #     expanded_infiles,
+        #     outfile,
+        #     split=split,
+        #     lod=[1],
+        #     attributes=[],
+        #     altitude=True,
+        #     allow_geometry_collection=True,
+        # )
+    elif type == "tran":
+        geojson_from_gml(
+            expanded_infiles,
+            outfile,
+            split=split,
+            lod=[1],
+            attributes=[],
+            altitude=True,  # TODO: can be False
+            allow_geometry_collection=True,
+            **kwargs,
+        )
+    elif type == "urf":
+        raise NotImplementedError("urf")
+        # generate.geojson_from_gml(
+        #     expanded_infiles,
+        #     outfile,
+        #     split=split,
+        #     lod=[0],
+        #     attributes=[],
+        #     altitude=True,
+        #     allow_geometry_collection=False,
+        # )
+    else:
+        raise NotImplementedError(type)
