@@ -10,7 +10,6 @@ import click
 from loguru import logger
 from prettytable import PrettyTable
 from rich.console import Console
-from tortoise import run_async
 
 from plateaukit import extractors, generators
 from plateaukit.config import Config
