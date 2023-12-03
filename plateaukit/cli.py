@@ -24,11 +24,11 @@ def is_dataset_installed(dataset_id, format):
     # return path and Path(path).exists()
 
 
-def setup_property_db(infiles, db_filename):
-    expanded_infiles = []
-    for infile in infiles:
-        expanded_infiles.extend(glob.glob(infile))
-    run_async(extractors.commands.extract_properties(expanded_infiles, db_filename))
+# def setup_property_db(infiles, db_filename):
+#     expanded_infiles = []
+#     for infile in infiles:
+#         expanded_infiles.extend(glob.glob(infile))
+#     run_async(extractors.commands.extract_properties(expanded_infiles, db_filename))
 
 
 @click.group(
@@ -459,25 +459,15 @@ def generate_qmesh(infiles, outfile):
 #     generators.triangles_from_gml(expanded_infiles)
 
 
-@cli.command("extract-properties")
-@click.argument("infiles", nargs=-1, required=True)
-@click.argument("outfile", nargs=1, required=True)
-def extract_properties(infiles, outfile):
-    """Extract properties from PLATEAU CityGML."""
-    expanded_infiles = []
-    for infile in infiles:
-        expanded_infiles.extend(glob.glob(infile))
-    run_async(extractors.commands.extract_properties(expanded_infiles, outfile))
-
-
-# @cli.command()
-# @click.option('--count', default=1, help='Number of greetings.')
-# @click.option('--name', prompt='Your name',
-#               help='The person to greet.')
-# def hello(count, name):
-#     """Simple program that greets NAME for a total of COUNT times."""
-#     for x in range(count):
-#         click.echo(f"Hello {name}!")
+# @cli.command("extract-properties")
+# @click.argument("infiles", nargs=-1, required=True)
+# @click.argument("outfile", nargs=1, required=True)
+# def extract_properties(infiles, outfile):
+#     """Extract properties from PLATEAU CityGML."""
+#     expanded_infiles = []
+#     for infile in infiles:
+#         expanded_infiles.extend(glob.glob(infile))
+#     run_async(extractors.commands.extract_properties(expanded_infiles, outfile))
 
 if __name__ == "__main__":
     cli()
