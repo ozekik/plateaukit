@@ -1,7 +1,7 @@
 import concurrent.futures
 import json
-from decimal import Decimal
 import math
+from decimal import Decimal
 from multiprocessing import Manager
 from pathlib import Path
 
@@ -10,9 +10,9 @@ from bidict import bidict
 # from json_stream import streamable_dict
 from loguru import logger
 from lxml import etree
-from tqdm import tqdm
-from plateaukit import utils
+from rich.progress import Progress
 
+from plateaukit import utils
 from plateaukit.constants import nsmap
 from plateaukit.utils import parse_posList
 
@@ -215,68 +215,72 @@ class CityObjectsParser:
         self.vertices_map = VerticesMap()
 
     # @streamable_dict
-    def generate_city_object(self, infiles, group_num=None, quit=None):
+    def generate_city_object(self, infiles, task_id=None, quit=None, _progress=None):
         # vertices_map = VerticesMap()
 
-        with tqdm(infiles, position=group_num) as pbar:
-            for infile in pbar:
-                # print(infile)
-                with open(infile, "r") as f:
-                    root = etree.parse(f)
-                    els_cityObject = root.iterfind(f".//{nsmap['bldg']}Building")
-                    # el_cityObject = root.find(
-                    #     f".//{nsmap['bldg']}Building[@{nsmap['gml']}id='BLD_166aaf40-b65b-46c3-b7c7-05f3e7118f46']"
-                    #     # f".//{nsmap['bldg']}Building"
-                    # )
-                    for el_cityObject in els_cityObject:
-                        if quit and quit.is_set():
-                            return
+        total = len(infiles)
+        for i, infile in enumerate(infiles):
+            if task_id is not None and _progress is not None:
+                _progress[task_id] = {"progress": i + 1, "total": total}
 
-                        exterior_surfaces, vertices_map = parse_lod1solid(
-                            el_cityObject, self.vertices_map
-                        )
-                        self.vertices_map = vertices_map
+            # print(infile)
+            with open(infile, "r") as f:
+                root = etree.parse(f)
+                els_cityObject = root.iterfind(f".//{nsmap['bldg']}Building")
+                # el_cityObject = root.find(
+                #     f".//{nsmap['bldg']}Building[@{nsmap['gml']}id='BLD_166aaf40-b65b-46c3-b7c7-05f3e7118f46']"
+                #     # f".//{nsmap['bldg']}Building"
+                # )
+                for el_cityObject in els_cityObject:
+                    if quit and quit.is_set():
+                        return
 
-                        yield el_cityObject.get(f"{nsmap['gml']}id"), {
-                            "type": "Building",
-                            # "attributes": {"建物ID": "13104-bldg-52530", "measuredHeight": 61.9},
-                            # "children": [
-                            #     "ID_22730c8f-9fbc-4d58-88dd-5569d7480fad",
-                            #     "ID_598f2fab-030f-429c-b938-a222e04d8e4b",
-                            #     "ID_db473977-e95e-4075-b0be-55eb65974610",
-                            #     "ID_ac26b2cb-553e-428a-9f10-2659419e824d",
-                            # ],
-                            "geometry": [
-                                # {
-                                #     "type": "MultiSurface",
-                                #     "lod": "0",
-                                #     "boundaries": [],
+                    exterior_surfaces, vertices_map = parse_lod1solid(
+                        el_cityObject, self.vertices_map
+                    )
+                    self.vertices_map = vertices_map
+
+                    yield el_cityObject.get(f"{nsmap['gml']}id"), {
+                        "type": "Building",
+                        # "attributes": {"建物ID": "13104-bldg-52530", "measuredHeight": 61.9},
+                        # "children": [
+                        #     "ID_22730c8f-9fbc-4d58-88dd-5569d7480fad",
+                        #     "ID_598f2fab-030f-429c-b938-a222e04d8e4b",
+                        #     "ID_db473977-e95e-4075-b0be-55eb65974610",
+                        #     "ID_ac26b2cb-553e-428a-9f10-2659419e824d",
+                        # ],
+                        "geometry": [
+                            # {
+                            #     "type": "MultiSurface",
+                            #     "lod": "0",
+                            #     "boundaries": [],
+                            # },
+                            {
+                                "type": "Solid",
+                                "lod": "1",
+                                "boundaries": [
+                                    # Exterior shell
+                                    exterior_surfaces,
+                                    # Interior shells
+                                    # [], [], ...
+                                ],
+                                # "semantics": {
+                                #     "surfaces": [],
+                                #     "values": [],
                                 # },
-                                {
-                                    "type": "Solid",
-                                    "lod": "1",
-                                    "boundaries": [
-                                        # Exterior shell
-                                        exterior_surfaces,
-                                        # Interior shells
-                                        # [], [], ...
-                                    ],
-                                    # "semantics": {
-                                    #     "surfaces": [],
-                                    #     "values": [],
-                                    # },
-                                    # "texture": {"rgbTexture": {"values": []}},
-                                },
-                            ],
-                            # "address": [{"Country": "日本", "Locality": "東京都新宿区西新宿一丁目"}],
-                        }
+                                # "texture": {"rgbTexture": {"values": []}},
+                            },
+                        ],
+                        # "address": [{"Country": "日本", "Locality": "東京都新宿区西新宿一丁目"}],
+                    }
 
 
 def cityson_from_gml_serial_with_quit(
     infiles,
     outfile,
-    group_num=None,
+    task_id=None,
     quit=None,
+    _progress=None,
     **opts,
 ):
     src_epsg = 6697  # WGS
@@ -287,7 +291,9 @@ def cityson_from_gml_serial_with_quit(
     parser = CityObjectsParser()
 
     city_objects = dict(
-        parser.generate_city_object(infiles, group_num=group_num, quit=quit)
+        parser.generate_city_object(
+            infiles, task_id=task_id, quit=quit, _progress=_progress
+        )
     )
 
     vertices = [
@@ -314,7 +320,7 @@ def cityson_from_gml_serial_with_quit(
         json.dump(result, f, ensure_ascii=False, separators=(",", ":"))
 
 
-def cityjson_from_gml(infiles, outfile, split=1, precision=16, lod=[1]):
+def cityjson_from_gml(infiles, outfile, split=1, precision=16, lod=[1], progress={}):
     # vertices_map = VerticesMap()
     # city_objects = {}
 
@@ -322,32 +328,64 @@ def cityjson_from_gml(infiles, outfile, split=1, precision=16, lod=[1]):
     logger.debug(f"GMLs per GeoJSON: {group_size}")
     infile_groups = utils.chunker(infiles, group_size)
 
-    with Manager() as manager:
-        quit = manager.Event()
-        with concurrent.futures.ProcessPoolExecutor(max_workers=None) as pool:
-            futures = []
-            for i, infile_group in enumerate(infile_groups):
-                stem = Path(outfile).stem
-                if split > 1:
-                    group_outfile = Path(outfile).with_stem(f"{stem}.{i + 1}")
-                else:
-                    group_outfile = outfile
-                futures.append(
-                    pool.submit(
-                        cityson_from_gml_serial_with_quit,
-                        infile_group,
-                        group_outfile,
-                        group_num=i,
-                        quit=quit,
-                        # **opts,
+    with Progress() as rprogress:
+        overall_task_id = rprogress.add_task(
+            progress.get("description", "Processing...")
+        )
+
+        with Manager() as manager:
+            quit = manager.Event()
+            _progress = manager.dict()
+
+            with concurrent.futures.ProcessPoolExecutor(max_workers=None) as pool:
+                futures = []
+                for i, infile_group in enumerate(infile_groups):
+                    stem = Path(outfile).stem
+                    if split > 1:
+                        group_outfile = Path(outfile).with_stem(f"{stem}.{i + 1}")
+                    else:
+                        group_outfile = outfile
+                    task_id = rprogress.add_task(
+                        f"[cyan]Progress #{i + 1}", total=len(infile_group)
                     )
-                )
-            with tqdm(
-                concurrent.futures.as_completed(futures), total=len(futures)
-            ) as pbar:
+                    futures.append(
+                        pool.submit(
+                            cityson_from_gml_serial_with_quit,
+                            infile_group,
+                            group_outfile,
+                            task_id=task_id,
+                            _progress=_progress,
+                            quit=quit,
+                            # **opts,
+                        )
+                    )
                 try:
-                    for future in pbar:
-                        result = future.result()
+                    while (
+                        n_finished := sum([future.done() for future in futures])
+                    ) < len(futures):
+                        rprogress.update(
+                            overall_task_id,
+                            completed=n_finished,
+                            total=len(futures),
+                        )
+                        for task_id, status in _progress.items():
+                            latest = status["progress"]
+                            total = status["total"]
+
+                            rprogress.update(
+                                task_id,
+                                completed=latest,
+                                total=total,
+                                visible=latest < total,
+                            )
+
+                    # Finish up the overall progress bar
+                    rprogress.update(
+                        overall_task_id,
+                        completed=n_finished,
+                        total=len(futures),
+                    )
+
                 except KeyboardInterrupt:
                     quit.set()
                     pool.shutdown(wait=True, cancel_futures=True)

@@ -234,10 +234,10 @@ def generate_cityjson(infiles, outfile, dataset, split):
     # print(infiles)
 
     if not infiles and not dataset:
-        raise Exception("Missing argument")
+        raise click.UsageError("Missing argument/option: infiles or --dataset")
 
     if infiles and dataset:
-        raise Exception("Too many argument")
+        raise click.UsageError("Too many argument")
 
     params = {}
 
