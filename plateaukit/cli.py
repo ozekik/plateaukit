@@ -1,9 +1,7 @@
 import glob
 import os
-import re
 import sys
 import tempfile
-import zipfile
 from pathlib import Path
 
 import click
@@ -11,7 +9,7 @@ from loguru import logger
 from prettytable import PrettyTable
 from rich.console import Console
 
-from plateaukit import extractors, generators
+from plateaukit import generators
 from plateaukit.config import Config
 from plateaukit.dataset import load_dataset
 from plateaukit.download import downloader
@@ -255,20 +253,19 @@ def prebuild(dataset_id):
 @cli.command("generate-cityjson")
 @click.argument("infiles", nargs=-1)
 @click.argument("outfile", nargs=1, required=True)
-@click.option("--dataset", help='Dataset ID (e.g. "plateau-tokyo23ku")')
+@click.option("--dataset", "dataset_id", help='Dataset ID (e.g. "plateau-tokyo23ku")')
 @click.option("--split", default=10)
 # # @click.option(
 # #     "--precision",
 # #     help="Number of decimal places to keep for geometry vertices (default: 16).",
 # )
-def generate_cityjson(infiles, outfile, dataset, split):
+def generate_cityjson(infiles, outfile, dataset_id, split):
     """Generate CityJSON from PLATEAU datasets."""
-    # print(infiles)
 
-    if not infiles and not dataset:
+    if not infiles and not dataset_id:
         raise click.UsageError("Missing argument/option: infiles or --dataset")
 
-    if infiles and dataset:
+    if infiles and dataset_id:
         raise click.UsageError("Too many argument")
 
     params = {}
@@ -276,53 +273,15 @@ def generate_cityjson(infiles, outfile, dataset, split):
     # if precision:
     #     params["precision"] = precision
 
+    # TODO: All types
     type = "bldg"
 
-    if dataset:
-        with tempfile.TemporaryDirectory() as tdir:
-            config = Config()
-            record = config.datasets[dataset]
-            if "citygml" not in record:
-                raise Exception("Missing CityGML data")
-            file_path = Path(record["citygml"])
-            # TODO: fix
-            pat = re.compile(rf".*udx\/{type}\/.*\.gml$")
-            if zipfile.is_zipfile(file_path):
-                with zipfile.ZipFile(file_path) as f:
-                    namelist = f.namelist()
-                    targets = list(filter(lambda x: pat.match(x), namelist))
-                    # print(targets, tdir)
-                    f.extractall(tdir, members=targets)
-                    # TODO: fix
-                    infiles = [
-                        str(Path(tdir, Path(file_path).stem, "udx", type, "*.gml"))
-                    ]
-            else:
-                infiles = [str(Path(file_path, "udx", type, "*.gml"))]
-            logger.debug([infiles, outfile])
-
-            expanded_infiles = []
-            for infile in infiles:
-                expanded_infiles.extend(glob.glob(infile))
-
-            expanded_infiles = sorted(expanded_infiles)
-
-            # print(infiles, expanded_infiles)
-
-            generators.simplecityjson.cityjson_from_gml(
-                expanded_infiles,
-                outfile,
-                split=split,
-                lod=[1],
-            )
-
-            # with open(outfile, "w") as f:
-            #     json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
+    if dataset_id:
+        dataset = load_dataset(dataset_id)
+        dataset.to_cityjson(outfile, type=type, split=split, **params)
 
     else:
-        generators.simplecityjson.cityjson_from_gml(infiles, outfile, **params)
-        # with open(outfile, "w") as f:
-        #     json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
+        generators.simplecityjson.cityjson_from_citygml(infiles, outfile, **params)
 
 
 def _generate_geojson(infiles, outfile, dataset: str, type: str, split: int, **kwargs):
@@ -338,13 +297,15 @@ def _generate_geojson(infiles, outfile, dataset: str, type: str, split: int, **k
         dataset = load_dataset(dataset)
         dataset.to_geojson(outfile, type=type, split=split, **kwargs)
     else:
-        generators.citygml_to_geojson(infiles, outfile, dataset, type, split, **kwargs)
+        generators.geojson.geojson_from_citygml(
+            infiles, outfile, dataset, type, split, **kwargs
+        )
 
 
 @cli.command("generate-geojson")
 @click.argument("infiles", nargs=-1)
 @click.argument("outfile", nargs=1, required=True)
-@click.option("--dataset", help='Dataset ID (e.g. "plateau-tokyo23ku")')
+@click.option("--dataset", "dataset_id", help='Dataset ID (e.g. "plateau-tokyo23ku")')
 @click.option(
     "--type",
     "-t",
@@ -355,10 +316,19 @@ def _generate_geojson(infiles, outfile, dataset: str, type: str, split: int, **k
     default="bldg",
 )
 @click.option("--split", default=10)
-def generate_geojson(infiles, outfile, dataset: str, type: str, split: int):
+def generate_geojson(infiles, outfile, dataset_id: str, type: str, split: int):
     """Generate GeoJSON from PLATEAU datasets."""
 
-    _generate_geojson(infiles, outfile, dataset, type, split)
+    _generate_geojson(infiles, outfile, dataset_id, type, split)
+
+
+@cli.command("generate-qmesh")
+@click.argument("infiles", nargs=-1)
+@click.argument("outfile", nargs=1, required=True)
+def generate_qmesh(infiles, outfile):
+    """Generate Quantized Mesh from PLATEAU datasets."""
+
+    generators.triangles_from_gml(infiles)
 
 
 # @cli.command("generate-gpkg")
@@ -370,15 +340,6 @@ def generate_geojson(infiles, outfile, dataset: str, type: str, split: int):
 #     for infile in infiles:
 #         expanded_infiles.extend(glob.glob(infile))
 #     generators.utils.geojson_to_gpkg(expanded_infiles, outfile)
-
-
-@cli.command("generate-qmesh")
-@click.argument("infiles", nargs=-1)
-@click.argument("outfile", nargs=1, required=True)
-def generate_qmesh(infiles, outfile):
-    """Generate Quantized Mesh from PLATEAU datasets."""
-    generators.triangles_from_gml(infiles)
-
 
 # @cli.command("generate-heightmap")
 # @click.argument("infiles", nargs=-1)

@@ -272,7 +272,7 @@ def geojson_from_gml(infiles, outfile, split, progress={}, **opts):
                     raise
 
 
-def citygml_to_geojson(
+def geojson_from_citygml(
     infiles: List[str | PathLike],
     outfile: str | PathLike,
     type: str,

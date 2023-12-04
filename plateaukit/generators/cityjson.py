@@ -24,7 +24,7 @@ def _get_citygml_tools_path():
     return str(path)
 
 
-def cityjson_from_gml(infiles, vertex_precision=16):
+def cityjson_from_citygml(infiles, vertex_precision=16):
     citygml_tools_path = _get_citygml_tools_path()
     args = [
         citygml_tools_path,

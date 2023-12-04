@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pyproj
 from bidict import bidict
+
 # from json_stream import streamable_dict
 from loguru import logger
 from lxml import etree
@@ -45,7 +46,7 @@ class VerticesMap:
         return vertex in self.index_by_vertex
 
 
-def cityjson_from_gml_lod1(infiles, precision=16):
+def cityjson_from_citygml_lod1(infiles, precision=16):
     counter = 0
     vertices = []
 
@@ -320,7 +321,9 @@ def cityson_from_gml_serial_with_quit(
         json.dump(result, f, ensure_ascii=False, separators=(",", ":"))
 
 
-def cityjson_from_gml(infiles, outfile, split=1, precision=16, lod=[1], progress={}):
+def cityjson_from_citygml(
+    infiles, outfile, split=1, precision=16, lod=[1], progress={}
+):
     # vertices_map = VerticesMap()
     # city_objects = {}
 
@@ -384,6 +387,7 @@ def cityjson_from_gml(infiles, outfile, split=1, precision=16, lod=[1], progress
                         overall_task_id,
                         completed=n_finished,
                         total=len(futures),
+                        description="[green]Done",
                     )
 
                 except KeyboardInterrupt:
