@@ -76,7 +76,7 @@ class Dataset:
                     infiles = [str(Path(file_path, "udx", type, "*.gml"))]
                 logger.debug([infiles, outfile])
 
-            generators.geojson.citygml_to_geojson(
+            generators.geojson.geojson_from_citygml(
                 infiles, outfile, type=type, split=split, **kwargs
             )
 
