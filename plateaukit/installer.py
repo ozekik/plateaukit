@@ -1,6 +1,8 @@
 import os
+import sys
 from os import PathLike
 from pathlib import Path
+from typing import List, Optional
 
 from plateaukit.config import Config
 from plateaukit.download import downloader
@@ -58,18 +60,30 @@ def install_dataset(
         return
 
 
-def uninstall_dataset(dataset_id: str, format: str, keep_files: bool = False):
+def uninstall_dataset(
+    dataset_id: str, formats: Optional[List[str]] = None, keep_files: bool = False
+):
     """Uninstall PLATEAU datasets."""
 
-    if not keep_files:
-        config = Config()
-        path = config.datasets[dataset_id][format]
-        if not path:
-            raise RuntimeError("Missing files in record")
-        os.remove(path)
-
     config = Config()
-    del config.datasets[dataset_id][format]
+    formats = formats or config.datasets[dataset_id].keys()
+
+    if not keep_files:
+        paths = []
+        for format in formats:
+            path = config.datasets[dataset_id].get(format)
+            if not path:
+                raise RuntimeError(f"Missing files in record for '{format}'")
+            paths.append(path)
+            try:
+                os.remove(path)
+            except Exception as e:
+                print(e, file=sys.stderr)
+
+    for format in formats:
+        del config.datasets[dataset_id][format]
+
     if len(config.datasets[dataset_id].items()) == 0:
         del config.datasets[dataset_id]
+
     config.save()

@@ -1,3 +1,4 @@
+from calendar import c
 import glob
 import os
 import sys
@@ -93,7 +94,9 @@ def list_cmd(local, all):
                     dataset_id,
                     city["city_name"],
                     city["homepage"],
-                    " ".join([x for x in ["citygml", "3dtiles"] if x in record]),
+                    " ".join(
+                        [x for x in ["citygml", "3dtiles", "gpkg"] if x in record]
+                    ),
                 ]
             )
         print(table)
@@ -137,26 +140,39 @@ def install_cmd(dataset_id, format, local, force, download_only, list, list_all)
 @click.argument("dataset_id", nargs=1, required=False)
 @click.option(
     "--format",
-    type=click.Choice(["citygml", "3dtiles"], case_sensitive=False),
-    default="citygml",
+    "-f",
+    "formats",
+    type=click.Choice(
+        ["citygml", "3dtiles", "gpkg"],
+        case_sensitive=False,
+    ),
+    default=None,
+    multiple=True,
 )
 @click.option("--keep-files", is_flag=True, default=False)
-def uninstall_cmd(dataset_id, format, keep_files):
+def uninstall_cmd(dataset_id, formats, keep_files):
     """Uninstall PLATEAU datasets."""
     if not dataset_id:
         raise Exception("Missing argument")
 
+    config = Config()
+    formats = formats or config.datasets[dataset_id].keys()
+
     # TODO: Fix duplicated code in uninstall_dataset
     if not keep_files:
-        config = Config()
-        path = config.datasets[dataset_id][format]
-        if not path:
-            raise RuntimeError("Missing files in record")
-        if click.confirm(f'Delete "{path}"?'):
-            os.remove(path)
-        uninstall_dataset(dataset_id, format, keep_files=True)
+        paths = []
+        for format in formats:
+            path = config.datasets[dataset_id].get(format)
+            if not path:
+                raise RuntimeError(f"Missing files in record for '{format}'")
+            paths.append(path)
+        click.echo("Would remove:")
+        for path in paths:
+            click.echo(f"  {path}")
+        if click.confirm("Proceed?"):
+            uninstall_dataset(dataset_id, formats, keep_files=False)
     else:
-        uninstall_dataset(dataset_id, format, keep_files=True)
+        uninstall_dataset(dataset_id, formats, keep_files=True)
 
 
 @cli.command("prebuild")
