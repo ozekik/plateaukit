@@ -158,7 +158,7 @@ def geojson_from_gml_serial_with_quit(
     task_id=None,
     quit=None,
     _progress=None,
-    **opts,
+    **kwargs,
 ):
     features = []
 
@@ -175,7 +175,7 @@ def geojson_from_gml_serial_with_quit(
 
         logger.debug(infile)
         with open(infile, "r") as f:
-            collection = geojson_from_gml_single(f, **opts)
+            collection = geojson_from_gml_single(f, **kwargs)
             # TODO: fix
             try:
                 features.extend(collection["features"])
@@ -190,7 +190,7 @@ def geojson_from_gml_serial_with_quit(
         geojson.dump(collection, f, ensure_ascii=False, separators=(",", ":"))
 
 
-def geojson_from_gml(infiles, outfile, split, progress={}, **opts):
+def _geojson_from_citygml(infiles, outfile, split, progress={}, **kwargs):
     group_size = math.ceil(len(infiles) / split)
     logger.debug(f"GMLs per GeoJSON: {group_size}")
     infile_groups = utils.chunker(infiles, group_size)
@@ -229,13 +229,6 @@ def geojson_from_gml(infiles, outfile, split, progress={}, **opts):
                 #     concurrent.futures.as_completed(futures), total=len(futures)
                 # ) as pbar:
                 try:
-                    # for future in track(
-                    #     concurrent.futures.as_completed(futures), total=len(futures)
-                    # ):
-                    #     task_id = progress.add_task("", total=len(futures))
-                    #     for future in concurrent.futures.as_completed(futures):
-                    #         result = future.result()
-                    #         progress.update(task_id, advance=1)
                     while (
                         n_finished := sum([future.done() for future in futures])
                     ) < len(futures):
@@ -274,7 +267,7 @@ def geojson_from_gml(infiles, outfile, split, progress={}, **opts):
 def geojson_from_citygml(
     infiles: List[str | PathLike],
     outfile: str | PathLike,
-    type: str,
+    types: List[str],
     split: int,
     **kwargs,
 ):
@@ -288,66 +281,74 @@ def geojson_from_citygml(
 
     expanded_infiles = sorted(expanded_infiles)
 
-    if type == "bldg":
-        geojson_from_gml(
-            expanded_infiles,
-            outfile,
-            split=split,
-            lod=[0],
-            altitude=True,
-            allow_geometry_collection=False,
-            **kwargs,
-        )
-    elif type == "brid":
-        geojson_from_gml(
-            expanded_infiles,
-            outfile,
-            split=split,
-            lod=[1],
-            attributes=[],
-            altitude=True,
-            allow_geometry_collection=True,
-            **kwargs,
-        )
-    elif type == "dem":
-        # TODO: implement
-        raise NotImplementedError("dem")
-    elif type == "fld":
-        raise NotImplementedError("fld")
-    elif type == "lsld":
-        raise NotImplementedError("lsld")
-    elif type == "luse":
-        raise NotImplementedError("luse")
-        # generate.geojson_from_gml(
-        #     expanded_infiles,
-        #     outfile,
-        #     split=split,
-        #     lod=[1],
-        #     attributes=[],
-        #     altitude=True,
-        #     allow_geometry_collection=True,
-        # )
-    elif type == "tran":
-        geojson_from_gml(
-            expanded_infiles,
-            outfile,
-            split=split,
-            lod=[1],
-            attributes=[],
-            altitude=True,  # TODO: can be False
-            allow_geometry_collection=True,
-            **kwargs,
-        )
-    elif type == "urf":
-        raise NotImplementedError("urf")
-        # generate.geojson_from_gml(
-        #     expanded_infiles,
-        #     outfile,
-        #     split=split,
-        #     lod=[0],
-        #     attributes=[],
-        #     altitude=True,
-        #     allow_geometry_collection=False,
-        # )
-    else:
-        raise NotImplementedError(type)
+    stem = Path(outfile).stem
+
+    for type in types:
+        if len(types) > 1:
+            type_outfile = Path(outfile).with_stem(f"{stem}.{type}")
+        else:
+            type_outfile = outfile
+
+        if type == "bldg":
+            _geojson_from_citygml(
+                expanded_infiles,
+                type_outfile,
+                split=split,
+                lod=[0],
+                altitude=True,
+                allow_geometry_collection=False,
+                **kwargs,
+            )
+        elif type == "brid":
+            _geojson_from_citygml(
+                expanded_infiles,
+                type_outfile,
+                split=split,
+                lod=[1],
+                attributes=[],
+                altitude=True,
+                allow_geometry_collection=True,
+                **kwargs,
+            )
+        elif type == "dem":
+            # TODO: implement
+            raise NotImplementedError("dem")
+        elif type == "fld":
+            raise NotImplementedError("fld")
+        elif type == "lsld":
+            raise NotImplementedError("lsld")
+        elif type == "luse":
+            raise NotImplementedError("luse")
+            # _geojson_from_citygml(
+            #     expanded_infiles,
+            #     outfile,
+            #     split=split,
+            #     lod=[1],
+            #     attributes=[],
+            #     altitude=True,
+            #     allow_geometry_collection=True,
+            # )
+        elif type == "tran":
+            _geojson_from_citygml(
+                expanded_infiles,
+                type_outfile,
+                split=split,
+                lod=[1],
+                attributes=[],
+                altitude=True,  # TODO: can be False
+                allow_geometry_collection=True,
+                **kwargs,
+            )
+        elif type == "urf":
+            raise NotImplementedError("urf")
+            # _geojson_from_citygml(
+            #     expanded_infiles,
+            #     outfile,
+            #     split=split,
+            #     lod=[0],
+            #     attributes=[],
+            #     altitude=True,
+            #     allow_geometry_collection=False,
+            # )
+        else:
+            raise NotImplementedError(type)

@@ -1,9 +1,8 @@
-from calendar import c
 import glob
-import os
 import sys
 import tempfile
 from pathlib import Path
+from typing import List
 
 import click
 from loguru import logger
@@ -194,19 +193,20 @@ def prebuild(dataset_id):
     # print(dataset_id, record)
 
     # TODO: All types
-    type = "bldg"
+    types = ["bldg"]
 
     with tempfile.TemporaryDirectory() as tdir:
-        outfile = Path(tdir, f"{dataset_id}.{type}.geojson")
+        for type in types:
+            outfile = Path(tdir, f"{dataset_id}.{type}.geojson")
 
-        _generate_geojson(
-            None,
-            outfile,
-            dataset_id,
-            type,
-            10,
-            progress={"description": "Generating GeoJSON files..."},
-        )
+            _generate_geojson(
+                None,
+                outfile,
+                dataset_id,
+                types=types,
+                split=10,
+                progress={"description": "Generating GeoJSON files..."},
+            )
 
         with console.status("Writing GeoPackage...") as status:
             df = gpd.GeoDataFrame()
@@ -263,7 +263,9 @@ def generate_cityjson(infiles, outfile, dataset_id, split):
         generators.simplecityjson.cityjson_from_citygml(infiles, outfile, **params)
 
 
-def _generate_geojson(infiles, outfile, dataset: str, type: str, split: int, **kwargs):
+def _generate_geojson(
+    infiles, outfile, dataset: str, types: List[str], split: int, **kwargs
+):
     """Generate GeoJSON from PLATEAU datasets."""
 
     if not infiles and not dataset:
@@ -274,10 +276,10 @@ def _generate_geojson(infiles, outfile, dataset: str, type: str, split: int, **k
 
     if dataset:
         dataset = load_dataset(dataset)
-        dataset.to_geojson(outfile, type=type, split=split, **kwargs)
+        dataset.to_geojson(outfile, types=types, split=split, **kwargs)
     else:
         generators.geojson.geojson_from_citygml(
-            infiles, outfile, dataset, type, split, **kwargs
+            infiles, outfile, dataset, types=types, split=split, **kwargs
         )
 
 
@@ -288,17 +290,19 @@ def _generate_geojson(infiles, outfile, dataset: str, type: str, split: int, **k
 @click.option(
     "--type",
     "-t",
+    "types",
     type=click.Choice(
         ["bldg", "brid", "dem", "fld", "frn", "lsld", "luse", "tran", "urf"],
         case_sensitive=True,
     ),
-    default="bldg",
+    default=["bldg"],
+    multiple=True,
 )
 @click.option("--split", default=1)
-def generate_geojson(infiles, outfile, dataset_id: str, type: str, split: int):
+def generate_geojson(infiles, outfile, dataset_id: str, types: List[str], split: int):
     """Generate GeoJSON from PLATEAU datasets."""
 
-    _generate_geojson(infiles, outfile, dataset_id, type, split)
+    _generate_geojson(infiles, outfile, dataset_id, types=types, split=split)
 
 
 @cli.command("generate-qmesh")

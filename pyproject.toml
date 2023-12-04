@@ -30,6 +30,7 @@ numpy = "^1.26.0"
 platformdirs = "^3.10.0"
 # pydeck = {extras = ["jupyter"], version = "^0.8.0"}
 rich = {extras = ["jupyter"], version = "^13.7.0"}
+pydeck = "^0.8.0"
 
 [tool.poetry.scripts]
 plateaukit = "plateaukit.cli:cli"
@@ -52,8 +53,8 @@ mkdocs-exclude = "^1.0.2"
 markdown-exec = {extras = ["ansi"], version = "^1.6.0"}
 mkdocs-redirects = "^1.2.1"
 mkdocs-jupyter = "^0.24.6"
-jupyter-contrib-nbextensions = "^0.7.0"
 notebook = "^6.5.6"
+jupyter-contrib-nbextensions = "^0.7.0"
 
 [build-system]
 requires = ["poetry-core"]
