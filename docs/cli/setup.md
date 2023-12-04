@@ -9,7 +9,7 @@
 plateaukit list
 ```
 
-??? note "現在の都市一覧 (最新のみ)"
+??? note "現在の都市一覧 (最新版のみ)"
 
     |                   id                   |       name       | version |                                    homepage                                   |
     |:--------------------------------------:|:----------------:|:-------:|:-----------------------------------------------------------------------------:|
@@ -140,7 +140,7 @@ plateaukit list
 
 ## 都市モデルをダウンロード・追加
 
-都市モデルをダウンロード・追加するには、`plateaukit install` コマンドで都市モデルのIDを指定します。
+都市モデルをダウンロード・追加するには、都市モデルのIDを指定して `plateaukit install` コマンドを実行します。
 
 ```bash title="例: 東京都23区のデータをダウンロードして追加"
 plateaukit install plateau-tokyo23ku
@@ -176,7 +176,7 @@ plateaukit install plateau-tokyo23ku --local ./13100_tokyo23-ku_2020_citygml_3_2
     - Windows: `C:\\Users\<username>\AppData\Local\plateaukit\`
     - Linux: `/home/<username>/.local/share/plateaukit/`
 
-    `--local` オプションを使ってダウンロード済みのデータを追加する場合は、そのファイルパスへの参照が追加されます。
+    `--local` オプションを使ってダウンロード済みのデータを追加する場合は、そのファイルパスへの参照が追加されます。（ファイルはコピーされません）
 
 
 ## 追加済みのデータの一覧を表示
