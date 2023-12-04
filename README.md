@@ -38,7 +38,7 @@ pip install plateaukit
   - [rhenerose/plateaupy](https://github.com/rhenerose/plateaupy)
 - [plateau-geo-tools](https://github.com/raokiey/plateau-geo-tools)
 
-### その他の言語
+### その他
 
 - [PLATEAU-SDK-for-Unreal](https://github.com/Project-PLATEAU/PLATEAU-SDK-for-Unreal)
 - [PLATEAU-SDK-for-Unity](https://github.com/Project-PLATEAU/PLATEAU-SDK-for-Unity)
