@@ -12,14 +12,7 @@ from rich.console import Console
 from plateaukit import generators
 from plateaukit.config import Config
 from plateaukit.dataset import load_dataset
-from plateaukit.download import downloader
-
-
-def is_dataset_installed(dataset_id, format):
-    config = Config()
-    path = config.datasets.get(dataset_id, {}).get(format)
-    return True if path else False
-    # return path and Path(path).exists()
+from plateaukit.installer import install_dataset, uninstall_dataset
 
 
 def list_available_datasets(is_all=False):
@@ -126,8 +119,6 @@ def list_cmd(local, all):
 )
 def install_cmd(dataset_id, format, local, force, download_only, list, list_all):
     """Download and install PLATEAU datasets."""
-    from plateaukit.download import city_list
-
     if not dataset_id and not (list or list_all):
         raise click.UsageError("Missing argument/option: dataset_id or -l/--list")
 
@@ -136,38 +127,10 @@ def install_cmd(dataset_id, format, local, force, download_only, list, list_all)
         return
 
     if dataset_id:
-        city = next(filter(lambda x: x["dataset_id"] == dataset_id, city_list), None)
-
-        if not city:
-            raise click.UsageError("Invalid dataset name")
-
-        if local:
-            local = Path(local).resolve()
-            if not local.exists():
-                raise click.UsageError("Local file not found")
-            # print(local)
-            config = Config()
-            config.datasets[dataset_id][format] = local
-            config.save()
-            return
-        else:
-            # Abort if a dataset is already installed
-            installed = is_dataset_installed(dataset_id, format)
-            if not force and installed:
-                click.echo(
-                    f'ERROR: Dataset "{dataset_id}" ({format}) is already installed.',
-                    err=True,
-                )
-                exit(-1)
-            resource_id = city[format]
-            # print(dataset_id, resource_id)
-            config = Config()
-            destfile_path = downloader.download_resource(
-                resource_id, dest=config.data_dir
-            )
-            config.datasets[dataset_id][format] = destfile_path
-            config.save()
-            return
+        try:
+            install_dataset(dataset_id, format, local, force)
+        except Exception as e:
+            raise click.UsageError(str(e))
 
 
 @cli.command("uninstall")
@@ -183,6 +146,7 @@ def uninstall_cmd(dataset_id, format, keep_files):
     if not dataset_id:
         raise Exception("Missing argument")
 
+    # TODO: Fix duplicated code in uninstall_dataset
     if not keep_files:
         config = Config()
         path = config.datasets[dataset_id][format]
@@ -190,12 +154,9 @@ def uninstall_cmd(dataset_id, format, keep_files):
             raise RuntimeError("Missing files in record")
         if click.confirm(f'Delete "{path}"?'):
             os.remove(path)
-
-    config = Config()
-    del config.datasets[dataset_id][format]
-    if len(config.datasets[dataset_id].items()) == 0:
-        del config.datasets[dataset_id]
-    config.save()
+        uninstall_dataset(dataset_id, format, keep_files=True)
+    else:
+        uninstall_dataset(dataset_id, format, keep_files=True)
 
 
 @cli.command("prebuild")
@@ -251,10 +212,12 @@ def prebuild(dataset_id):
 
 
 @cli.command("generate-cityjson")
-@click.argument("infiles", nargs=-1)
-@click.argument("outfile", nargs=1, required=True)
+@click.argument("infiles", nargs=-1, help="Path(s) to input files")
+@click.argument("outfile", nargs=1, required=True, help="Path to output file")
 @click.option("--dataset", "dataset_id", help='Dataset ID (e.g. "plateau-tokyo23ku")')
-@click.option("--split", default=10)
+@click.option(
+    "--split", default=1, help="Split the output into specified number of files"
+)
 # # @click.option(
 # #     "--precision",
 # #     help="Number of decimal places to keep for geometry vertices (default: 16).",
@@ -315,7 +278,7 @@ def _generate_geojson(infiles, outfile, dataset: str, type: str, split: int, **k
     ),
     default="bldg",
 )
-@click.option("--split", default=10)
+@click.option("--split", default=1)
 def generate_geojson(infiles, outfile, dataset_id: str, type: str, split: int):
     """Generate GeoJSON from PLATEAU datasets."""
 
