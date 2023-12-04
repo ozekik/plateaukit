@@ -197,9 +197,8 @@ def geojson_from_gml(infiles, outfile, split, progress={}, **opts):
 
     # https://www.deanmontgomery.com/2022/03/24/rich-progress-and-multiprocessing/
     with Progress() as rprogress:
-        overall_task_id = rprogress.add_task(
-            progress.get("description", "Processing...")
-        )
+        overall_progress_description = progress.get("description", "Processing...")
+        overall_task_id = rprogress.add_task(description=overall_progress_description)
 
         with Manager() as manager:
             quit = manager.Event()
@@ -261,7 +260,7 @@ def geojson_from_gml(infiles, outfile, split, progress={}, **opts):
                         overall_task_id,
                         completed=n_finished,
                         total=len(futures),
-                        description="[green]Done",
+                        description=f"{overall_progress_description} [green]Done",
                     )
 
                 except KeyboardInterrupt:
