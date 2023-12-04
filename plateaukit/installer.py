@@ -15,8 +15,16 @@ def is_dataset_installed(dataset_id, format):
     # return path and Path(path).exists()
 
 
+def list_installed_datasets():
+    config = Config()
+    return list(config.datasets.keys())
+
+
 def install_dataset(
-    dataset_id: str, format: str, local: str | PathLike, force: bool = False
+    dataset_id: str,
+    format: str = "citygml",
+    local: str | PathLike = None,
+    force: bool = False,
 ):
     """Download and install PLATEAU datasets."""
 
@@ -66,7 +74,7 @@ def uninstall_dataset(
     """Uninstall PLATEAU datasets."""
 
     config = Config()
-    formats = formats or config.datasets[dataset_id].keys()
+    formats = formats or list(config.datasets[dataset_id].keys())
 
     if not keep_files:
         paths = []
@@ -81,7 +89,8 @@ def uninstall_dataset(
                 print(e, file=sys.stderr)
 
     for format in formats:
-        del config.datasets[dataset_id][format]
+        if format in config.datasets[dataset_id]:
+            del config.datasets[dataset_id][format]
 
     if len(config.datasets[dataset_id].items()) == 0:
         del config.datasets[dataset_id]

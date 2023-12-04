@@ -1,6 +1,7 @@
 import glob
 import re
 import tempfile
+from typing import List
 import zipfile
 from os import PathLike
 from pathlib import Path
@@ -34,12 +35,21 @@ class Dataset:
         # gpkg_path = config.data[dataset_id].get("gpkg")
         # self.gdf = read_dataframe(gpkg_path)
 
-    def to_geojson(self, outfile: str | PathLike, type, split=1, **kwargs):
+    def __repr__(self):
+        return f"Dataset({self.dataset_id})"
+
+    def to_geojson(
+        self,
+        outfile: str | PathLike,
+        types: List[str] = ["bldg"],
+        split: int = 1,
+        **kwargs,
+    ):
         """Generate GeoJSON from PLATEAU datasets.
 
         Args:
             outfile (str | PathLike): Output file path
-            type (str): CityGML feature type
+            types (List[str]): CityGML object types
             split (int): Split the output into specified number of files
             **kwargs: Keyword arguments for the generator
         """
@@ -47,20 +57,21 @@ class Dataset:
         if not self.dataset_id:
             raise Exception("Missing dataset_id")
 
+        if not types:
+            raise Exception("Missing object types")
+
         # NOTE: this is intentional but to be refactored in the future
         with tempfile.TemporaryDirectory() as tdir:
-            if self.dataset_id:
-                if not type:
-                    raise Exception("Missing type")
+            config = Config()
+            record = config.datasets[self.dataset_id]
 
-                config = Config()
-                record = config.datasets[self.dataset_id]
+            if "citygml" not in record:
+                raise Exception("Missing CityGML data")
+            file_path = Path(record["citygml"])
 
-                if "citygml" not in record:
-                    raise Exception("Missing CityGML data")
-                file_path = Path(record["citygml"])
-
-                # TODO: fix
+            # TODO: Refactor
+            for type in types:
+                # TODO: Fix
                 pat = re.compile(rf".*udx\/{type}\/.*\.gml$")
                 if zipfile.is_zipfile(file_path):
                     with zipfile.ZipFile(file_path) as f:
@@ -76,11 +87,13 @@ class Dataset:
                     infiles = [str(Path(file_path, "udx", type, "*.gml"))]
                 logger.debug([infiles, outfile])
 
-            generators.geojson.geojson_from_citygml(
-                infiles, outfile, type=type, split=split, **kwargs
-            )
+                generators.geojson.geojson_from_citygml(
+                    infiles, outfile, type=type, split=split, **kwargs
+                )
 
-    def to_cityjson(self, outfile: str | PathLike, type="bldg", split=1, **kwargs):
+    def to_cityjson(
+        self, outfile: str | PathLike, types: List[str] = ["bldg"], split=1, **kwargs
+    ):
         """Generate CityJSON from PLATEAU datasets.
 
         Args:
@@ -107,42 +120,40 @@ class Dataset:
 
             file_path = Path(record["citygml"])
 
-            # TODO: fix
-            pat = re.compile(rf".*udx\/{type}\/.*\.gml$")
+            for type in types:
+                # TODO: fix
+                pat = re.compile(rf".*udx\/{type}\/.*\.gml$")
 
-            if zipfile.is_zipfile(file_path):
-                with zipfile.ZipFile(file_path) as f:
-                    namelist = f.namelist()
-                    targets = list(filter(lambda x: pat.match(x), namelist))
-                    # print(targets, tdir)
-                    f.extractall(tdir, members=targets)
-                    # TODO: fix
-                    infiles = [
-                        str(Path(tdir, Path(file_path).stem, "udx", type, "*.gml"))
-                    ]
-            else:
-                infiles = [str(Path(file_path, "udx", type, "*.gml"))]
+                if zipfile.is_zipfile(file_path):
+                    with zipfile.ZipFile(file_path) as f:
+                        namelist = f.namelist()
+                        targets = list(filter(lambda x: pat.match(x), namelist))
+                        # print(targets, tdir)
+                        f.extractall(tdir, members=targets)
+                        # TODO: fix
+                        infiles = [
+                            str(Path(tdir, Path(file_path).stem, "udx", type, "*.gml"))
+                        ]
+                else:
+                    infiles = [str(Path(file_path, "udx", type, "*.gml"))]
 
-            logger.debug([infiles, outfile])
+                logger.debug([infiles, outfile])
 
-            expanded_infiles = []
+                expanded_infiles = []
 
-            for infile in infiles:
-                expanded_infiles.extend(glob.glob(infile))
+                for infile in infiles:
+                    expanded_infiles.extend(glob.glob(infile))
 
-            expanded_infiles = sorted(expanded_infiles)
+                expanded_infiles = sorted(expanded_infiles)
 
-            # print(infiles, expanded_infiles)
+                # print(infiles, expanded_infiles)
 
-            generators.simplecityjson.cityjson_from_citygml(
-                expanded_infiles,
-                outfile,
-                split=split,
-                lod=[1],
-            )
-
-            # with open(outfile, "w") as f:
-            #     json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
+                generators.simplecityjson.cityjson_from_citygml(
+                    expanded_infiles,
+                    outfile,
+                    split=split,
+                    lod=[1],
+                )
 
     # def get_area(self, bbox):
     #     """Get an area of interest
