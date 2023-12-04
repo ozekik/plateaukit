@@ -212,8 +212,8 @@ def prebuild(dataset_id):
 
 
 @cli.command("generate-cityjson")
-@click.argument("infiles", nargs=-1, help="Path(s) to input files")
-@click.argument("outfile", nargs=1, required=True, help="Path to output file")
+@click.argument("infiles", nargs=-1)
+@click.argument("outfile", nargs=1, required=True)
 @click.option("--dataset", "dataset_id", help='Dataset ID (e.g. "plateau-tokyo23ku")')
 @click.option(
     "--split", default=1, help="Split the output into specified number of files"
