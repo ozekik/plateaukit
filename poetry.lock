@@ -732,7 +732,6 @@ certifi = "*"
 click = ">=8.0,<9.0"
 click-plugins = ">=1.0"
 cligj = ">=0.5"
-importlib-metadata = {version = "*", markers = "python_version < \"3.10\""}
 setuptools = "*"
 six = "*"
 
@@ -887,13 +886,13 @@ dev = ["flake8", "markdown", "twine", "wheel"]
 
 [[package]]
 name = "griffe"
-version = "0.38.0"
+version = "0.38.1"
 description = "Signatures for entire Python programs. Extract the structure, the frame, the skeleton of your project, to generate API documentation or find breaking changes in your API."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "griffe-0.38.0-py3-none-any.whl", hash = "sha256:6a5bc457320e8e199006aa5fbb03e162f5e21abe31aa6221f7a5c37ea0724c71"},
-    {file = "griffe-0.38.0.tar.gz", hash = "sha256:9b97487b583042b543d1e28196caee638ecd766c8c4c98135071806cb5333ac2"},
+    {file = "griffe-0.38.1-py3-none-any.whl", hash = "sha256:334c79d3b5964ade65c05dfcaf53518c576dedd387aaba5c9fd71212f34f1483"},
+    {file = "griffe-0.38.1.tar.gz", hash = "sha256:bd68d7da7f3d87bc57eb9962b250db123efd9bbcc06c11c1a91b6e583b2a9361"},
 ]
 
 [package.dependencies]
@@ -909,43 +908,6 @@ files = [
     {file = "idna-3.6-py3-none-any.whl", hash = "sha256:c05567e9c24a6b9faaa835c4821bad0590fbb9d5779e7caa6e1cc4978e7eb24f"},
     {file = "idna-3.6.tar.gz", hash = "sha256:9ecdbbd083b06798ae1e86adcbfe8ab1479cf864e4ee30fe4e46a003d12491ca"},
 ]
-
-[[package]]
-name = "importlib-metadata"
-version = "7.0.0"
-description = "Read metadata from Python packages"
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "importlib_metadata-7.0.0-py3-none-any.whl", hash = "sha256:d97503976bb81f40a193d41ee6570868479c69d5068651eb039c40d850c59d67"},
-    {file = "importlib_metadata-7.0.0.tar.gz", hash = "sha256:7fc841f8b8332803464e5dc1c63a2e59121f46ca186c0e2e182e80bf8c1319f7"},
-]
-
-[package.dependencies]
-zipp = ">=0.5"
-
-[package.extras]
-docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (<7.2.5)", "sphinx (>=3.5)", "sphinx-lint"]
-perf = ["ipython"]
-testing = ["flufl.flake8", "importlib-resources (>=1.3)", "packaging", "pyfakefs", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-mypy (>=0.9.1)", "pytest-perf (>=0.9.2)", "pytest-ruff"]
-
-[[package]]
-name = "importlib-resources"
-version = "6.1.1"
-description = "Read resources from Python packages"
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "importlib_resources-6.1.1-py3-none-any.whl", hash = "sha256:e8bf90d8213b486f428c9c39714b920041cb02c184686a3dee24905aaa8105d6"},
-    {file = "importlib_resources-6.1.1.tar.gz", hash = "sha256:3893a00122eafde6894c59914446a512f728a0c1a45f9bb9b63721b6bacf0b4a"},
-]
-
-[package.dependencies]
-zipp = {version = ">=3.1.0", markers = "python_version < \"3.10\""}
-
-[package.extras]
-docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (<7.2.5)", "sphinx (>=3.5)", "sphinx-lint"]
-testing = ["pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-mypy (>=0.9.1)", "pytest-ruff", "zipp (>=3.17)"]
 
 [[package]]
 name = "ipykernel"
@@ -1002,7 +964,6 @@ prompt-toolkit = ">=3.0.41,<3.1.0"
 pygments = ">=2.4.0"
 stack-data = "*"
 traitlets = ">=5"
-typing-extensions = {version = "*", markers = "python_version < \"3.10\""}
 
 [package.extras]
 all = ["black", "curio", "docrepr", "exceptiongroup", "ipykernel", "ipyparallel", "ipywidgets", "matplotlib", "matplotlib (!=3.2.0)", "nbconvert", "nbformat", "notebook", "numpy (>=1.22)", "pandas", "pickleshare", "pytest (<7)", "pytest (<7.1)", "pytest-asyncio (<0.22)", "qtconsole", "setuptools (>=18.5)", "sphinx (>=1.3)", "sphinx-rtd-theme", "stack-data", "testpath", "trio", "typing-extensions"]
@@ -1324,13 +1285,13 @@ test = ["jupyter-contrib-core[testing-utils]", "mock", "nose", "requests", "sele
 
 [[package]]
 name = "jupyter-server"
-version = "2.11.2"
+version = "2.12.1"
 description = "The backend—i.e. core services, APIs, and REST endpoints—to Jupyter web applications."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "jupyter_server-2.11.2-py3-none-any.whl", hash = "sha256:0c548151b54bcb516ca466ec628f7f021545be137d01b5467877e87f6fff4374"},
-    {file = "jupyter_server-2.11.2.tar.gz", hash = "sha256:0c99f9367b0f24141e527544522430176613f9249849be80504c6d2b955004bb"},
+    {file = "jupyter_server-2.12.1-py3-none-any.whl", hash = "sha256:fd030dd7be1ca572e4598203f718df6630c12bd28a599d7f1791c4d7938e1010"},
+    {file = "jupyter_server-2.12.1.tar.gz", hash = "sha256:dc77b7dcc5fc0547acba2b2844f01798008667201eea27c6319ff9257d700a6d"},
 ]
 
 [package.dependencies]
@@ -1713,9 +1674,6 @@ files = [
     {file = "Markdown-3.5.1.tar.gz", hash = "sha256:b65d7beb248dc22f2e8a31fb706d93798093c308dc1aba295aedeb9d41a813bd"},
 ]
 
-[package.dependencies]
-importlib-metadata = {version = ">=4.4", markers = "python_version < \"3.10\""}
-
 [package.extras]
 docs = ["mdx-gh-links (>=0.2)", "mkdocs (>=1.5)", "mkdocs-gen-files", "mkdocs-literate-nav", "mkdocs-nature (>=0.6)", "mkdocs-section-index", "mkdocstrings[python]"]
 testing = ["coverage", "pyyaml"]
@@ -1862,7 +1820,6 @@ files = [
 contourpy = ">=1.0.1"
 cycler = ">=0.10"
 fonttools = ">=4.22.0"
-importlib-resources = {version = ">=3.2.0", markers = "python_version < \"3.10\""}
 kiwisolver = ">=1.3.1"
 numpy = ">=1.21,<2"
 packaging = ">=20.0"
@@ -1951,7 +1908,6 @@ files = [
 click = ">=7.0"
 colorama = {version = ">=0.4", markers = "platform_system == \"Windows\""}
 ghp-import = ">=1.0"
-importlib-metadata = {version = ">=4.3", markers = "python_version < \"3.10\""}
 jinja2 = ">=2.11.1"
 markdown = ">=3.2.1"
 markupsafe = ">=2.0.1"
@@ -2085,7 +2041,6 @@ files = [
 
 [package.dependencies]
 click = ">=7.0"
-importlib-metadata = {version = ">=4.6", markers = "python_version < \"3.10\""}
 Jinja2 = ">=2.11.1"
 Markdown = ">=3.3"
 MarkupSafe = ">=1.1"
@@ -2093,7 +2048,6 @@ mkdocs = ">=1.4"
 mkdocs-autorefs = ">=0.3.1"
 platformdirs = ">=2.2.0"
 pymdown-extensions = ">=6.3"
-typing-extensions = {version = ">=4.1", markers = "python_version < \"3.10\""}
 
 [package.extras]
 crystal = ["mkdocstrings-crystal (>=0.3.4)"]
@@ -2187,7 +2141,6 @@ files = [
 beautifulsoup4 = "*"
 bleach = "!=5.0.0"
 defusedxml = "*"
-importlib-metadata = {version = ">=3.6", markers = "python_version < \"3.10\""}
 jinja2 = ">=3.0"
 jupyter-core = ">=4.7"
 jupyterlab-pygments = "*"
@@ -4163,22 +4116,7 @@ files = [
     {file = "xyzservices-2023.10.1.tar.gz", hash = "sha256:091229269043bc8258042edbedad4fcb44684b0473ede027b5672ad40dc9fa02"},
 ]
 
-[[package]]
-name = "zipp"
-version = "3.17.0"
-description = "Backport of pathlib-compatible object wrapper for zip files"
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "zipp-3.17.0-py3-none-any.whl", hash = "sha256:0e923e726174922dce09c53c59ad483ff7bbb8e572e00c7f7c46b88556409f31"},
-    {file = "zipp-3.17.0.tar.gz", hash = "sha256:84e64a1c28cf7e91ed2078bb8cc8c259cb19b76942096c8d7b84947690cabaf0"},
-]
-
-[package.extras]
-docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (<7.2.5)", "sphinx (>=3.5)", "sphinx-lint"]
-testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-ignore-flaky", "pytest-mypy (>=0.9.1)", "pytest-ruff"]
-
 [metadata]
 lock-version = "2.0"
-python-versions = ">=3.9,<3.13"
-content-hash = "5e7bdd8d8249a085bb4f2da4eeef876f433549d7374d4b8a9b0792f5490732a0"
+python-versions = ">=3.10,<3.13"
+content-hash = "f454ec12071939a4dc58ad1df408e19a063abf9aa15ccfb112fd91e276a88e04"
