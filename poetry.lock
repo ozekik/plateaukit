@@ -253,6 +253,17 @@ files = [
 jinja2 = "*"
 
 [[package]]
+name = "cachetools"
+version = "5.3.2"
+description = "Extensible memoizing collections and decorators"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "cachetools-5.3.2-py3-none-any.whl", hash = "sha256:861f35a13a451f94e301ce2bec7cac63e881232ccce7ed67fab9b5df4d3beaa1"},
+    {file = "cachetools-5.3.2.tar.gz", hash = "sha256:086ee420196f7b2ab9ca2db2520aca326318b68fe5ba8bc4d49cca91add450f2"},
+]
+
+[[package]]
 name = "certifi"
 version = "2023.11.17"
 description = "Python package for providing Mozilla's CA Bundle."
@@ -1418,6 +1429,17 @@ test-integration = ["ipykernel", "jupyter-server (!=2.11)", "jupytext[test-funct
 test-ui = ["calysto-bash"]
 
 [[package]]
+name = "kanjize"
+version = "1.3.0"
+description = "Easy converter between Kanji-Number and Integer"
+optional = false
+python-versions = "*"
+files = [
+    {file = "kanjize-1.3.0-py3-none-any.whl", hash = "sha256:e43ccbdf71e945426a27eebe12abd0880d0e18eba277a3f34ae81de1228c2a51"},
+    {file = "kanjize-1.3.0.tar.gz", hash = "sha256:4b3cf588af085ccaee07cf133e2cb4d84a3214d2f2dd96fa88c43356d09826d5"},
+]
+
+[[package]]
 name = "kiwisolver"
 version = "1.4.5"
 description = "A fast implementation of the Cassowary constraint solver"
@@ -2237,6 +2259,22 @@ developer = ["changelist (==0.4)", "mypy (>=1.1)", "pre-commit (>=3.2)", "rtoml"
 doc = ["nb2plots (>=0.7)", "nbconvert (<7.9)", "numpydoc (>=1.6)", "pillow (>=9.4)", "pydata-sphinx-theme (>=0.14)", "sphinx (>=7)", "sphinx-gallery (>=0.14)", "texext (>=0.6.7)"]
 extra = ["lxml (>=4.6)", "pydot (>=1.4.2)", "pygraphviz (>=1.11)", "sympy (>=1.10)"]
 test = ["pytest (>=7.2)", "pytest-cov (>=4.0)"]
+
+[[package]]
+name = "normalize-japanese-addresses"
+version = "0.0.6"
+description = "Ported version of @geolonia/normalize-japanese-addresses"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "normalize-japanese-addresses-0.0.6.tar.gz", hash = "sha256:32e15e08c829d26118e4f05c60513971119458385db430b11cf2230000312803"},
+    {file = "normalize_japanese_addresses-0.0.6-py3-none-any.whl", hash = "sha256:446c69ae89df77597c5d5efa6b3cdfa89325d15a1e42b7218276f8433aa0dc89"},
+]
+
+[package.dependencies]
+cachetools = "*"
+kanjize = "*"
+requests = "*"
 
 [[package]]
 name = "notebook"
@@ -4143,4 +4181,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.13"
-content-hash = "7ac0dbb952703c1b0a9c76bc52c879ee3b4cf99d41e31093e4d912e6c55adf76"
+content-hash = "5e7bdd8d8249a085bb4f2da4eeef876f433549d7374d4b8a9b0792f5490732a0"
