@@ -9,7 +9,7 @@ from typing import List, Optional
 import geopandas as gpd
 from loguru import logger
 
-from plateaukit import generators
+from plateaukit import generators, geocoding
 from plateaukit.area import Area
 from plateaukit.config import Config
 
@@ -54,7 +54,17 @@ class Dataset:
         else:
             raise RuntimeError("Missing GeoPackage; Please prebuild the dataset first")
 
-    def get_area(self, bbox: Optional[List[float]] = None):
+    def get_area(self):
+        """Get the entire area of the dataset."""
+
+        if self.gdf is None:
+            self.load_gdf()
+
+        area_gdf = self.gdf
+
+        return Area(area_gdf)
+
+    def area_from_bbox(self, bbox: Optional[List[float]] = None):
         """Get the specified area from the dataset.
 
         Args:
@@ -72,6 +82,81 @@ class Dataset:
         # TODO: Error handling when area_gdf is empty
 
         return Area(area_gdf)
+
+    def area_from_polygons(self, polygons: list[gpd.GeoDataFrame]):
+        """Get an area from the dataset by polygons.
+
+        Args:
+            polygon: Polygon of the area of interest.
+        """
+
+        if self.gdf is None:
+            self.load_gdf()
+
+        area_gdf = self.gdf[self.gdf.geometry.intersects(polygons)]
+
+        return Area(area_gdf)
+
+    def area_from_points(
+        self, points: List[List[float]], size: List[float] = [1000, 1000]
+    ):
+        """Get an area from the dataset by points.
+
+        Args:
+            points: List of points of the area of interest.
+            size: Size of the area of interest in meters.
+        """
+
+        if self.gdf is None:
+            self.load_gdf()
+
+        bbox = geocoding._get_bbox(points)
+        bbox = geocoding._pad_bbox(bbox, size)
+
+        return self.area_from_bbox(bbox)
+
+    def area_from_address(self, address: str, size: List[float] = [1000, 1000]):
+        """Get an area from the dataset by an address.
+
+        Args:
+            address: Address of the area of interest.
+            size: Size of the area of interest in meters.
+        """
+
+        if self.gdf is None:
+            self.load_gdf()
+
+        bbox = geocoding.bbox_from_address(address, min_size=size)
+
+        return self.area_from_bbox(bbox)
+
+    def area_from_postcode(self, postcode: str):
+        """Get an area from the dataset by a postcode.
+
+        Args:
+            postcode: Postal code of the area of interest.
+        """
+
+        if self.gdf is None:
+            self.load_gdf()
+
+        bbox = geocoding.bbox_from_postcode(postcode)
+
+        return self.area_from_bbox(bbox)
+
+    def area_from_landmark(self, landmark: str, min_size: List[float] = [1000, 1000]):
+        """Get an area from the dataset by a landmark.
+
+        Args:
+            landmark: Landmark of the area of interest.
+        """
+
+        if self.gdf is None:
+            self.load_gdf()
+
+        bbox = geocoding.bbox_from_landmark(landmark, min_size=min_size)
+
+        return self.area_from_bbox(bbox)
 
     # def search_area(self, keyword: str):
     #     print(keyword)

@@ -87,10 +87,10 @@ def _pad_bbox(bbox: List[float], min_size: [float, float]):
     return bbox_wgs84
 
 
-def address_from_postalcode(code: str):
+def address_from_postcode(code: str):
     """Returns an address from a Japanese postal code.
 
-    >>> address_from_postalcode("108-0073")
+    >>> address_from_postcode("108-0073")
     PostalAddress(prefecture='東京都', address1='港区', address2='三田', address3='', address4='')
     """
     parsed = re.match(r"^([0-9]{3})\-?([0-9]{4})$", code)
@@ -147,13 +147,13 @@ def bbox_from_address(address: str, min_size: [float, float] = [1000, 1000]):
     return bbox
 
 
-def point_from_postalcode(code: str):
+def point_from_postcode(code: str):
     """Returns a coordinate from a Japanese postal code.
 
-    >>> from_postalcode("108-0073")  # doctest: +ELLIPSIS
+    >>> from_postcode("108-0073")  # doctest: +ELLIPSIS
     Result(lng=139.74034749999998, lat=35.648897000000005, all=[...])
     """
-    postal_address = address_from_postalcode(code)
+    postal_address = address_from_postcode(code)
     resp = requests.get(
         f"https://geolonia.github.io/japanese-addresses/api/ja/{postal_address.prefecture}/{postal_address.address1}.json"
     )
@@ -194,10 +194,10 @@ def point_from_postalcode(code: str):
         raise NotImplementedError()
 
 
-def bbox_from_postalcode(code: str, min_size: [float, float] = [1000, 1000]):
+def bbox_from_postcode(code: str, min_size: [float, float] = [1000, 1000]):
     """Returns a bounding box from a Japanese postal code."""
 
-    point = point_from_postalcode(code)
+    point = point_from_postcode(code)
     bbox = _get_bbox([(point.lng, point.lat)])
     bbox = _pad_bbox(bbox, min_size)
     return bbox
