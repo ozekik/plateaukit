@@ -2,7 +2,6 @@ import glob
 import sys
 import tempfile
 from pathlib import Path
-from typing import List
 
 import click
 from loguru import logger
@@ -264,7 +263,7 @@ def generate_cityjson(infiles, outfile, dataset_id, split):
 
 
 def _generate_geojson(
-    infiles, outfile, dataset: str, types: List[str], split: int, **kwargs
+    infiles, outfile, dataset: str, types: list[str], split: int, **kwargs
 ):
     """Generate GeoJSON from PLATEAU datasets."""
 
@@ -299,7 +298,7 @@ def _generate_geojson(
     multiple=True,
 )
 @click.option("--split", default=1)
-def generate_geojson(infiles, outfile, dataset_id: str, types: List[str], split: int):
+def generate_geojson(infiles, outfile, dataset_id: str, types: list[str], split: int):
     """Generate GeoJSON from PLATEAU datasets."""
 
     _generate_geojson(infiles, outfile, dataset_id, types=types, split=split)

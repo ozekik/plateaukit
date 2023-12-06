@@ -10,7 +10,7 @@ license = "MIT"
 packages = [{ include = "plateaukit" }]
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.13"
+python = ">=3.10,<3.13"
 click = "^8.1.3"
 tqdm = "^4.64.1"
 geojson = "^3.1.0"
@@ -29,7 +29,7 @@ quantized-mesh-encoder = "^0.4.3"
 numpy = "^1.26.0"
 platformdirs = "^3.10.0"
 # pydeck = {extras = ["jupyter"], version = "^0.8.0"}
-rich = {extras = ["jupyter"], version = "^13.7.0"}
+rich = { extras = ["jupyter"], version = "^13.7.0" }
 pydeck = "^0.8.0"
 normalize-japanese-addresses = "^0.0.6"
 kanjize = "1.3.0"
@@ -52,7 +52,7 @@ mkdocs = "^1.5.2"
 mkdocs-material = "^9.1.21"
 mkdocstrings-python = "^1.2.1"
 mkdocs-exclude = "^1.0.2"
-markdown-exec = {extras = ["ansi"], version = "^1.6.0"}
+markdown-exec = { extras = ["ansi"], version = "^1.6.0" }
 mkdocs-redirects = "^1.2.1"
 mkdocs-jupyter = "^0.24.6"
 notebook = "^6.5.6"

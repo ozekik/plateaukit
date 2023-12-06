@@ -1,5 +1,4 @@
 import tempfile
-from typing import List, Optional
 
 from geopandas import GeoDataFrame
 
@@ -20,7 +19,7 @@ class Area:
     def __repr__(self) -> str:
         return f"Area()"
 
-    def get_area(self, bbox: Optional[List[float]] = None):
+    def get_area(self, bbox: list[float] | None = None):
         """Get the specified area from the dataset.
 
         Args:
@@ -36,7 +35,7 @@ class Area:
 
         return Area(area_gdf)
 
-    def get_centroid(self) -> List[float]:
+    def get_centroid(self) -> list[float]:
         """Get the centroid of the area of interest."""
 
         bbox = self.gdf.total_bounds

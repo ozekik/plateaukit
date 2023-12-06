@@ -2,7 +2,7 @@
 
 import re
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import Optional
 
 import requests
 from normalize_japanese_addresses import normalize
@@ -42,10 +42,10 @@ class LandmarkPoint:
 class ResultPoint:
     lng: float
     lat: float
-    all: Optional[List[AddressPoint | LandmarkPoint]] = None
+    all: Optional[list[AddressPoint | LandmarkPoint]] = None
 
 
-def _get_bbox(points: List[tuple[float, float]]):
+def _get_bbox(points: list[tuple[float, float]]):
     """Returns a bounding box from a list of points."""
     xs = [p[0] for p in points]
     ys = [p[1] for p in points]
@@ -53,12 +53,12 @@ def _get_bbox(points: List[tuple[float, float]]):
     return [min(xs), min(ys), max(xs), max(ys)]
 
 
-def _get_bbox_centroid(bbox: List[float]):
+def _get_bbox_centroid(bbox: list[float]):
     """Returns a centroid from a bounding box."""
     return [(bbox[0] + bbox[2]) / 2, (bbox[1] + bbox[3]) / 2]
 
 
-def _pad_bbox(bbox: List[float], min_size: [float, float]):
+def _pad_bbox(bbox: list[float], min_size: [float, float]):
     """Returns a padded bounding box."""
 
     # print(bbox)

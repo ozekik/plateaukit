@@ -4,7 +4,6 @@ import tempfile
 import zipfile
 from os import PathLike
 from pathlib import Path
-from typing import List, Optional
 
 import geopandas as gpd
 from loguru import logger
@@ -25,7 +24,7 @@ class Dataset:
     """
 
     dataset_id: str
-    gdf: Optional[gpd.GeoDataFrame] = None
+    gdf: gpd.GeoDataFrame | None = None
 
     def __init__(self, dataset_id: str):
         """Initialize a dataset.
@@ -64,7 +63,7 @@ class Dataset:
 
         return Area(area_gdf)
 
-    def area_from_bbox(self, bbox: Optional[List[float]] = None):
+    def area_from_bbox(self, bbox: Optional[list[float]] = None):
         """Get the specified area from the dataset.
 
         Args:
@@ -98,7 +97,7 @@ class Dataset:
         return Area(area_gdf)
 
     def area_from_points(
-        self, points: List[List[float]], size: List[float] = [1000, 1000]
+        self, points: list[list[float]], size: list[float] = [1000, 1000]
     ):
         """Get an area from the dataset by points.
 
@@ -115,7 +114,7 @@ class Dataset:
 
         return self.area_from_bbox(bbox)
 
-    def area_from_address(self, address: str, size: List[float] = [1000, 1000]):
+    def area_from_address(self, address: str, size: list[float] = [1000, 1000]):
         """Get an area from the dataset by an address.
 
         Args:
@@ -144,7 +143,7 @@ class Dataset:
 
         return self.area_from_bbox(bbox)
 
-    def area_from_landmark(self, landmark: str, min_size: List[float] = [1000, 1000]):
+    def area_from_landmark(self, landmark: str, min_size: list[float] = [1000, 1000]):
         """Get an area from the dataset by a landmark.
 
         Args:
@@ -164,7 +163,7 @@ class Dataset:
     def to_geojson(
         self,
         outfile: str | PathLike,
-        types: List[str] = ["bldg"],
+        types: list[str] = ["bldg"],
         split: int = 1,
         **kwargs,
     ):
@@ -218,7 +217,7 @@ class Dataset:
     def to_cityjson(
         self,
         outfile: str | PathLike,
-        types: List[str] = ["bldg"],
+        types: list[str] = ["bldg"],
         split: int = 1,
         **kwargs,
     ):

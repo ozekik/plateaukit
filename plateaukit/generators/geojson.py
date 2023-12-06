@@ -4,7 +4,6 @@ import sys
 from multiprocessing import Manager
 from os import PathLike
 from pathlib import Path
-from typing import List
 
 import geojson
 import pyproj
@@ -265,9 +264,9 @@ def _geojson_from_citygml(infiles, outfile, split, progress={}, **kwargs):
 
 
 def geojson_from_citygml(
-    infiles: List[str | PathLike],
+    infiles: list[str | PathLike],
     outfile: str | PathLike,
-    types: List[str],
+    types: list[str],
     split: int,
     **kwargs,
 ):

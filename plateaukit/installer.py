@@ -2,7 +2,7 @@ import os
 import sys
 from os import PathLike
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 from plateaukit.config import Config
 from plateaukit.download import downloader
@@ -69,7 +69,7 @@ def install_dataset(
 
 
 def uninstall_dataset(
-    dataset_id: str, formats: Optional[List[str]] = None, keep_files: bool = False
+    dataset_id: str, formats: Optional[list[str]] = None, keep_files: bool = False
 ):
     """Uninstall PLATEAU datasets."""
 
