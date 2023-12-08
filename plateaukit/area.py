@@ -111,4 +111,11 @@ class Area:
 
     @property
     def buildings(self):
-        raise NotImplementedError()
+        from plateaukit.models import Building
+
+        # TODO: Filter and return buildings only
+
+        for row in self.gdf.itertuples():
+            df = self.gdf.loc[[row.Index]]
+
+            yield Building(df)
