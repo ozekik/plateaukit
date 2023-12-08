@@ -69,8 +69,12 @@ class Area:
                     data=self.gdf,
                     filled=True,
                     get_fill_color=[255, 255, 255],
+                    # get_fill_color=[255, 255, 255, 240],
+                    # get_line_color=[255, 255, 255],
                     extruded=True,
+                    # wireframe=True,
                     get_elevation="measuredHeight",
+                    pickable=True,
                 )
             ],
             initial_view_state=view_state,
@@ -81,6 +85,14 @@ class Area:
             #     pitch=0,
             #     bearing=0,
             # ),
+            tooltip={
+                "html": "<b>ID:</b> {id}",
+                "style": {
+                    "font-family": "sans-serif",
+                    "font-size": "8px",
+                    "color": "white",
+                },
+            },
         )
 
         try:
