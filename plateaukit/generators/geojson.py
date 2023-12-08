@@ -14,10 +14,19 @@ from rich.progress import Progress
 
 from plateaukit import extractors, utils
 from plateaukit.constants import nsmap
+from plateaukit.parsers import PLATEAUCityGMLParser
 
 # TODO: Should be controlled by -v option:
 logger.remove()
 logger.add(sys.stderr, level="INFO")
+
+
+def dict_key_to_camel_case(d):
+    def to_camel_case(s):
+        t = "".join([w.capitalize() for w in s.split("_")])
+        return t[0].lower() + t[1:]
+
+    return {to_camel_case(k): v for k, v in d.items()}
 
 
 def geojson_from_gml_single(
@@ -28,108 +37,60 @@ def geojson_from_gml_single(
     attributes=["measuredHeight"],
     allow_geometry_collection=False,
 ):
-    logger.debug(f"infile: {infile}")
+    # logger.debug("geojson_from_gml_single")
 
-    tree = etree.parse(infile)
+    parser = PLATEAUCityGMLParser(target_epsg=target_epsg)
+    citygml = parser.parse(infile)
 
-    src_epsg = extractors.utils.extract_epsg(tree)  # 6697
-    # logger.debug(src_epsg)
-    crs_orig = pyproj.CRS(src_epsg)
-    # logger.debug(repr(crs_orig))
-
-    logger.debug(f"EPSG:{src_epsg} → EPSG:{target_epsg}")
-
-    transformer = pyproj.Transformer.from_crs(src_epsg, target_epsg)
+    # logger.debug(f"citygml: {citygml}")
 
     features = []
 
-    # logger.debug(
-    #     f"""elements#: {len(list(tree.iterfind(f"./{nsmap['core']}cityObjectMember/*")))}"""
-    # )
+    if len(lod) > 1:
+        raise NotImplementedError("too many LOD values")
 
-    for i, el in enumerate(tree.iterfind(f"./{nsmap['core']}cityObjectMember/*")):
-        # building_id = extract.utils.extract_string_attribute_value(el, "建物ID")
-        try:
-            building_id = extractors.utils.extract_gml_id(el)
-        except Exception as err:
-            logger.error(err)
-            building_id = None
-        # name = extract.utils.extract_name(el)
-        # print(building_id)
-        # tqdm.write(f"{building_id} {name}")
-        # entity = Entity(ns="plateau", uid=building_id, name=name)
-        # entities.append(entity)
-
-        ## Attributes
-        attribute_values = None
-        if attributes:
-            attribute_values = {}
-            for attribute in attributes:
-                value = extractors.utils.exract_bldg_attribute(el, attribute)
-                # TODO: fix
-                try:
-                    value = float(value) if value else None
-                except:
-                    pass
-                attribute_values[attribute] = value
-
-        ## EXTRACT LODs
-        if len(lod) > 1:
-            raise NotImplementedError("too many LOD values")
-
-        poslists = None
-
-        logger.debug(f"lod: {lod}")
-
-        if 0 in lod:
-            poslists = extractors.utils.extract_lod0_poslists(el)
-            # print(lod0_poslist)
-        if 1 in lod:
-            try:
-                poslists = extractors.utils.extract_lod1_poslists(el)
-            except Exception as err:
-                logger.error(err)
-                poslists = []
+    for i, obj in enumerate(citygml.city_objects):
+        logger.debug(f"{obj.id}")
 
         polygons = []
 
-        logger.debug(f"poslists: {poslists}")
+        if 0 in lod:
+            geom = next(filter(lambda x: x["lod"] == 0, obj.geometry), None)
+        if 1 in lod:
+            geom = next(filter(lambda x: x["lod"] == 1, obj.geometry), None)
+            # raise NotImplementedError("LOD 1")
+        if 2 in lod:
+            geom = next(filter(lambda x: x["lod"] == 2, obj.geometry), None)
 
-        # TODO: fix
-        if not poslists:
-            return
+        if geom is None:
+            continue
 
-        for poslist in poslists:
-            chunked = utils.chunker(poslist, 3)
+        base_polygons = geom["boundaries"]
 
-            base_polygon = [transformer.transform(*coord) for coord in chunked]
+        if altitude:
+            base_polygons = [
+                list(map(lambda x: [x[1], x[0], x[2]], base_polygon))
+                for base_polygon in base_polygons
+            ]
+        else:
+            base_polygons = [
+                list(map(lambda x: [x[1], x[0]], base_polygon))
+                for base_polygon in base_polygons
+            ]
 
-            # print(list(utils.chunker(lod0_poslist, 3)))
-            # print(base_polygon)
-
-            if altitude:
-                # raise NotImplementedError()
-                base_polygon = list(map(lambda x: [x[1], x[0], x[2]], base_polygon))
-            else:
-                base_polygon = list(map(lambda x: [x[1], x[0]], base_polygon))
-
-            poly = Polygon([base_polygon])
-            # print(poly)
-
-            polygons.append(poly)
+        polygons = [Polygon([base_polygon]) for base_polygon in base_polygons]
 
         def to_feature(feature_geometry):
             properties = {}
-            if building_id:
-                properties["id"] = building_id
-            if attributes:
-                properties |= attribute_values
+            # properties["id"] = obj.id
+            properties |= dict_key_to_camel_case(obj.attributes)
+            # if attributes:
+            #     properties |= attribute_values
 
             feat = Feature(
                 geometry=feature_geometry,
                 properties=properties,
             )
-            # print(feat)
 
             return feat
 
@@ -172,7 +133,8 @@ def geojson_from_gml_serial_with_quit(
         if quit and quit.is_set():
             return
 
-        logger.debug(infile)
+        logger.debug(f"infile: {infile}")
+
         with open(infile, "r") as f:
             collection = geojson_from_gml_single(f, **kwargs)
             # TODO: fix
@@ -221,7 +183,7 @@ def _geojson_from_citygml(infiles, outfile, split, progress={}, **kwargs):
                             task_id=task_id,
                             _progress=_progress,
                             quit=None,
-                            # **opts,
+                            **kwargs,
                         )
                     )
                 # with tqdm(
@@ -289,6 +251,7 @@ def geojson_from_citygml(
             type_outfile = outfile
 
         if type == "bldg":
+            """建築物、建築物部分、建築物付属物、及びこれらの境界面"""
             _geojson_from_citygml(
                 expanded_infiles,
                 type_outfile,
@@ -299,35 +262,19 @@ def geojson_from_citygml(
                 **kwargs,
             )
         elif type == "brid":
+            """橋梁"""
             _geojson_from_citygml(
                 expanded_infiles,
                 type_outfile,
                 split=split,
-                lod=[1],
+                lod=[2],
                 attributes=[],
                 altitude=True,
                 allow_geometry_collection=True,
                 **kwargs,
             )
-        elif type == "dem":
-            # TODO: implement
-            raise NotImplementedError("dem")
-        elif type == "fld":
-            raise NotImplementedError("fld")
-        elif type == "lsld":
-            raise NotImplementedError("lsld")
-        elif type == "luse":
-            raise NotImplementedError("luse")
-            # _geojson_from_citygml(
-            #     expanded_infiles,
-            #     outfile,
-            #     split=split,
-            #     lod=[1],
-            #     attributes=[],
-            #     altitude=True,
-            #     allow_geometry_collection=True,
-            # )
         elif type == "tran":
+            """道路"""
             _geojson_from_citygml(
                 expanded_infiles,
                 type_outfile,
@@ -338,16 +285,20 @@ def geojson_from_citygml(
                 allow_geometry_collection=True,
                 **kwargs,
             )
+        elif type == "dem":
+            """地形(起伏)"""
+            raise NotImplementedError("dem")
+        elif type == "fld":
+            """洪水浸水想定区域"""
+            raise NotImplementedError("fld")
+        elif type == "lsld":
+            """土砂災害警戒区域"""
+            raise NotImplementedError("lsld")
+        elif type == "luse":
+            """土地利用"""
+            raise NotImplementedError("luse")
         elif type == "urf":
+            """都市計画区域、区域区分、地域地区"""
             raise NotImplementedError("urf")
-            # _geojson_from_citygml(
-            #     expanded_infiles,
-            #     outfile,
-            #     split=split,
-            #     lod=[0],
-            #     attributes=[],
-            #     altitude=True,
-            #     allow_geometry_collection=False,
-            # )
         else:
             raise NotImplementedError(type)
