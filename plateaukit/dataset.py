@@ -203,12 +203,13 @@ class Dataset:
                         # print(targets, tdir)
                         f.extractall(tdir, members=targets)
                         # TODO: fix
-                        infiles = [
+                        infiles += [
                             str(Path(tdir, Path(file_path).stem, "udx", type, "*.gml"))
                         ]
                 else:
                     infiles += [str(Path(file_path, "udx", type, "*.gml"))]
-                logger.debug([infiles, outfile])
+
+            logger.debug([types, infiles, outfile])
 
             generators.geojson.geojson_from_citygml(
                 infiles, outfile, types=types, split=split, **kwargs
