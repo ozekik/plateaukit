@@ -17,3 +17,11 @@ def parse_posList(text):
     points = list(map(lambda x: float(x), points))
     chunks = list(chunker(points, 3))
     return chunks
+
+
+def dict_key_to_camel_case(d):
+    def to_camel_case(s):
+        t = "".join([w.capitalize() for w in s.split("_")])
+        return t[0].lower() + t[1:]
+
+    return {to_camel_case(k): v for k, v in d.items()}

@@ -15,22 +15,16 @@ from rich.progress import Progress
 from plateaukit import extractors, utils
 from plateaukit.constants import nsmap
 from plateaukit.parsers import PLATEAUCityGMLParser
+from plateaukit.utils import dict_key_to_camel_case
 
 # TODO: Should be controlled by -v option:
 logger.remove()
 logger.add(sys.stderr, level="INFO")
 
 
-def dict_key_to_camel_case(d):
-    def to_camel_case(s):
-        t = "".join([w.capitalize() for w in s.split("_")])
-        return t[0].lower() + t[1:]
-
-    return {to_camel_case(k): v for k, v in d.items()}
-
-
 def geojson_from_gml_single(
     infile,
+    types=None,
     target_epsg=4326,  # WGS
     altitude=False,
     lod=[0],
@@ -52,6 +46,9 @@ def geojson_from_gml_single(
     for i, obj in enumerate(citygml.city_objects):
         logger.debug(f"{obj.id}")
 
+        if types and obj.type not in types:
+            continue
+
         polygons = []
 
         if 0 in lod:
@@ -65,7 +62,8 @@ def geojson_from_gml_single(
         if geom is None:
             continue
 
-        base_polygons = geom["boundaries"]
+        # WIP: exterior only; TODO: Fix this
+        base_polygons = [surface[0] for surface in geom["boundaries"]]
 
         if altitude:
             base_polygons = [
@@ -115,6 +113,7 @@ def geojson_from_gml_single(
 def geojson_from_gml_serial_with_quit(
     infiles,
     outfile,
+    types=None,
     task_id=None,
     quit=None,
     _progress=None,
@@ -136,7 +135,7 @@ def geojson_from_gml_serial_with_quit(
         logger.debug(f"infile: {infile}")
 
         with open(infile, "r") as f:
-            collection = geojson_from_gml_single(f, **kwargs)
+            collection = geojson_from_gml_single(f, types=types, **kwargs)
             # TODO: fix
             try:
                 features.extend(collection["features"])
@@ -151,7 +150,7 @@ def geojson_from_gml_serial_with_quit(
         geojson.dump(collection, f, ensure_ascii=False, separators=(",", ":"))
 
 
-def _geojson_from_citygml(infiles, outfile, split, progress={}, **kwargs):
+def _geojson_from_citygml(infiles, outfile, types=None, split=1, progress={}, **kwargs):
     group_size = math.ceil(len(infiles) / split)
     logger.debug(f"GMLs per GeoJSON: {group_size}")
     infile_groups = utils.chunker(infiles, group_size)
@@ -180,6 +179,7 @@ def _geojson_from_citygml(infiles, outfile, split, progress={}, **kwargs):
                             geojson_from_gml_serial_with_quit,
                             infile_group,
                             group_outfile,
+                            types=types,
                             task_id=task_id,
                             _progress=_progress,
                             quit=None,
@@ -255,6 +255,7 @@ def geojson_from_citygml(
             _geojson_from_citygml(
                 expanded_infiles,
                 type_outfile,
+                types=["Building"],
                 split=split,
                 lod=[0],
                 altitude=True,
@@ -266,6 +267,7 @@ def geojson_from_citygml(
             _geojson_from_citygml(
                 expanded_infiles,
                 type_outfile,
+                types=["Bridge"],
                 split=split,
                 lod=[2],
                 attributes=[],
@@ -278,6 +280,7 @@ def geojson_from_citygml(
             _geojson_from_citygml(
                 expanded_infiles,
                 type_outfile,
+                types=["Road"],
                 split=split,
                 lod=[1],
                 attributes=[],
