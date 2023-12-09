@@ -66,7 +66,7 @@ class GeometryParser:
     def extract_chunked_poslists(self, root):
         path = "/".join(
             [
-                ".//gml:surfaceMember", # TODO: Check this
+                ".//gml:surfaceMember",  # TODO: Check this
                 "gml:Polygon",
                 "gml:exterior",
                 "gml:LinearRing",
@@ -183,6 +183,26 @@ class PLATEAUCityObjectParser(CityObjectParser):
                             }
                         ],
                         "values": [0 for _ in range(len(chunked_poslists))],
+                    },
+                }
+
+                geoms.append(geom)
+            elif type in ["lod1Solid"]:
+                # TODO: Fix this
+                chunked_poslists = parser.extract_chunked_poslists(el)
+                solid_boundaries = [chunked_poslists]
+
+                geom = {
+                    "type": "Solid",
+                    "lod": 1,
+                    "boundaries": solid_boundaries,
+                    "semantics": {
+                        "surfaces": [
+                            {
+                                "type": f"+{type}",
+                            }
+                        ],
+                        "values": [0 for _ in range(len(solid_boundaries))],
                     },
                 }
 

@@ -5,16 +5,14 @@ from decimal import Decimal
 from multiprocessing import Manager
 from pathlib import Path
 
-import pyproj
 from bidict import bidict
-
 # from json_stream import streamable_dict
 from loguru import logger
-from lxml import etree
 from rich.progress import Progress
 
 from plateaukit import utils
 from plateaukit.constants import nsmap
+from plateaukit.parsers import PLATEAUCityGMLParser
 from plateaukit.utils import parse_posList
 
 
@@ -46,122 +44,36 @@ class VerticesMap:
         return vertex in self.index_by_vertex
 
 
-def cityjson_from_citygml_lod1(infiles, precision=16):
-    counter = 0
-    vertices = []
-
-    for infile in infiles:
-        with open(infile, "r") as f:
-            tree = etree.parse(f)
-            tree = tree.find(
-                f".//{nsmap['bldg']}Building[@{nsmap['gml']}id='BLD_ffc04e24-60a0-48ce-8b20-93a51c160bb3']"
-            )
-            print(tree)
-
-            lod1solid_tree = tree.find(f"./{nsmap['bldg']}lod1Solid")
-            print(lod1solid_tree)
-
-            # TODO: handling composite surface seriously
-            compositeSurface_tree = lod1solid_tree.find(
-                f"./{nsmap['gml']}Solid/{nsmap['gml']}exterior/{nsmap['gml']}CompositeSurface"
-            )
-            print(compositeSurface_tree)
-
-            posLists = compositeSurface_tree.iterfind(
-                f".//{nsmap['gml']}exterior/{nsmap['gml']}LinearRing/{nsmap['gml']}posList"
-            )
-
-            exterior_surfaces = []
-
-            for posList in posLists:
-                text = posList.text
-                chunks = parse_posList(text)
-                single_exterior_surface_exterior = []
-                for chunk in chunks:
-                    vertices.append(chunk)
-                    single_exterior_surface_exterior.append(counter)
-                    counter += 1
-                single_exterior_surface = [single_exterior_surface_exterior]
-                exterior_surfaces.append(single_exterior_surface)
-
-            # print(exterior_surfaces)
-
-            result = {
-                "type": "CityJSON",
-                "version": "1.1",
-                "extensions": {},
-                "transform": {"scale": [1.0, 1.0, 1.0], "translate": [0.0, 0.0, 0.0]},
-                "metadata": {},
-                "CityObjects": {
-                    "BLD_f51c1fff-5198-4196-ac9b-39a5c1e48dca": {
-                        "type": "Building",
-                        # "attributes": {"建物ID": "13104-bldg-52530", "measuredHeight": 61.9},
-                        # "children": [
-                        #     "ID_22730c8f-9fbc-4d58-88dd-5569d7480fad",
-                        #     "ID_598f2fab-030f-429c-b938-a222e04d8e4b",
-                        #     "ID_db473977-e95e-4075-b0be-55eb65974610",
-                        #     "ID_ac26b2cb-553e-428a-9f10-2659419e824d",
-                        # ],
-                        "geometry": [
-                            # {
-                            #     "type": "MultiSurface",
-                            #     "lod": "0",
-                            #     "boundaries": [],
-                            # },
-                            {
-                                "type": "Solid",
-                                "lod": "2",
-                                "boundaries": [
-                                    # Exterior shell
-                                    exterior_surfaces,
-                                    # Interior shells
-                                    # [], [], ...
-                                ],
-                                "semantics": {
-                                    "surfaces": [],
-                                    "values": [],
-                                },
-                                "texture": {"rgbTexture": {"values": []}},
-                            },
-                        ],
-                        "address": [{"Country": "日本", "Locality": "東京都新宿区西新宿一丁目"}],
-                    }
-                },
-                "vertices": vertices,
-                "appearance": {},
-                "geometry-templates": {},
-            }
-            result_debug = json.dumps(result, indent=2, ensure_ascii=False)
-            # print(result_debug)
-            return result
-
-
-def parse_lod1solid(element_cityObject, vertices_map: VerticesMap):
+def parse_lod1solid(city_obj, vertices_map: VerticesMap):
     # TODO: handling composite surface seriously
-    elem_compositeSurface = element_cityObject.find(
-        f"./{nsmap['bldg']}lod1Solid/{nsmap['gml']}Solid/{nsmap['gml']}exterior/{nsmap['gml']}CompositeSurface"
-    )
-    # print(elem_compositeSurface)
+    # print("parse_lod1solid")
 
-    els_poslist = elem_compositeSurface.iterfind(
-        f".//{nsmap['gml']}exterior/{nsmap['gml']}LinearRing/{nsmap['gml']}posList"
+    geom = next(
+        filter(lambda x: x["lod"] == 1 and x["type"] == "Solid", city_obj.geometry),
+        None,
     )
 
-    exterior_surfaces = []
+    # print("geom", geom)
 
-    for el in els_poslist:
-        text = el.text
-        chunks = parse_posList(text)
-        chunks = chunks[:-1]
-        # print("chunks", chunks)
+    indexed_surfaces = []
+
+    exterior = geom["boundaries"][0]
+
+    # print("exterior", exterior)
+
+    for surface in exterior:
+        unclosed_surface = surface[:-1]
+        # print("unclosed_surface", unclosed_surface)
         single_exterior_surface_exterior = []
-        for chunk in chunks:
+
+        for chunk in unclosed_surface:
             index = vertices_map.to_index(chunk)
             single_exterior_surface_exterior.append(index)
-        single_exterior_surface = [single_exterior_surface_exterior]
-        exterior_surfaces.append(single_exterior_surface)
 
-    return exterior_surfaces, vertices_map
+        indexed_surface = [single_exterior_surface_exterior]
+        indexed_surfaces.append(indexed_surface)
+
+    return indexed_surfaces, vertices_map
 
 
 def parse_lod2solid(element_cityObject, vertices_map: VerticesMap):
@@ -211,37 +123,46 @@ def parse_lod2solid(element_cityObject, vertices_map: VerticesMap):
     return exterior_surfaces, vertices_map
 
 
-class CityObjectsParser:
-    def __init__(self):
+class CityJSONConverter:
+    def __init__(self, target_epsg):
+        self.target_epsg = target_epsg
+
         self.vertices_map = VerticesMap()
 
     # @streamable_dict
     def generate_city_object(self, infiles, task_id=None, quit=None, _progress=None):
         # vertices_map = VerticesMap()
 
+        parser = PLATEAUCityGMLParser(target_epsg=self.target_epsg)
+
         total = len(infiles)
+
         for i, infile in enumerate(infiles):
             if task_id is not None and _progress is not None:
                 _progress[task_id] = {"progress": i + 1, "total": total}
 
             # print(infile)
             with open(infile, "r") as f:
-                root = etree.parse(f)
-                els_cityObject = root.iterfind(f".//{nsmap['bldg']}Building")
-                # el_cityObject = root.find(
-                #     f".//{nsmap['bldg']}Building[@{nsmap['gml']}id='BLD_166aaf40-b65b-46c3-b7c7-05f3e7118f46']"
-                #     # f".//{nsmap['bldg']}Building"
-                # )
-                for el_cityObject in els_cityObject:
+                # print(f"infile: {infile}")
+
+                citygml = parser.parse(f)
+
+                for city_obj in citygml.city_objects:
                     if quit and quit.is_set():
                         return
 
+                    # print("city_obj", city_obj)
+
                     exterior_surfaces, vertices_map = parse_lod1solid(
-                        el_cityObject, self.vertices_map
+                        city_obj, self.vertices_map
                     )
                     self.vertices_map = vertices_map
 
-                    yield el_cityObject.get(f"{nsmap['gml']}id"), {
+                    # print("exterior_surfaces", exterior_surfaces)
+
+                    obj_id = city_obj.attributes.get("building_id", city_obj.id)
+
+                    yield obj_id, {
                         "type": "Building",
                         # "attributes": {"建物ID": "13104-bldg-52530", "measuredHeight": 61.9},
                         # "children": [
@@ -284,22 +205,25 @@ def cityson_from_gml_serial_with_quit(
     _progress=None,
     **opts,
 ):
-    src_epsg = 6697  # WGS
-    crs_orig = pyproj.CRS(src_epsg)
-    target_epsg = 3857
-    transformer = pyproj.Transformer.from_crs(src_epsg, target_epsg)
+    logger.debug("[*] cityson_from_gml_serial_with_quit")
 
-    parser = CityObjectsParser()
+    target_epsg = 3857
+    # target_epsg = 4326
+
+    converter = CityJSONConverter(target_epsg=target_epsg)
 
     city_objects = dict(
-        parser.generate_city_object(
+        converter.generate_city_object(
             infiles, task_id=task_id, quit=quit, _progress=_progress
         )
     )
 
-    vertices = [
-        transformer.transform(*vertice) for vertice in parser.vertices_map.vertices
-    ]
+    # print(city_objects)
+
+    # vertices = [
+    #     transformer.transform(*vertice) for vertice in converter.vertices_map.vertices
+    # ]
+    vertices = converter.vertices_map.vertices
 
     result = {
         "type": "CityJSON",
@@ -324,6 +248,7 @@ def cityson_from_gml_serial_with_quit(
 def cityjson_from_citygml(
     infiles, outfile, split=1, precision=16, lod=[1], progress={}
 ):
+    logger.debug("[*] cityjson_from_citygml")
     # vertices_map = VerticesMap()
     # city_objects = {}
 
@@ -342,15 +267,22 @@ def cityjson_from_citygml(
 
             with concurrent.futures.ProcessPoolExecutor(max_workers=None) as pool:
                 futures = []
+
                 for i, infile_group in enumerate(infile_groups):
                     stem = Path(outfile).stem
+
                     if split > 1:
                         group_outfile = Path(outfile).with_stem(f"{stem}.{i + 1}")
                     else:
                         group_outfile = outfile
+
                     task_id = rprogress.add_task(
                         f"[cyan]Progress #{i + 1}", total=len(infile_group)
                     )
+                    # task_id = None
+
+                    logger.debug(f"group_outfile: {group_outfile}")
+
                     futures.append(
                         pool.submit(
                             cityson_from_gml_serial_with_quit,
@@ -359,9 +291,10 @@ def cityjson_from_citygml(
                             task_id=task_id,
                             _progress=_progress,
                             quit=quit,
-                            # **opts,
+                            # **kwargs,
                         )
                     )
+
                 try:
                     while (
                         n_finished := sum([future.done() for future in futures])
