@@ -1,8 +1,7 @@
 import json
 from collections import defaultdict
 from pathlib import Path
-import re
-from typing import Annotated, Any, DefaultDict, Optional
+from typing import Annotated, DefaultDict
 
 from platformdirs import user_config_dir, user_data_dir
 from pydantic import BaseModel, Field, PrivateAttr, field_validator
@@ -15,9 +14,9 @@ class Config(BaseModel):
 
     path: str = Field(default=None, validate_default=True)
     _data_dir: str = PrivateAttr(default=str(Path(user_data_dir("plateaukit"), "data")))
-    datasets: Optional[
-        DefaultDict[str, Annotated[dict, Field(default_factory=dict)]]
-    ] = None
+    datasets: DefaultDict[
+        str, Annotated[dict, Field(default_factory=dict)]
+    ] | None = None
 
     @field_validator("path", mode="before")
     @classmethod

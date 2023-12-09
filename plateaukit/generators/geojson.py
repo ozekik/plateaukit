@@ -6,14 +6,11 @@ from os import PathLike
 from pathlib import Path
 
 import geojson
-import pyproj
 from geojson import Feature, FeatureCollection, GeometryCollection, Polygon
 from loguru import logger
-from lxml import etree
 from rich.progress import Progress
 
-from plateaukit import extractors, utils
-from plateaukit.constants import nsmap
+from plateaukit import utils
 from plateaukit.parsers import PLATEAUCityGMLParser
 from plateaukit.utils import dict_key_to_camel_case
 
