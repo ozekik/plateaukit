@@ -27,14 +27,15 @@ object_type_tags = {
     "Bridge": f"{{{nsmap['brid']}}}Bridge",
 }
 
-geometry_type_tags = {
-    "lod0RoofEdge": f"{{{nsmap['bldg']}}}lod0RoofEdge",
-    "lod0FootPrint": f"{{{nsmap['bldg']}}}lod0FootPrint",
-    "lod1Solid": f"{{{nsmap['bldg']}}}lod1Solid",
-    "lod2Solid": f"{{{nsmap['bldg']}}}lod2Solid",
-    "lod1MultiSurface": f"{{{nsmap['tran']}}}lod1MultiSurface",
-    "lod2MultiSurface": f"{{{nsmap['brid']}}}lod2MultiSurface",
-}
+geometry_type_tags = [
+    {"type": "lod0RoofEdge", "tag": f"{{{nsmap['bldg']}}}lod0RoofEdge"},
+    {"type": "lod0FootPrint", "tag": f"{{{nsmap['bldg']}}}lod0FootPrint"},
+    {"type": "lod1Solid", "tag": f"{{{nsmap['bldg']}}}lod1Solid"},
+    {"type": "lod2Solid", "tag": f"{{{nsmap['bldg']}}}lod2Solid"},
+    {"type": "lod2MultiSurface", "tag": f"{{{nsmap['bldg']}}}lod2MultiSurface"},
+    {"type": "lod1MultiSurface", "tag": f"{{{nsmap['tran']}}}lod1MultiSurface"},
+    {"type": "lod2MultiSurface", "tag": f"{{{nsmap['brid']}}}lod2MultiSurface"},
+]
 
 # TODO: boundedBy
 
@@ -83,7 +84,8 @@ class GeometryParser:
             chunked = list(utils.chunker(poslist, 3))
             if self.transformer:
                 chunked = list(self.transformer.itransform(chunked))
-            parsed.append(chunked)
+            surface = [chunked]
+            parsed.append(surface)
 
         return parsed
 
@@ -145,7 +147,10 @@ class PLATEAUCityObjectParser(CityObjectParser):
 
         parser = GeometryParser(transformer=self.transformer)
 
-        for type, tag in geometry_type_tags.items():
+        for type_tag in geometry_type_tags:
+            type = type_tag["type"]
+            tag = type_tag["tag"]
+
             el = root.find(f"./{tag}", nsmap)
 
             if el is None:
@@ -225,6 +230,42 @@ class PLATEAUCityObjectParser(CityObjectParser):
                 }
 
                 geoms.append(geom)
+
+        # Look through boundedBy
+        bound_els = list(root.iterfind("./bldg:boundedBy", nsmap))
+        for bound_el in bound_els:
+            # TODO: Check semantics
+            for type_tag in geometry_type_tags:
+                type = type_tag["type"]
+                tag = type_tag["tag"]
+
+                el = bound_el.find(f".//{tag}", nsmap)
+
+                if el is None:
+                    continue
+
+                if type in ["lod2MultiSurface"]:
+                    chunked_poslists = parser.extract_chunked_poslists(el)
+
+                    geom = {
+                        "type": "MultiSurface",
+                        "lod": 2,
+                        "boundaries": chunked_poslists,
+                        "semantics": {
+                            "surfaces": [
+                                {
+                                    "type": f"+{type}",
+                                }
+                            ],
+                            "values": [0 for _ in range(len(chunked_poslists))],
+                        },
+                    }
+
+                    geoms.append(geom)
+
+                else:
+                    pass
+                    # raise NotImplementedError()
 
         return geoms
 

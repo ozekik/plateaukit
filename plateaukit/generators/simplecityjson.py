@@ -6,6 +6,7 @@ from multiprocessing import Manager
 from pathlib import Path
 
 from bidict import bidict
+
 # from json_stream import streamable_dict
 from loguru import logger
 from rich.progress import Progress
@@ -13,7 +14,7 @@ from rich.progress import Progress
 from plateaukit import utils
 from plateaukit.constants import nsmap
 from plateaukit.parsers import PLATEAUCityGMLParser
-from plateaukit.utils import parse_posList
+from plateaukit.utils import parse_posList, dict_key_to_camel_case
 
 
 class VerticesMap:
@@ -44,9 +45,9 @@ class VerticesMap:
         return vertex in self.index_by_vertex
 
 
-def parse_lod1solid(city_obj, vertices_map: VerticesMap):
+def get_indexed_lod1_solid(city_obj, vertices_map: VerticesMap):
     # TODO: handling composite surface seriously
-    # print("parse_lod1solid")
+    # print("get_indexed_lod1_solid")
 
     geom = next(
         filter(lambda x: x["lod"] == 1 and x["type"] == "Solid", city_obj.geometry),
@@ -74,6 +75,84 @@ def parse_lod1solid(city_obj, vertices_map: VerticesMap):
         indexed_surfaces.append(indexed_surface)
 
     return indexed_surfaces, vertices_map
+
+
+def get_indexed_boundaries(geometry, vertices_map: VerticesMap):
+    # TODO: handling composite surface seriously
+    # print("get_indexed_boundaries")
+    # print("type", geometry["type"])
+
+    indexed_boundaries = []
+
+    if geometry["type"] == "MultiPoint":
+        for point in geometry["boundaries"]:
+            index = vertices_map.to_index(point)
+            indexed_boundaries.append(index)
+        return indexed_boundaries, vertices_map
+
+    elif geometry["type"] == "MultiLineString":
+        for line in geometry["boundaries"]:
+            indexed_line = []
+            for point in line:
+                index = vertices_map.to_index(point)
+                indexed_line.append(index)
+            indexed_boundaries.append(indexed_line)
+        return indexed_boundaries, vertices_map
+
+    elif geometry["type"] in ["MultiSurface", "CompositeSurface"]:
+        for surface in geometry["boundaries"]:
+            # print("surface", surface)
+            indexed_surface = []
+            for region in surface:
+                # print("region", region)
+                indexed_region = []
+                unclosed_region = region[:-1]
+                for point in unclosed_region:
+                    index = vertices_map.to_index(point)
+                    indexed_region.append(index)
+                indexed_surface.append(indexed_region)
+            indexed_boundaries.append(indexed_surface)
+        # print("indexed_boundaries", indexed_boundaries, "aaa" * 100)
+        return indexed_boundaries, vertices_map
+
+    elif geometry["type"] == "Solid":
+        for shell in geometry["boundaries"]:
+            # print("shell", shell)
+            indexed_shell = []
+            for surface in shell:
+                indexed_surface = []
+                for region in surface:
+                    # print("region", region)
+                    indexed_region = []
+                    unclosed_region = region[:-1]
+                    for point in unclosed_region:
+                        # print("point", point)
+                        index = vertices_map.to_index(point)
+                        indexed_region.append(index)
+                    # print("indexed_region", indexed_region)
+                    indexed_surface.append(indexed_region)
+                indexed_shell.append(indexed_surface)
+            indexed_boundaries.append(indexed_shell)
+        # print("indexed_boundaries", indexed_boundaries)
+        return indexed_boundaries, vertices_map
+    else:
+        raise NotImplementedError()
+
+    # TODO: MultiSolid, CompositeSolid
+
+    # for surface in exterior:
+    #     unclosed_surface = surface[:-1]
+    #     # print("unclosed_surface", unclosed_surface)
+    #     single_exterior_surface_exterior = []
+
+    #     for chunk in unclosed_surface:
+    #         index = vertices_map.to_index(chunk)
+    #         single_exterior_surface_exterior.append(index)
+
+    #     indexed_surface = [single_exterior_surface_exterior]
+    #     indexed_surfaces.append(indexed_surface)
+
+    # return indexed_surfaces, vertices_map
 
 
 def parse_lod2solid(element_cityObject, vertices_map: VerticesMap):
@@ -153,17 +232,31 @@ class CityJSONConverter:
 
                     # print("city_obj", city_obj)
 
-                    exterior_surfaces, vertices_map = parse_lod1solid(
-                        city_obj, self.vertices_map
-                    )
-                    self.vertices_map = vertices_map
+                    indexed_geoms = []
 
-                    # print("exterior_surfaces", exterior_surfaces)
+                    for geom in city_obj.geometry:
+                        # print("geom", geom)
+                        boundaries, vertices_map = get_indexed_boundaries(
+                            geom, self.vertices_map
+                        )
 
-                    obj_id = city_obj.attributes.get("building_id", city_obj.id)
+                        indexed_geom = dict(
+                            geom, lod=str(geom["lod"]), boundaries=boundaries
+                        )
+
+                        # print("indexed_geom", indexed_geom)
+                        indexed_geoms.append(indexed_geom)
+
+                        self.vertices_map = vertices_map
+
+                    # print("indexed_geoms", indexed_geoms)
+
+                    # obj_id = city_obj.attributes.get("building_id", city_obj.id)
+                    obj_id = city_obj.id
 
                     yield obj_id, {
                         "type": "Building",
+                        "attributes": dict_key_to_camel_case(city_obj.attributes),
                         # "attributes": {"建物ID": "13104-bldg-52530", "measuredHeight": 61.9},
                         # "children": [
                         #     "ID_22730c8f-9fbc-4d58-88dd-5569d7480fad",
@@ -171,28 +264,24 @@ class CityJSONConverter:
                         #     "ID_db473977-e95e-4075-b0be-55eb65974610",
                         #     "ID_ac26b2cb-553e-428a-9f10-2659419e824d",
                         # ],
-                        "geometry": [
-                            # {
-                            #     "type": "MultiSurface",
-                            #     "lod": "0",
-                            #     "boundaries": [],
-                            # },
-                            {
-                                "type": "Solid",
-                                "lod": "1",
-                                "boundaries": [
-                                    # Exterior shell
-                                    exterior_surfaces,
-                                    # Interior shells
-                                    # [], [], ...
-                                ],
-                                # "semantics": {
-                                #     "surfaces": [],
-                                #     "values": [],
-                                # },
-                                # "texture": {"rgbTexture": {"values": []}},
-                            },
-                        ],
+                        "geometry": indexed_geoms,
+                        # [
+                        # {
+                        #     "type": "MultiSurface",
+                        #     "lod": "0",
+                        #     "boundaries": [],
+                        # },
+                        # {
+                        #     "type": "Solid",
+                        #     "lod": "1",
+                        #     "boundaries": boundaries,
+                        #     # "semantics": {
+                        #     #     "surfaces": [],
+                        #     #     "values": [],
+                        #     # },
+                        #     # "texture": {"rgbTexture": {"values": []}},
+                        # },
+                        # ],
                         # "address": [{"Country": "日本", "Locality": "東京都新宿区西新宿一丁目"}],
                     }
 

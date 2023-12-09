@@ -247,6 +247,8 @@ class Dataset:
 
             file_path = Path(record["citygml"])
 
+            infiles = []
+
             for type in types:
                 # TODO: fix
                 pat = re.compile(rf".*udx\/{type}\/.*\.gml$")
@@ -258,13 +260,13 @@ class Dataset:
                         # print(targets, tdir)
                         f.extractall(tdir, members=targets)
                         # TODO: fix
-                        infiles = [
+                        infiles += [
                             str(Path(tdir, Path(file_path).stem, "udx", type, "*.gml"))
                         ]
                 else:
-                    infiles = [str(Path(file_path, "udx", type, "*.gml"))]
+                    infiles += [str(Path(file_path, "udx", type, "*.gml"))]
 
-                logger.debug([infiles, outfile])
+                logger.debug([types, infiles, outfile])
 
                 expanded_infiles = []
 
