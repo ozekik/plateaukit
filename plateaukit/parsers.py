@@ -306,6 +306,8 @@ class PLATEAUCityObjectParser(CityObjectParser):
                 attributes=attributes,
                 geometry=geometry,
             )
+        else:
+            raise NotImplementedError(f"Unknown object type: {el.tag}")
 
         return obj
 
