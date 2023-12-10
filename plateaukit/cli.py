@@ -258,6 +258,21 @@ def generate_cityjson(infiles, outfile, dataset_id, types, split):
     # if precision:
     #     params["precision"] = precision
 
+    # obj_types_map = {
+    #     "bldg": ["Building"],
+    #     "brid": ["Bridge"],
+    #     "tran": ["Road"],
+    #     # "dem": ["ReliefFeature"],
+    #     # "fld": ["LandUse"],
+    #     # "frn": ["WaterBody"],
+    #     # "lsld": ["TransportationComplex"],
+    #     # "luse": ["LandUse"],
+    #     # "urf": ["CityFurniture"],
+    # }
+
+    # obj_types = sum([obj_types_map[type] for type in types], [])
+    # logger.debug(obj_types)
+
     if dataset_id:
         dataset = load_dataset(dataset_id)
         dataset.to_cityjson(outfile, types=types, split=split, **params)

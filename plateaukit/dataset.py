@@ -1,16 +1,14 @@
-import glob
 import re
-import tempfile
 import zipfile
 from os import PathLike
 from pathlib import Path
 
 import geopandas as gpd
-from loguru import logger
 
 from plateaukit import generators, geocoding
 from plateaukit.area import Area
 from plateaukit.config import Config
+from plateaukit.logger import logger
 
 # from pyogrio import read_dataframe
 
@@ -218,6 +216,8 @@ class Dataset:
         self,
         outfile: str | PathLike,
         types: list[str] = ["bldg"],
+        object_types=None,  # TODO: Handle this
+        lod=[1, 2],
         split: int = 1,
         **kwargs,
     ):
@@ -237,51 +237,46 @@ class Dataset:
         if not self.dataset_id:
             raise Exception("Missing dataset_id")
 
-        with tempfile.TemporaryDirectory() as tdir:
-            config = Config()
-            record = config.datasets[self.dataset_id]
+        config = Config()
+        record = config.datasets[self.dataset_id]
 
-            if "citygml" not in record:
-                raise Exception("Missing CityGML data")
+        if "citygml" not in record:
+            raise Exception("Missing CityGML data")
 
-            file_path = Path(record["citygml"])
+        file_path = Path(record["citygml"])
 
-            infiles = []
+        infiles = []
 
-            for type in types:
-                # TODO: fix
-                pat = re.compile(rf".*udx\/{type}\/.*\.gml$")
+        for type in types:
+            # TODO: fix
+            pat = re.compile(rf".*udx\/{type}\/.*\.gml$")
 
-                if zipfile.is_zipfile(file_path):
-                    with zipfile.ZipFile(file_path) as f:
-                        namelist = f.namelist()
-                        targets = list(filter(lambda x: pat.match(x), namelist))
-                        # print(targets, tdir)
-                        f.extractall(tdir, members=targets)
-                        # TODO: fix
-                        infiles += [
-                            str(Path(tdir, Path(file_path).stem, "udx", type, "*.gml"))
-                        ]
-                else:
-                    infiles += [str(Path(file_path, "udx", type, "*.gml"))]
+            if zipfile.is_zipfile(file_path):
+                with zipfile.ZipFile(file_path) as f:
+                    namelist = f.namelist()
+                    targets = list(filter(lambda x: pat.match(x), namelist))
+                    infiles += [str(Path("/", target)) for target in targets]
+            else:
+                infiles += [str(Path(file_path, "udx", type, "*.gml"))]
 
-                logger.debug([types, infiles, outfile])
+            logger.debug([types, infiles, outfile])
 
-                expanded_infiles = []
+        # Sort by a part of filename to group by areas; TODO: Update this
+        # try:
+        #     infiles = sorted(infiles, key=lambda x: Path(x).stem.split("_")[0])
+        # except:
+        #     infiles = sorted(infiles)
+        infiles = sorted(infiles)
 
-                for infile in infiles:
-                    expanded_infiles.extend(glob.glob(infile))
+        logger.debug(f"infiles: {infiles}")
 
-                expanded_infiles = sorted(expanded_infiles)
-
-                # print(infiles, expanded_infiles)
-
-                generators.simplecityjson.cityjson_from_citygml(
-                    expanded_infiles,
-                    outfile,
-                    split=split,
-                    lod=[1],
-                )
+        generators.simplecityjson.cityjson_from_citygml(
+            infiles,
+            outfile,
+            split=split,
+            zipfile=file_path,
+            lod=lod,
+        )
 
 
 def load_dataset(dataset_id: str) -> Dataset:

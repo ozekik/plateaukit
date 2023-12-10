@@ -3,9 +3,11 @@ import json
 import math
 from decimal import Decimal
 from multiprocessing import Manager
+from os import PathLike
 from pathlib import Path
 
 from bidict import bidict
+from fs import open_fs
 
 # from json_stream import streamable_dict
 from loguru import logger
@@ -155,51 +157,51 @@ def get_indexed_boundaries(geometry, vertices_map: VerticesMap):
     # return indexed_surfaces, vertices_map
 
 
-def parse_lod2solid(element_cityObject, vertices_map: VerticesMap):
-    # TODO: handling composite surface seriously
-    elem_compositeSurface = element_cityObject.find(
-        f"./{nsmap['bldg']}lod2Solid/{nsmap['gml']}Solid/{nsmap['gml']}exterior/{nsmap['gml']}CompositeSurface"
-    )
-    # print(elem_compositeSurface)
+# def parse_lod2solid(element_cityObject, vertices_map: VerticesMap):
+#     # TODO: handling composite surface seriously
+#     elem_compositeSurface = element_cityObject.find(
+#         f"./{nsmap['bldg']}lod2Solid/{nsmap['gml']}Solid/{nsmap['gml']}exterior/{nsmap['gml']}CompositeSurface"
+#     )
+#     # print(elem_compositeSurface)
 
-    elems_surfaceMember = elem_compositeSurface.iterfind(
-        f".//{nsmap['gml']}surfaceMember"
-    )
+#     elems_surfaceMember = elem_compositeSurface.iterfind(
+#         f".//{nsmap['gml']}surfaceMember"
+#     )
 
-    hrefs = []
-    for elem in elems_surfaceMember:
-        # print(elem)
-        href = elem.get(f"{nsmap['xlink']}href")
-        # Remove hash
-        href = href[1:]
-        # print(href)
-        hrefs.append(href)
+#     hrefs = []
+#     for elem in elems_surfaceMember:
+#         # print(elem)
+#         href = elem.get(f"{nsmap['xlink']}href")
+#         # Remove hash
+#         href = href[1:]
+#         # print(href)
+#         hrefs.append(href)
 
-    elems_member = []
+#     elems_member = []
 
-    # Collect linked elements
-    for href in hrefs:
-        # NOTE: this may not be guaranteed
-        elem = element_cityObject.find(f".//*[@{nsmap['gml']}id='{href}']")
-        # print(elem)
-        elems_member.append(elem)
+#     # Collect linked elements
+#     for href in hrefs:
+#         # NOTE: this may not be guaranteed
+#         elem = element_cityObject.find(f".//*[@{nsmap['gml']}id='{href}']")
+#         # print(elem)
+#         elems_member.append(elem)
 
-    exterior_surfaces = []
+#     exterior_surfaces = []
 
-    for elem in elems_member:
-        els_list = elem.iterfind(f".//{nsmap['gml']}posList")
-        for el in els_list:
-            text = el.text
-            chunks = parse_posList(text)
-            logger.debug(chunks)
-            single_exterior_surface_exterior = []
-            for chunk in chunks:
-                index = vertices_map.to_index(chunk)
-                single_exterior_surface_exterior.append(index)
-            single_exterior_surface = [single_exterior_surface_exterior]
-            exterior_surfaces.append(single_exterior_surface)
+#     for elem in elems_member:
+#         els_list = elem.iterfind(f".//{nsmap['gml']}posList")
+#         for el in els_list:
+#             text = el.text
+#             chunks = parse_posList(text)
+#             logger.debug(chunks)
+#             single_exterior_surface_exterior = []
+#             for chunk in chunks:
+#                 index = vertices_map.to_index(chunk)
+#                 single_exterior_surface_exterior.append(index)
+#             single_exterior_surface = [single_exterior_surface_exterior]
+#             exterior_surfaces.append(single_exterior_surface)
 
-    return exterior_surfaces, vertices_map
+#     return exterior_surfaces, vertices_map
 
 
 class CityJSONConverter:
@@ -209,7 +211,16 @@ class CityJSONConverter:
         self.vertices_map = VerticesMap()
 
     # @streamable_dict
-    def generate_city_object(self, infiles, task_id=None, quit=None, _progress=None):
+    def generate_city_object(
+        self,
+        infiles: list[str],
+        object_types: list[str] | None,
+        lod: list[int],
+        zipfile: str | PathLike | None = None,
+        task_id=None,
+        quit=None,
+        _progress=None,
+    ):
         # vertices_map = VerticesMap()
 
         parser = PLATEAUCityGMLParser(target_epsg=self.target_epsg)
@@ -221,74 +232,88 @@ class CityJSONConverter:
                 _progress[task_id] = {"progress": i + 1, "total": total}
 
             # print(infile)
-            with open(infile, "r") as f:
-                # print(f"infile: {infile}")
+            if zipfile is not None:
+                with open_fs(f"zip://{zipfile}") as zip_fs:
+                    with zip_fs.open(infile, "r") as f:
+                        citygml = parser.parse(f)
+            else:
+                with open(infile, "r") as f:
+                    # print(f"infile: {infile}")
 
-                citygml = parser.parse(f)
+                    citygml = parser.parse(f)
 
-                for city_obj in citygml.city_objects:
-                    if quit and quit.is_set():
-                        return
+            for city_obj in citygml.city_objects:
+                if quit and quit.is_set():
+                    return
 
-                    # print("city_obj", city_obj)
+                # print("city_obj", city_obj)
 
-                    indexed_geoms = []
+                if object_types is not None and city_obj.type not in object_types:
+                    continue
 
-                    for geom in city_obj.geometry:
-                        # print("geom", geom)
-                        boundaries, vertices_map = get_indexed_boundaries(
-                            geom, self.vertices_map
-                        )
+                indexed_geoms = []
 
-                        indexed_geom = dict(
-                            geom, lod=str(geom["lod"]), boundaries=boundaries
-                        )
+                for geom in city_obj.geometry:
+                    if geom["lod"] not in lod:
+                        continue
 
-                        # print("indexed_geom", indexed_geom)
-                        indexed_geoms.append(indexed_geom)
+                    # print("geom", geom)
+                    boundaries, vertices_map = get_indexed_boundaries(
+                        geom, self.vertices_map
+                    )
 
-                        self.vertices_map = vertices_map
+                    indexed_geom = dict(
+                        geom, lod=str(geom["lod"]), boundaries=boundaries
+                    )
 
-                    # print("indexed_geoms", indexed_geoms)
+                    # print("indexed_geom", indexed_geom)
+                    indexed_geoms.append(indexed_geom)
 
-                    # obj_id = city_obj.attributes.get("building_id", city_obj.id)
-                    obj_id = city_obj.id
+                    self.vertices_map = vertices_map
 
-                    yield obj_id, {
-                        "type": "Building",
-                        "attributes": dict_key_to_camel_case(city_obj.attributes),
-                        # "attributes": {"建物ID": "13104-bldg-52530", "measuredHeight": 61.9},
-                        # "children": [
-                        #     "ID_22730c8f-9fbc-4d58-88dd-5569d7480fad",
-                        #     "ID_598f2fab-030f-429c-b938-a222e04d8e4b",
-                        #     "ID_db473977-e95e-4075-b0be-55eb65974610",
-                        #     "ID_ac26b2cb-553e-428a-9f10-2659419e824d",
-                        # ],
-                        "geometry": indexed_geoms,
-                        # [
-                        # {
-                        #     "type": "MultiSurface",
-                        #     "lod": "0",
-                        #     "boundaries": [],
-                        # },
-                        # {
-                        #     "type": "Solid",
-                        #     "lod": "1",
-                        #     "boundaries": boundaries,
-                        #     # "semantics": {
-                        #     #     "surfaces": [],
-                        #     #     "values": [],
-                        #     # },
-                        #     # "texture": {"rgbTexture": {"values": []}},
-                        # },
-                        # ],
-                        # "address": [{"Country": "日本", "Locality": "東京都新宿区西新宿一丁目"}],
-                    }
+                # print("indexed_geoms", indexed_geoms)
+
+                # obj_id = city_obj.attributes.get("building_id", city_obj.id)
+                obj_id = city_obj.id
+
+                yield obj_id, {
+                    "type": "Building",
+                    "attributes": dict_key_to_camel_case(city_obj.attributes),
+                    # "attributes": {"建物ID": "13104-bldg-52530", "measuredHeight": 61.9},
+                    # "children": [
+                    #     "ID_22730c8f-9fbc-4d58-88dd-5569d7480fad",
+                    #     "ID_598f2fab-030f-429c-b938-a222e04d8e4b",
+                    #     "ID_db473977-e95e-4075-b0be-55eb65974610",
+                    #     "ID_ac26b2cb-553e-428a-9f10-2659419e824d",
+                    # ],
+                    "geometry": indexed_geoms,
+                    # [
+                    # {
+                    #     "type": "MultiSurface",
+                    #     "lod": "0",
+                    #     "boundaries": [],
+                    # },
+                    # {
+                    #     "type": "Solid",
+                    #     "lod": "1",
+                    #     "boundaries": boundaries,
+                    #     # "semantics": {
+                    #     #     "surfaces": [],
+                    #     #     "values": [],
+                    #     # },
+                    #     # "texture": {"rgbTexture": {"values": []}},
+                    # },
+                    # ],
+                    # "address": [{"Country": "日本", "Locality": "東京都新宿区西新宿一丁目"}],
+                }
 
 
 def cityson_from_gml_serial_with_quit(
     infiles,
     outfile,
+    object_types,
+    lod,
+    zipfile=None,
     task_id=None,
     quit=None,
     _progress=None,
@@ -303,7 +328,13 @@ def cityson_from_gml_serial_with_quit(
 
     city_objects = dict(
         converter.generate_city_object(
-            infiles, task_id=task_id, quit=quit, _progress=_progress
+            infiles,
+            object_types=object_types,
+            lod=lod,
+            zipfile=zipfile,
+            task_id=task_id,
+            quit=quit,
+            _progress=_progress,
         )
     )
 
@@ -340,7 +371,14 @@ def cityson_from_gml_serial_with_quit(
 
 
 def cityjson_from_citygml(
-    infiles, outfile, split=1, precision=16, lod=[1], progress={}
+    infiles,
+    outfile,
+    split: int = 1,
+    zipfile=None,
+    precision=16,
+    object_types=None,
+    lod: list[int] = [1, 2],
+    progress={},
 ):
     logger.debug("[*] cityjson_from_citygml")
     # vertices_map = VerticesMap()
@@ -380,6 +418,9 @@ def cityjson_from_citygml(
                         cityson_from_gml_serial_with_quit,
                         infile_group,
                         group_outfile,
+                        object_types=object_types,
+                        lod=lod,
+                        zipfile=zipfile,
                         task_id=task_id,
                         _progress=_progress,
                         quit=quit,
