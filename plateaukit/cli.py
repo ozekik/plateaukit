@@ -1,10 +1,8 @@
 import glob
-import sys
 import tempfile
 from pathlib import Path
 
 import click
-from loguru import logger
 from prettytable import PrettyTable
 from rich.console import Console
 
@@ -12,6 +10,7 @@ from plateaukit import generators
 from plateaukit.config import Config
 from plateaukit.dataset import load_dataset
 from plateaukit.installer import install_dataset, uninstall_dataset
+from plateaukit.logger import logger, set_log_level
 
 
 def list_available_datasets(is_all=False):
@@ -56,10 +55,7 @@ class OrderCommands(click.Group):
 )
 def cli(verbose):
     if verbose:
-        logger.remove()
-        logger.add(sys.stderr, level="DEBUG")
-    else:
-        logger.remove()
+        set_log_level("DEBUG")
 
 
 @cli.command("list")

@@ -1,11 +1,9 @@
 import sys
 from pathlib import Path
 
-from loguru import logger
 from tqdm import tqdm
 
-logger.remove()
-logger.add(sys.stderr, level="INFO")
+from plateaukit.logger import logger
 
 
 def geojson_to_gpkg(

@@ -7,16 +7,12 @@ from pathlib import Path
 
 import geojson
 from geojson import Feature, FeatureCollection, GeometryCollection, Polygon
-from loguru import logger
 from rich.progress import Progress
 
 from plateaukit import utils
+from plateaukit.logger import logger
 from plateaukit.parsers import PLATEAUCityGMLParser
 from plateaukit.utils import dict_key_to_camel_case
-
-# TODO: Should be controlled by -v option:
-logger.remove()
-logger.add(sys.stderr, level="INFO")
 
 
 def geojson_from_gml_single(
