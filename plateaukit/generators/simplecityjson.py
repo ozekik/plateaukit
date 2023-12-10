@@ -11,10 +11,10 @@ from bidict import bidict
 from loguru import logger
 from rich.progress import Progress
 
-from plateaukit import utils
+from plateaukit import parallel, utils
 from plateaukit.constants import nsmap
 from plateaukit.parsers import PLATEAUCityGMLParser
-from plateaukit.utils import parse_posList, dict_key_to_camel_case
+from plateaukit.utils import dict_key_to_camel_case, parse_posList
 
 
 class VerticesMap:
@@ -214,7 +214,7 @@ class CityJSONConverter:
 
         parser = PLATEAUCityGMLParser(target_epsg=self.target_epsg)
 
-        total = len(infiles)
+        total = len(infiles) + 1  # + 1 for geojson.dump
 
         for i, infile in enumerate(infiles):
             if task_id is not None and _progress is not None:
@@ -333,6 +333,11 @@ def cityson_from_gml_serial_with_quit(
     with open(outfile, "w") as f:
         json.dump(result, f, ensure_ascii=False, separators=(",", ":"))
 
+    total = len(infiles) + 1  # + 1 for geojson.dump
+
+    # Complete the progress bar
+    _progress[task_id] = {"progress": total, "total": total}
+
 
 def cityjson_from_citygml(
     infiles, outfile, split=1, precision=16, lod=[1], progress={}
@@ -346,9 +351,8 @@ def cityjson_from_citygml(
     infile_groups = utils.chunker(infiles, group_size)
 
     with Progress() as rprogress:
-        overall_task_id = rprogress.add_task(
-            progress.get("description", "Processing...")
-        )
+        overall_progress_description = progress.get("description", "Processing...")
+        overall_task_id = rprogress.add_task(overall_progress_description)
 
         with Manager() as manager:
             quit = manager.Event()
@@ -356,7 +360,7 @@ def cityjson_from_citygml(
 
             with concurrent.futures.ProcessPoolExecutor(max_workers=None) as pool:
                 futures = []
-
+                futures_status = dict()
                 for i, infile_group in enumerate(infile_groups):
                     stem = Path(outfile).stem
 
@@ -372,49 +376,66 @@ def cityjson_from_citygml(
 
                     logger.debug(f"group_outfile: {group_outfile}")
 
-                    futures.append(
-                        pool.submit(
-                            cityson_from_gml_serial_with_quit,
-                            infile_group,
-                            group_outfile,
-                            task_id=task_id,
-                            _progress=_progress,
-                            quit=quit,
-                            # **kwargs,
-                        )
+                    future = pool.submit(
+                        cityson_from_gml_serial_with_quit,
+                        infile_group,
+                        group_outfile,
+                        task_id=task_id,
+                        _progress=_progress,
+                        quit=quit,
+                        # **kwargs,
                     )
 
-                try:
-                    while (
-                        n_finished := sum([future.done() for future in futures])
-                    ) < len(futures):
-                        rprogress.update(
-                            overall_task_id,
-                            completed=n_finished,
-                            total=len(futures),
-                        )
-                        for task_id, status in _progress.items():
-                            latest = status["progress"]
-                            total = status["total"]
+                    futures.append(future)
+                    futures_status[future] = {
+                        "task_id": task_id,
+                        "counter": i + 1,
+                        "failed": False,
+                    }
 
-                            rprogress.update(
-                                task_id,
-                                completed=latest,
-                                total=total,
-                                visible=latest < total,
-                            )
+                parallel.wait_futures(
+                    futures,
+                    pool,
+                    futures_status,
+                    overall_progress={
+                        "task_id": overall_task_id,
+                        "description": overall_progress_description,
+                    },
+                    rich_progress=rprogress,
+                    shared_progress_status=_progress,
+                )
 
-                    # Finish up the overall progress bar
-                    rprogress.update(
-                        overall_task_id,
-                        completed=n_finished,
-                        total=len(futures),
-                        description="[green]Done",
-                    )
+                # try:
+                #     while (
+                #         n_finished := sum([future.done() for future in futures])
+                #     ) < len(futures):
+                #         rprogress.update(
+                #             overall_task_id,
+                #             completed=n_finished,
+                #             total=len(futures),
+                #         )
+                #         for task_id, status in _progress.items():
+                #             latest = status["progress"]
+                #             total = status["total"]
 
-                except KeyboardInterrupt:
-                    quit.set()
-                    pool.shutdown(wait=True, cancel_futures=True)
-                    # pool._processes.clear()
-                    # concurrent.futures.thread._threads_queues.clear()
-                    raise
+                #             rprogress.update(
+                #                 task_id,
+                #                 completed=latest,
+                #                 total=total,
+                #                 visible=latest < total,
+                #             )
+
+                #     # Finish up the overall progress bar
+                #     rprogress.update(
+                #         overall_task_id,
+                #         completed=n_finished,
+                #         total=len(futures),
+                #         description="[green]Done",
+                #     )
+
+                # except KeyboardInterrupt:
+                #     quit.set()
+                #     pool.shutdown(wait=True, cancel_futures=True)
+                #     # pool._processes.clear()
+                #     # concurrent.futures.thread._threads_queues.clear()
+                #     raise

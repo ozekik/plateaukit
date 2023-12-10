@@ -182,38 +182,37 @@ class Dataset:
             raise Exception("Missing object types")
 
         # NOTE: this is intentional but to be refactored in the future
-        with tempfile.TemporaryDirectory() as tdir:
-            config = Config()
-            record = config.datasets[self.dataset_id]
+        config = Config()
+        record = config.datasets[self.dataset_id]
 
-            if "citygml" not in record:
-                raise Exception("Missing CityGML data")
-            file_path = Path(record["citygml"])
+        if "citygml" not in record:
+            raise Exception("Missing CityGML data")
+        file_path = Path(record["citygml"])
 
-            infiles = []
+        infiles = []
 
-            # TODO: Refactor
-            for type in types:
-                # TODO: Fix
-                pat = re.compile(rf".*udx\/{type}\/.*\.gml$")
-                if zipfile.is_zipfile(file_path):
-                    with zipfile.ZipFile(file_path) as f:
-                        namelist = f.namelist()
-                        targets = list(filter(lambda x: pat.match(x), namelist))
-                        # print(targets, tdir)
-                        f.extractall(tdir, members=targets)
-                        # TODO: fix
-                        infiles += [
-                            str(Path(tdir, Path(file_path).stem, "udx", type, "*.gml"))
-                        ]
-                else:
-                    infiles += [str(Path(file_path, "udx", type, "*.gml"))]
+        # TODO: Refactor
+        for type in types:
+            # TODO: Fix
+            pat = re.compile(rf".*udx\/{type}\/.*\.gml$")
+            if zipfile.is_zipfile(file_path):
+                with zipfile.ZipFile(file_path) as f:
+                    namelist = f.namelist()
+                    targets = list(filter(lambda x: pat.match(x), namelist))
+                    # print(targets)
+                    infiles += [str(Path("/", target)) for target in targets]
+                    # f.extractall(tdir, members=targets)
+                    # infiles += [
+                    #     str(Path(tdir, Path(file_path).stem, "udx", type, "*.gml"))
+                    # ]
+            else:
+                infiles += [str(Path(file_path, "udx", type, "*.gml"))]
 
-            logger.debug([types, infiles, outfile])
+        logger.debug([types, infiles, outfile])
 
-            generators.geojson.geojson_from_citygml(
-                infiles, outfile, types=types, split=split, **kwargs
-            )
+        generators.geojson.geojson_from_citygml(
+            infiles, outfile, types=types, split=split, zipfile=file_path, **kwargs
+        )
 
     def to_cityjson(
         self,

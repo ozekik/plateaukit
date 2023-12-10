@@ -6,10 +6,11 @@ from os import PathLike
 from pathlib import Path
 
 import geojson
+from fs import open_fs
 from geojson import Feature, FeatureCollection, GeometryCollection, Polygon
 from rich.progress import Progress
 
-from plateaukit import utils
+from plateaukit import parallel, utils
 from plateaukit.logger import logger
 from plateaukit.parsers import PLATEAUCityGMLParser
 from plateaukit.utils import dict_key_to_camel_case
@@ -107,6 +108,7 @@ def geojson_from_gml_serial_with_quit(
     infiles,
     outfile,
     types=None,
+    zipfile=None,
     task_id=None,
     quit=None,
     _progress=None,
@@ -114,10 +116,7 @@ def geojson_from_gml_serial_with_quit(
 ):
     features = []
 
-    # with tqdm(
-    #     infiles, desc=f"#{group_num + 1:>3} ", position=group_num + 1, leave=False
-    # ) as pbar:
-    total = len(infiles)
+    total = len(infiles) + 1  # + 1 for geojson.dump
     for i, infile in enumerate(infiles):
         if task_id is not None and _progress is not None:
             _progress[task_id] = {"progress": i + 1, "total": total}
@@ -127,14 +126,19 @@ def geojson_from_gml_serial_with_quit(
 
         logger.debug(f"infile: {infile}")
 
-        with open(infile, "r") as f:
-            collection = geojson_from_gml_single(f, types=types, **kwargs)
-            # TODO: fix
-            try:
-                features.extend(collection["features"])
-            except Exception as err:
-                logger.debug(err)
-                pass
+        if zipfile:
+            with open_fs(f"zip://{zipfile}") as zip_fs:
+                with zip_fs.open(infile, "r") as f:
+                    collection = geojson_from_gml_single(f, types=types, **kwargs)
+        else:
+            with open(infile, "r") as f:
+                collection = geojson_from_gml_single(f, types=types, **kwargs)
+                # TODO: fix
+
+        try:
+            features.extend(collection["features"])
+        except Exception as err:
+            logger.debug(err)
 
     collection = FeatureCollection(features)
 
@@ -142,8 +146,13 @@ def geojson_from_gml_serial_with_quit(
     with open(outfile, "w") as f:
         geojson.dump(collection, f, ensure_ascii=False, separators=(",", ":"))
 
+    # Complete progress
+    _progress[task_id] = {"progress": total, "total": total}
 
-def _geojson_from_citygml(infiles, outfile, types=None, split=1, progress={}, **kwargs):
+
+def _geojson_from_citygml(
+    infiles, outfile, types=None, split=1, zipfile=None, progress={}, **kwargs
+):
     group_size = math.ceil(len(infiles) / split)
     logger.debug(f"GMLs per GeoJSON: {group_size}")
     infile_groups = utils.chunker(infiles, group_size)
@@ -158,6 +167,7 @@ def _geojson_from_citygml(infiles, outfile, types=None, split=1, progress={}, **
             _progress = manager.dict()
             with concurrent.futures.ProcessPoolExecutor(max_workers=None) as pool:
                 futures = []
+                futures_status = dict()
                 for i, infile_group in enumerate(infile_groups):
                     stem = Path(outfile).stem
                     if split > 1:
@@ -167,55 +177,35 @@ def _geojson_from_citygml(infiles, outfile, types=None, split=1, progress={}, **
                     task_id = rprogress.add_task(
                         f"[cyan]Progress #{i + 1}", total=len(infile_group)
                     )
-                    futures.append(
-                        pool.submit(
-                            geojson_from_gml_serial_with_quit,
-                            infile_group,
-                            group_outfile,
-                            types=types,
-                            task_id=task_id,
-                            _progress=_progress,
-                            quit=None,
-                            **kwargs,
-                        )
+                    future = pool.submit(
+                        geojson_from_gml_serial_with_quit,
+                        infile_group,
+                        group_outfile,
+                        types=types,
+                        zipfile=zipfile,
+                        task_id=task_id,
+                        _progress=_progress,
+                        quit=None,
+                        **kwargs,
                     )
-                # with tqdm(
-                #     concurrent.futures.as_completed(futures), total=len(futures)
-                # ) as pbar:
-                try:
-                    while (
-                        n_finished := sum([future.done() for future in futures])
-                    ) < len(futures):
-                        rprogress.update(
-                            overall_task_id,
-                            completed=n_finished,
-                            total=len(futures),
-                        )
-                        for task_id, status in _progress.items():
-                            latest = status["progress"]
-                            total = status["total"]
+                    futures.append(future)
+                    futures_status[future] = {
+                        "task_id": task_id,
+                        "counter": i + 1,
+                        "failed": False,
+                    }
 
-                            rprogress.update(
-                                task_id,
-                                completed=latest,
-                                total=total,
-                                visible=latest < total,
-                            )
-
-                    # Finish up the overall progress bar
-                    rprogress.update(
-                        overall_task_id,
-                        completed=n_finished,
-                        total=len(futures),
-                        description=f"{overall_progress_description} [green]Done",
-                    )
-
-                except KeyboardInterrupt:
-                    quit.set()
-                    pool.shutdown(wait=True, cancel_futures=True)
-                    # pool._processes.clear()
-                    # concurrent.futures.thread._threads_queues.clear()
-                    raise
+                parallel.wait_futures(
+                    futures,
+                    pool,
+                    futures_status,
+                    overall_progress={
+                        "task_id": overall_task_id,
+                        "description": overall_progress_description,
+                    },
+                    rich_progress=rprogress,
+                    shared_progress_status=_progress,
+                )
 
 
 def geojson_from_citygml(
@@ -223,17 +213,21 @@ def geojson_from_citygml(
     outfile: str | PathLike,
     types: list[str],
     split: int,
+    zipfile: str | PathLike | None = None,
     **kwargs,
 ):
     """Generate GeoJSON file(s) from CityGML files."""
 
     import glob
 
-    expanded_infiles = []
-    for infile in infiles:
-        expanded_infiles.extend(glob.glob(infile))
+    if zipfile is None:
+        expanded_infiles = []
+        for infile in infiles:
+            expanded_infiles.extend(glob.glob(infile))
 
-    expanded_infiles = sorted(expanded_infiles)
+        infiles = expanded_infiles
+
+    infiles = sorted(infiles)
 
     stem = Path(outfile).stem
 
@@ -246,19 +240,20 @@ def geojson_from_citygml(
         if type == "bldg":
             """建築物、建築物部分、建築物付属物、及びこれらの境界面"""
             _geojson_from_citygml(
-                expanded_infiles,
+                infiles,
                 type_outfile,
                 types=["Building"],
                 split=split,
                 lod=[0],
                 altitude=True,
                 allow_geometry_collection=False,
+                zipfile=zipfile,
                 **kwargs,
             )
         elif type == "brid":
             """橋梁"""
             _geojson_from_citygml(
-                expanded_infiles,
+                infiles,
                 type_outfile,
                 types=["Bridge"],
                 split=split,
@@ -266,12 +261,13 @@ def geojson_from_citygml(
                 attributes=[],
                 altitude=True,
                 allow_geometry_collection=True,
+                zipfile=zipfile,
                 **kwargs,
             )
         elif type == "tran":
             """道路"""
             _geojson_from_citygml(
-                expanded_infiles,
+                infiles,
                 type_outfile,
                 types=["Road"],
                 split=split,
@@ -279,6 +275,7 @@ def geojson_from_citygml(
                 attributes=[],
                 altitude=True,  # TODO: can be False
                 allow_geometry_collection=True,
+                zipfile=zipfile,
                 **kwargs,
             )
         elif type == "dem":
