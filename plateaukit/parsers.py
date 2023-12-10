@@ -61,6 +61,14 @@ class CityGML:
 
 
 class GeometryParser:
+    """A parser for CityGML geometries.
+
+    Attributes:
+        transformer: A pyproj.Transformer instance.
+    """
+
+    transformer: pyproj.Transformer
+
     def __init__(self, transformer: pyproj.Transformer = None):
         self.transformer = transformer
 
@@ -318,6 +326,8 @@ class CityGMLParser:
 
 class PLATEAUCityGMLParser(CityGMLParser):
     """A parser for PLATEAU CityGML."""
+
+    target_epsg: int
 
     def __init__(self, target_epsg=4326):
         self.target_epsg = target_epsg
