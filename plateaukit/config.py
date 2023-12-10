@@ -59,8 +59,8 @@ if pydantic_version.startswith("1"):
 
         def save(self):
             with open(self.path, "w") as f:
-                data = self.model_dump_json(
-                    indent=2, exclude_none=True, exclude=["path"]
+                data = self.json(
+                    indent=2, exclude_none=True, exclude={"path"}, ensure_ascii=False
                 )
                 # TODO: remove
                 # print("Saved:", data)
