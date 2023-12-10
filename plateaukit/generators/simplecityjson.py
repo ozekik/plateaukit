@@ -277,7 +277,7 @@ class CityJSONConverter:
                 obj_id = city_obj.id
 
                 yield obj_id, {
-                    "type": "Building",
+                    "type": city_obj.type,  # TODO: There is no Track type etc. in CityJSON
                     "attributes": dict_key_to_camel_case(city_obj.attributes),
                     # "attributes": {"建物ID": "13104-bldg-52530", "measuredHeight": 61.9},
                     # "children": [
