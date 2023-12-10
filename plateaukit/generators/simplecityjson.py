@@ -8,15 +8,14 @@ from pathlib import Path
 
 from bidict import bidict
 from fs import open_fs
-
-# from json_stream import streamable_dict
-from loguru import logger
 from rich.progress import Progress
 
 from plateaukit import parallel, utils
-from plateaukit.constants import nsmap
+from plateaukit.logger import logger
 from plateaukit.parsers import PLATEAUCityGMLParser
-from plateaukit.utils import dict_key_to_camel_case, parse_posList
+from plateaukit.utils import dict_key_to_camel_case
+
+# from json_stream import streamable_dict
 
 
 class VerticesMap:
@@ -107,6 +106,13 @@ def get_indexed_boundaries(geometry, vertices_map: VerticesMap):
             indexed_surface = []
             for region in surface:
                 # print("region", region)
+
+                # NOTE: Reverse the order of vertices; this is necessary for
+                # being rendered correctly in cityjson-threejs-loader
+                # for SOME datasets
+                # eg. plateau-13213-higashimurayama-shi-2020
+                ## region = region[::-1]
+
                 indexed_region = []
                 unclosed_region = region[:-1]
                 for point in unclosed_region:
@@ -231,7 +237,6 @@ class CityJSONConverter:
             if task_id is not None and _progress is not None:
                 _progress[task_id] = {"progress": i + 1, "total": total}
 
-            # print(infile)
             if zipfile is not None:
                 with open_fs(f"zip://{zipfile}") as zip_fs:
                     with zip_fs.open(infile, "r") as f:
@@ -319,6 +324,7 @@ def cityson_from_gml_serial_with_quit(
     _progress=None,
     **opts,
 ):
+    # TODO: logger does not work; must use QueueHandler
     logger.debug("[*] cityson_from_gml_serial_with_quit")
 
     target_epsg = 3857

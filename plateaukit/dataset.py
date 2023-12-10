@@ -268,8 +268,6 @@ class Dataset:
         #     infiles = sorted(infiles)
         infiles = sorted(infiles)
 
-        logger.debug(f"infiles: {infiles}")
-
         generators.simplecityjson.cityjson_from_citygml(
             infiles,
             outfile,
