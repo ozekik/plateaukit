@@ -437,6 +437,7 @@ def cityjson_from_citygml(
                 parallel.wait_futures(
                     futures,
                     pool,
+                    quit,
                     futures_status,
                     overall_progress={
                         "task_id": overall_task_id,
