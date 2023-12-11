@@ -6,6 +6,8 @@ from geopandas import GeoDataFrame
 class Building:
     """This class represents a building."""
 
+    gdf: GeoDataFrame
+
     def __init__(self, gdf: GeoDataFrame) -> None:
         """Initialize a building.
 
