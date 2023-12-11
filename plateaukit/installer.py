@@ -51,7 +51,7 @@ def install_dataset(
         # Abort if a dataset is already installed
         installed = is_dataset_installed(dataset_id, format)
         if not force and installed:
-            RuntimeError(
+            raise RuntimeError(
                 f'ERROR: Dataset "{dataset_id}" ({format}) is already installed'
             )
             return
