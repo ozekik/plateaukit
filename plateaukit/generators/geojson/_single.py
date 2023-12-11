@@ -8,15 +8,15 @@ from plateaukit.utils import dict_key_to_camel_case
 
 
 def _to_feature(feature_geometry, *, properties: dict[str, Any]):
-    properties = {}
-    # properties["id"] = obj.id
-    properties |= dict_key_to_camel_case(properties)
-    # if attributes:
-    #     properties |= attribute_values
+    _properties = {}
+
+    # _properties["id"] = ...?
+
+    _properties |= dict_key_to_camel_case(properties)
 
     feat = Feature(
         geometry=feature_geometry,
-        properties=properties,
+        properties=_properties,
     )
 
     return feat
@@ -31,6 +31,7 @@ def geojson_from_gml_single(
     codelist_file_map: dict[str, BinaryIO] | None = None,
     attributes: list[str] = ["measuredHeight"],
     allow_geometry_collection: bool = False,
+    include_type: bool = False,
 ):
     """Generate GeoJSON from a single CityGML file."""
 
@@ -83,18 +84,20 @@ def geojson_from_gml_single(
 
         polygons = [Polygon([base_polygon]) for base_polygon in base_polygons]
 
+        properties = dict(obj.attributes)
+        if include_type:
+            properties["type"] = obj.type
+
         if len(polygons) == 1:
-            feat = _to_feature(polygons[0], properties=obj.attributes)
+            feat = _to_feature(polygons[0], properties=properties)
             features.append(feat)
         else:
             if allow_geometry_collection:
-                feat = _to_feature(
-                    GeometryCollection(polygons), properties=obj.attributes
-                )
+                feat = _to_feature(GeometryCollection(polygons), properties=properties)
                 features.append(feat)
             else:
                 for polygon in polygons:
-                    feat = _to_feature(polygon, properties=obj.attributes)
+                    feat = _to_feature(polygon, properties=properties)
                     features.append(feat)
                 # raise AssertionError("No geometry")
 

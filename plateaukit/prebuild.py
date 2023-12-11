@@ -37,6 +37,7 @@ def prebuild(dataset_id: str) -> None:
                 dataset.to_geojson(
                     outfile,
                     types=types,
+                    include_type=True,
                     split=split,
                     progress={"description": "Generating GeoJSON files..."},
                 )

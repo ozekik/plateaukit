@@ -15,6 +15,7 @@ def geojson_from_gml_serial_with_quit(
     outfile,
     codelist_infiles=None,
     types=None,
+    include_type=False,
     zipfile=None,
     task_id=None,
     _quit=None,
@@ -57,12 +58,20 @@ def geojson_from_gml_serial_with_quit(
             with open_fs(f"zip://{zipfile}") as zip_fs:
                 with zip_fs.open(infile, "r") as f:
                     collection = geojson_from_gml_single(
-                        f, types=types, codelist_file_map=codelist_file_map, **kwargs
+                        f,
+                        types=types,
+                        codelist_file_map=codelist_file_map,
+                        include_type=include_type,
+                        **kwargs,
                     )
         else:
             with open(infile, "r") as f:
                 collection = geojson_from_gml_single(
-                    f, types=types, codelist_file_map=codelist_file_map, **kwargs
+                    f,
+                    types=types,
+                    codelist_file_map=codelist_file_map,
+                    include_type=include_type,
+                    **kwargs,
                 )
                 # TODO: fix
 

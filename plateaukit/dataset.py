@@ -161,7 +161,9 @@ class Dataset:
     def to_geojson(
         self,
         outfile: str | PathLike,
+        *,
         types: list[str] = ["bldg"],
+        include_type: bool = False,
         split: int = 1,
         **kwargs,
     ):
@@ -220,6 +222,7 @@ class Dataset:
             infiles,
             outfile,
             types=types,
+            include_type=include_type,
             split=split,
             zipfile=file_path,
             codelist_infiles=codelist_infiles,
