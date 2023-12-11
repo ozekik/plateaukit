@@ -1,3 +1,5 @@
+from typing import Any, BinaryIO
+
 from geojson import Feature, FeatureCollection, GeometryCollection, Polygon
 
 from plateaukit.logger import logger
@@ -5,16 +7,33 @@ from plateaukit.parsers import PLATEAUCityGMLParser
 from plateaukit.utils import dict_key_to_camel_case
 
 
+def _to_feature(feature_geometry, *, properties: dict[str, Any]):
+    properties = {}
+    # properties["id"] = obj.id
+    properties |= dict_key_to_camel_case(properties)
+    # if attributes:
+    #     properties |= attribute_values
+
+    feat = Feature(
+        geometry=feature_geometry,
+        properties=properties,
+    )
+
+    return feat
+
+
 def geojson_from_gml_single(
-    infile,
-    types=None,
-    target_epsg=4326,  # WGS
-    altitude=False,
-    lod=[0],
-    codelist_file_map=None,
-    attributes=["measuredHeight"],
-    allow_geometry_collection=False,
+    infile: BinaryIO,
+    types: list[str] | None = None,
+    target_epsg: int = 4326,  # WGS
+    altitude: bool = False,
+    lod: list[int] = [0],
+    codelist_file_map: dict[str, BinaryIO] | None = None,
+    attributes: list[str] = ["measuredHeight"],
+    allow_geometry_collection: bool = False,
 ):
+    """Generate GeoJSON from a single CityGML file."""
+
     # logger.debug("geojson_from_gml_single")
 
     parser = PLATEAUCityGMLParser(
@@ -35,7 +54,7 @@ def geojson_from_gml_single(
         if types and obj.type not in types:
             continue
 
-        polygons = []
+        geom = None
 
         if 0 in lod:
             geom = next(filter(lambda x: x["lod"] == 0, obj.geometry), None)
@@ -64,30 +83,18 @@ def geojson_from_gml_single(
 
         polygons = [Polygon([base_polygon]) for base_polygon in base_polygons]
 
-        def to_feature(feature_geometry):
-            properties = {}
-            # properties["id"] = obj.id
-            properties |= dict_key_to_camel_case(obj.attributes)
-            # if attributes:
-            #     properties |= attribute_values
-
-            feat = Feature(
-                geometry=feature_geometry,
-                properties=properties,
-            )
-
-            return feat
-
         if len(polygons) == 1:
-            feat = to_feature(polygons[0])
+            feat = _to_feature(polygons[0], properties=obj.attributes)
             features.append(feat)
         else:
             if allow_geometry_collection:
-                feat = to_feature(GeometryCollection(polygons))
+                feat = _to_feature(
+                    GeometryCollection(polygons), properties=obj.attributes
+                )
                 features.append(feat)
             else:
                 for polygon in polygons:
-                    feat = to_feature(polygon)
+                    feat = _to_feature(polygon, properties=obj.attributes)
                     features.append(feat)
                 # raise AssertionError("No geometry")
 
