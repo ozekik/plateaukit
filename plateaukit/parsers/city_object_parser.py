@@ -1,25 +1,10 @@
-# %%
-
 from dataclasses import dataclass
-from decimal import Decimal
-from typing import Any, BinaryIO, Self
+from typing import Any
 
 import pyproj
-from lxml import etree
 
 from plateaukit import extractors, utils
-
-nsmap = {
-    "gen": "http://www.opengis.net/citygml/generics/2.0",
-    "gml": "http://www.opengis.net/gml",
-    "core": "http://www.opengis.net/citygml/2.0",
-    "bldg": "http://www.opengis.net/citygml/building/2.0",
-    "tran": "http://www.opengis.net/citygml/transportation/2.0",
-    "brid": "http://www.opengis.net/citygml/bridge/2.0",
-    "xlink": "http://www.w3.org/1999/xlink",
-    "xAL": "urn:oasis:names:tc:ciq:xsdschema:xAL:2.0",
-    "uro": "https://www.geospatial.jp/iur/uro/2.0",
-}
+from plateaukit.parsers.constants import nsmap
 
 object_type_tags = {
     "Building": f"{{{nsmap['bldg']}}}Building",
@@ -53,38 +38,6 @@ class CityObject:
 @dataclass
 class Building(CityObject):
     address: dict | None = None
-
-
-@dataclass
-class CityGML:
-    city_objects: list[CityObject]
-
-
-class CodelistParser:
-    """A parser for codelists."""
-
-    def __init__(self):
-        pass
-
-    def parse(self, infile):
-        tree = etree.parse(infile)
-        root = tree.getroot()
-
-        result = dict()
-
-        for el in root.iterfind(".//gml:dictionaryEntry/gml:Definition", nsmap):
-            # print(el)
-
-            el_key = el.find("./gml:name", nsmap)
-            key = el_key.text if el_key is not None else None
-
-            el_value = el.find("./gml:description", nsmap)
-            value = el_value.text if el_value is not None else None
-
-            if key is not None:
-                result[key] = value
-
-        return result
 
 
 class GeometryParser:
@@ -413,65 +366,3 @@ class PLATEAUCityObjectParser(CityObjectParser):
             raise NotImplementedError(f"Unknown object type: {el.tag}")
 
         return obj
-
-
-class CityGMLParser:
-    pass
-
-
-class PLATEAUCityGMLParser(CityGMLParser):
-    """A parser for PLATEAU CityGML.
-
-    Attributes:
-        target_epsg: Target EPSG code.
-        codelist_file_map: A map from codelist path to file object.
-    """
-
-    target_epsg: int
-    codelist_file_map: dict[str, BinaryIO] | None = None
-
-    def __init__(self, target_epsg: int = 4326, codelist_file_map=None):
-        self.target_epsg = target_epsg
-        self.codelist_file_map = codelist_file_map
-
-    def parse(self, infile):
-        tree = etree.parse(infile)
-        root = tree.getroot()
-
-        src_epsg = extractors.utils.extract_epsg(tree)  # 6697
-
-        transformer = pyproj.Transformer.from_crs(src_epsg, self.target_epsg)
-
-        # Parse codelists
-        codelist_map = None
-
-        if self.codelist_file_map:
-            codelist_map = dict()
-
-            parser = CodelistParser()
-
-            for path, file_obj in self.codelist_file_map.items():
-                codelist = parser.parse(file_obj)
-                codelist_map[path] = codelist
-
-        # print(codelist_map, "   " * 200)
-
-        co_parser = PLATEAUCityObjectParser(
-            transformer=transformer, codelist_map=codelist_map
-        )
-
-        objects = []
-
-        for i, el in enumerate(root.iterfind(f"./core:cityObjectMember/*", nsmap)):
-            obj = co_parser.parse(el)
-
-            # print(obj)
-
-            objects.append(obj)
-
-        return CityGML(
-            city_objects=objects,
-        )
-
-    # def city_objects(self):
-    #     pass
