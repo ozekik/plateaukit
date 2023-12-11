@@ -256,7 +256,7 @@ def _generate_geojson(
         dataset.to_geojson(outfile, types=types, split=split, **kwargs)
     else:
         generators.geojson.geojson_from_citygml(
-            infiles, outfile, dataset_id, types=types, split=split, **kwargs
+            infiles, outfile, types=types, split=split, **kwargs
         )
 
 
