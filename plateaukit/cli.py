@@ -104,7 +104,9 @@ def list_cmd(local, all):
     default="citygml",
 )
 @click.option("--local", help="Install local file. (without copying)")
-@click.option("--prebuild", is_flag=True, default=False, help="Prebuild dataset.")
+@click.option(
+    "--prebuild", "run_prebuild", is_flag=True, default=False, help="Prebuild dataset."
+)
 @click.option("--force", is_flag=True, default=False, help="Force install.")
 @click.option("--download-only", is_flag=True, default=False)
 @click.option("-l", "--list", is_flag=True, help="List all latest available datasets.")
@@ -112,7 +114,7 @@ def list_cmd(local, all):
     "--list-all", is_flag=True, help="List all available datasets including old ones."
 )
 def install_cmd(
-    dataset_id, format, local, prebuild, force, download_only, list, list_all
+    dataset_id, format, local, run_prebuild, force, download_only, list, list_all
 ):
     """Download and install PLATEAU datasets."""
     if not dataset_id and not (list or list_all):
@@ -127,6 +129,9 @@ def install_cmd(
             install_dataset(dataset_id, format, local, force)
         except Exception as e:
             raise click.UsageError(str(e))
+
+    if run_prebuild:
+        prebuild(dataset_id)
 
 
 @cli.command("uninstall")
