@@ -68,7 +68,7 @@ class Area:
                     "GeoJsonLayer",
                     data=self.gdf,
                     filled=True,
-                    get_fill_color=[255, 255, 255],
+                    get_fill_color="fill_color || color || [255, 255, 255]",
                     # get_fill_color=[255, 255, 255, 240],
                     # get_line_color=[255, 255, 255],
                     extruded=True,
@@ -86,7 +86,7 @@ class Area:
             #     bearing=0,
             # ),
             tooltip={
-                "html": "<b>ID:</b> {id}",
+                "html": "<b>ID:</b> {buildingId}",
                 "style": {
                     "font-family": "sans-serif",
                     "font-size": "8px",
