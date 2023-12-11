@@ -1,16 +1,12 @@
-import glob
-import tempfile
-from pathlib import Path
-
 import click
 from prettytable import PrettyTable
-from rich.console import Console
 
 from plateaukit import generators
 from plateaukit.config import Config
 from plateaukit.dataset import load_dataset
 from plateaukit.installer import install_dataset, uninstall_dataset
 from plateaukit.logger import logger, set_log_level
+from plateaukit.prebuild import prebuild
 
 
 def list_available_datasets(is_all=False):
@@ -108,13 +104,16 @@ def list_cmd(local, all):
     default="citygml",
 )
 @click.option("--local", help="Install local file. (without copying)")
+@click.option("--prebuild", is_flag=True, default=False, help="Prebuild dataset.")
 @click.option("--force", is_flag=True, default=False, help="Force install.")
 @click.option("--download-only", is_flag=True, default=False)
 @click.option("-l", "--list", is_flag=True, help="List all latest available datasets.")
 @click.option(
     "--list-all", is_flag=True, help="List all available datasets including old ones."
 )
-def install_cmd(dataset_id, format, local, force, download_only, list, list_all):
+def install_cmd(
+    dataset_id, format, local, prebuild, force, download_only, list, list_all
+):
     """Download and install PLATEAU datasets."""
     if not dataset_id and not (list or list_all):
         raise click.UsageError("Missing argument/option: dataset_id or -l/--list")
@@ -171,55 +170,10 @@ def uninstall_cmd(dataset_id, formats, keep_files):
 
 @cli.command("prebuild")
 @click.argument("dataset_id", nargs=1, required=True)
-def prebuild(dataset_id):
+def prebuild_cmd(dataset_id):
     """Prebuild PLATEAU datasets."""
 
-    import geopandas as gpd
-    import pandas as pd
-    from pyogrio import read_dataframe, write_dataframe
-
-    console = Console()
-
-    if not dataset_id:
-        raise Exception("Missing argument: dataset_id")
-
-    config = Config()
-    record = config.datasets.get(dataset_id)
-    # print(dataset_id, record)
-
-    # TODO: All types
-    types = ["bldg"]
-
-    with tempfile.TemporaryDirectory() as tdir:
-        for type in types:
-            outfile = Path(tdir, f"{dataset_id}.{type}.geojson")
-
-            _generate_geojson(
-                None,
-                outfile,
-                dataset_id,
-                types=types,
-                split=10,
-                progress={"description": "Generating GeoJSON files..."},
-            )
-
-        with console.status("Writing GeoPackage...") as status:
-            df = gpd.GeoDataFrame()
-
-            for filename in glob.glob(str(Path(tdir, "*.geojson"))):
-                subdf = read_dataframe(filename)
-                df = pd.concat([df, subdf])
-
-            # click.echo("Writing GeoPackage...")
-            dest_path = Path(config.data_dir, f"{dataset_id}.gpkg")
-            write_dataframe(df, dest_path, driver="GPKG")
-
-            config.datasets[dataset_id]["gpkg"] = dest_path
-            config.save()
-
-        console.print("Writing GeoPackage... [green]Done")
-
-        # click.echo(f"\nCreated: {dest_path}")
+    prebuild(dataset_id)
 
 
 @cli.command("generate-cityjson")
@@ -282,22 +236,22 @@ def generate_cityjson(infiles, outfile, dataset_id, types, split):
 
 
 def _generate_geojson(
-    infiles, outfile, dataset: str, types: list[str], split: int, **kwargs
+    infiles, outfile, dataset_id: str, types: list[str], split: int, **kwargs
 ):
     """Generate GeoJSON from PLATEAU datasets."""
 
-    if not infiles and not dataset:
+    if not infiles and not dataset_id:
         raise click.UsageError("Missing argument: infiles or dataset")
 
-    if infiles and dataset:
+    if infiles and dataset_id:
         raise click.UsageError("Too many arguments")
 
-    if dataset:
-        dataset = load_dataset(dataset)
+    if dataset_id:
+        dataset = load_dataset(dataset_id)
         dataset.to_geojson(outfile, types=types, split=split, **kwargs)
     else:
         generators.geojson.geojson_from_citygml(
-            infiles, outfile, dataset, types=types, split=split, **kwargs
+            infiles, outfile, dataset_id, types=types, split=split, **kwargs
         )
 
 
