@@ -1,6 +1,8 @@
+import traceback
 from concurrent.futures import Future
 from multiprocessing import Event
 from multiprocessing.pool import Pool
+
 from plateaukit.logger import logger
 
 
@@ -21,7 +23,8 @@ def wait_futures(
             pool.shutdown(wait=True, cancel_futures=True)
             raise
         except Exception as e:
-            logger.error(e)
+            # logger.error(e)
+            traceback.print_exc()
             futures_status[future]["failed"] = True
 
     for future in futures:
