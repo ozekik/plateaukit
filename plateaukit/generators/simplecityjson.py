@@ -1,6 +1,8 @@
 import concurrent.futures
+import io
 import json
 import math
+import os.path
 from decimal import Decimal
 from multiprocessing import Manager
 from os import PathLike
@@ -12,7 +14,7 @@ from rich.progress import Progress
 
 from plateaukit import parallel, utils
 from plateaukit.logger import logger
-from plateaukit.parsers import PLATEAUCityGMLParser
+from plateaukit.parsers import CodelistParser, PLATEAUCityGMLParser
 from plateaukit.utils import dict_key_to_camel_case
 
 # from json_stream import streamable_dict
@@ -222,6 +224,7 @@ class CityJSONConverter:
         infiles: list[str],
         object_types: list[str] | None,
         lod: list[int],
+        codelist_infiles: list[str] | None = None,
         zipfile: str | PathLike | None = None,
         task_id=None,
         quit=None,
@@ -229,7 +232,27 @@ class CityJSONConverter:
     ):
         # vertices_map = VerticesMap()
 
-        parser = PLATEAUCityGMLParser(target_epsg=self.target_epsg)
+        # Load codelists
+        codelist_file_map = None
+
+        if codelist_infiles and infiles:
+            base_path = Path(infiles[0]).parent  # TODO: Fix this
+            codelist_file_map = dict()
+
+            for codelist_infile in codelist_infiles:
+                if zipfile is not None:
+                    with open_fs(f"zip://{zipfile}") as zip_fs:
+                        with zip_fs.open(codelist_infile, "rb") as f:
+                            relative_path = os.path.relpath(codelist_infile, base_path)
+                            codelist_file_map[relative_path] = io.BytesIO(f.read())
+                else:
+                    with open(codelist_infile, "rb") as f:
+                        relative_path = os.path.relpath(codelist_infile, base_path)
+                        codelist_file_map[relative_path] = io.BytesIO(f.read())
+
+        parser = PLATEAUCityGMLParser(
+            target_epsg=self.target_epsg, codelist_file_map=codelist_file_map
+        )
 
         total = len(infiles) + 1  # + 1 for geojson.dump
 
@@ -318,6 +341,7 @@ def cityson_from_gml_serial_with_quit(
     outfile,
     object_types,
     lod,
+    codelist_infiles,
     zipfile=None,
     task_id=None,
     quit=None,
@@ -337,6 +361,7 @@ def cityson_from_gml_serial_with_quit(
             infiles,
             object_types=object_types,
             lod=lod,
+            codelist_infiles=codelist_infiles,
             zipfile=zipfile,
             task_id=task_id,
             quit=quit,
@@ -384,6 +409,7 @@ def cityjson_from_citygml(
     precision=16,
     object_types=None,
     lod: list[int] = [1, 2],
+    codelist_infiles=None,
     progress={},
 ):
     logger.debug("[*] cityjson_from_citygml")
@@ -426,6 +452,7 @@ def cityjson_from_citygml(
                         group_outfile,
                         object_types=object_types,
                         lod=lod,
+                        codelist_infiles=codelist_infiles,
                         zipfile=zipfile,
                         task_id=task_id,
                         _progress=_progress,

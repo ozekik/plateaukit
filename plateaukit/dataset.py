@@ -208,8 +208,22 @@ class Dataset:
 
         logger.debug([types, infiles, outfile])
 
+        # Codelists
+        codelist_infiles = []
+        pat = re.compile(rf".*codelists\/.*\.xml$")
+        with zipfile.ZipFile(file_path) as f:
+            namelist = f.namelist()
+            codelist_infiles = list(filter(lambda x: pat.match(x), namelist))
+            codelist_infiles = [str(Path("/", target)) for target in codelist_infiles]
+
         generators.geojson.geojson_from_citygml(
-            infiles, outfile, types=types, split=split, zipfile=file_path, **kwargs
+            infiles,
+            outfile,
+            types=types,
+            split=split,
+            zipfile=file_path,
+            codelist_infiles=codelist_infiles,
+            **kwargs,
         )
 
     def to_cityjson(
@@ -268,12 +282,21 @@ class Dataset:
         #     infiles = sorted(infiles)
         infiles = sorted(infiles)
 
+        # Codelists
+        codelist_infiles = []
+        pat = re.compile(rf".*codelists\/.*\.xml$")
+        with zipfile.ZipFile(file_path) as f:
+            namelist = f.namelist()
+            codelist_infiles = list(filter(lambda x: pat.match(x), namelist))
+            codelist_infiles = [str(Path("/", target)) for target in codelist_infiles]
+
         generators.simplecityjson.cityjson_from_citygml(
             infiles,
             outfile,
             split=split,
             zipfile=file_path,
             lod=lod,
+            codelist_infiles=codelist_infiles,
         )
 
 

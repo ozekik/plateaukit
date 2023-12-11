@@ -1,6 +1,7 @@
 import concurrent.futures
+import io
 import math
-import sys
+import os.path
 from multiprocessing import Manager
 from os import PathLike
 from pathlib import Path
@@ -22,12 +23,15 @@ def geojson_from_gml_single(
     target_epsg=4326,  # WGS
     altitude=False,
     lod=[0],
+    codelist_file_map=None,
     attributes=["measuredHeight"],
     allow_geometry_collection=False,
 ):
     # logger.debug("geojson_from_gml_single")
 
-    parser = PLATEAUCityGMLParser(target_epsg=target_epsg)
+    parser = PLATEAUCityGMLParser(
+        target_epsg=target_epsg, codelist_file_map=codelist_file_map
+    )
     citygml = parser.parse(infile)
 
     # logger.debug(f"citygml: {citygml}")
@@ -107,6 +111,7 @@ def geojson_from_gml_single(
 def geojson_from_gml_serial_with_quit(
     infiles,
     outfile,
+    codelist_infiles,
     types=None,
     zipfile=None,
     task_id=None,
@@ -116,7 +121,26 @@ def geojson_from_gml_serial_with_quit(
 ):
     features = []
 
+    # Load codelists
+    codelist_file_map = None
+
+    if codelist_infiles and infiles:
+        base_path = Path(infiles[0]).parent  # TODO: Fix this
+        codelist_file_map = dict()
+
+        for codelist_infile in codelist_infiles:
+            if zipfile is not None:
+                with open_fs(f"zip://{zipfile}") as zip_fs:
+                    with zip_fs.open(codelist_infile, "rb") as f:
+                        relative_path = os.path.relpath(codelist_infile, base_path)
+                        codelist_file_map[relative_path] = io.BytesIO(f.read())
+            else:
+                with open(codelist_infile, "rb") as f:
+                    relative_path = os.path.relpath(codelist_infile, base_path)
+                    codelist_file_map[relative_path] = io.BytesIO(f.read())
+
     total = len(infiles) + 1  # + 1 for geojson.dump
+
     for i, infile in enumerate(infiles):
         if task_id is not None and _progress is not None:
             _progress[task_id] = {"progress": i + 1, "total": total}
@@ -129,10 +153,14 @@ def geojson_from_gml_serial_with_quit(
         if zipfile:
             with open_fs(f"zip://{zipfile}") as zip_fs:
                 with zip_fs.open(infile, "r") as f:
-                    collection = geojson_from_gml_single(f, types=types, **kwargs)
+                    collection = geojson_from_gml_single(
+                        f, types=types, codelist_file_map=codelist_file_map, **kwargs
+                    )
         else:
             with open(infile, "r") as f:
-                collection = geojson_from_gml_single(f, types=types, **kwargs)
+                collection = geojson_from_gml_single(
+                    f, types=types, codelist_file_map=codelist_file_map, **kwargs
+                )
                 # TODO: fix
 
         try:
@@ -151,7 +179,14 @@ def geojson_from_gml_serial_with_quit(
 
 
 def _geojson_from_citygml(
-    infiles, outfile, types=None, split=1, zipfile=None, progress={}, **kwargs
+    infiles,
+    outfile,
+    codelist_infiles,
+    types=None,
+    split=1,
+    zipfile=None,
+    progress={},
+    **kwargs,
 ):
     group_size = math.ceil(len(infiles) / split)
     logger.debug(f"GMLs per GeoJSON: {group_size}")
@@ -181,6 +216,7 @@ def _geojson_from_citygml(
                         geojson_from_gml_serial_with_quit,
                         infile_group,
                         group_outfile,
+                        codelist_infiles,
                         types=types,
                         zipfile=zipfile,
                         task_id=task_id,
@@ -215,6 +251,7 @@ def geojson_from_citygml(
     types: list[str],
     split: int,
     zipfile: str | PathLike | None = None,
+    codelist_infiles=None,
     **kwargs,
 ):
     """Generate GeoJSON file(s) from CityGML files."""
@@ -243,6 +280,7 @@ def geojson_from_citygml(
             _geojson_from_citygml(
                 infiles,
                 type_outfile,
+                codelist_infiles,
                 types=["Building"],
                 split=split,
                 lod=[0],
@@ -256,6 +294,7 @@ def geojson_from_citygml(
             _geojson_from_citygml(
                 infiles,
                 type_outfile,
+                codelist_infiles,
                 types=["Bridge"],
                 split=split,
                 lod=[2],
@@ -270,6 +309,7 @@ def geojson_from_citygml(
             _geojson_from_citygml(
                 infiles,
                 type_outfile,
+                codelist_infiles,
                 types=["Road"],
                 split=split,
                 lod=[1],

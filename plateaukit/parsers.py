@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from decimal import Decimal
-from typing import Any, Self
+from typing import Any, BinaryIO, Self
 
 import pyproj
 from lxml import etree
@@ -126,10 +126,19 @@ class GeometryParser:
 
 
 class CityObjectParser:
-    transformer: pyproj.Transformer
+    """A parser for CityGML objects.
 
-    def __init__(self, transformer: pyproj.Transformer = None):
+    Attributes:
+        transformer: A pyproj.Transformer instance.
+        codelist_map: A map from codelist path to corresponding dict.
+    """
+
+    transformer: pyproj.Transformer
+    codelist_map: dict[str, dict[str, str]] | None = {}
+
+    def __init__(self, transformer: pyproj.Transformer = None, codelist_map={}):
         self.transformer = transformer
+        self.codelist_map = codelist_map or {}
 
 
 class PLATEAUCityObjectParser(CityObjectParser):
@@ -163,6 +172,52 @@ class PLATEAUCityObjectParser(CityObjectParser):
         result = root.find(f"./bldg:measuredHeight", nsmap)
         value = result.text if result is not None else None
         value = float(value) if value is not None else None
+        return value
+
+    def _get_year_of_construction(self, root):
+        result = root.find(f"./bldg:yearOfConstruction", nsmap)
+        value = result.text if result is not None else None
+        value = int(value) if value is not None else None
+        return value
+
+    def _get_storeys_above_ground(self, root):
+        result = root.find(f"./bldg:storeysAboveGround", nsmap)
+        value = result.text if result is not None else None
+        value = int(value) if value is not None else None
+        return value
+
+    def _get_storeys_below_ground(self, root):
+        result = root.find(f"./bldg:storeysBelowGround", nsmap)
+        value = result.text if result is not None else None
+        value = int(value) if value is not None else None
+        return value
+
+    def __get_codespace_attribute(self, root, xpath) -> str | None:
+        el = root.find(xpath, nsmap)
+
+        if el is None:
+            return None
+
+        # Check if el has codeSpace attribute
+        if (code_space_path := el.get("codeSpace")) is not None:
+            code_dict = self.codelist_map.get(code_space_path, None)
+
+            if code_dict is None:
+                return None
+
+            key = el.text
+            value = code_dict.get(key, None)
+            return value
+
+        value = el.text if el is not None else None
+        return value
+
+    def _get_name(self, root):
+        value = self.__get_codespace_attribute(root, "./gml:name")
+        return value
+
+    def _get_usage(self, root):
+        value = self.__get_codespace_attribute(root, "./bldg:usage")
         return value
 
     def _get_address(self, root):
@@ -312,7 +367,20 @@ class PLATEAUCityObjectParser(CityObjectParser):
 
         if el.tag == object_type_tags["Building"]:
             attributes["building_id"] = self._get_building_id(el)
-            attributes["measured_height"] = self._get_measured_height(el)
+
+            # Optional attributes
+            optional_attributes = {
+                "measured_height": self._get_measured_height(el),
+                "year_of_construction": self._get_year_of_construction(el),
+                "storeys_above_ground": self._get_storeys_above_ground(el),
+                "storeys_below_ground": self._get_storeys_below_ground(el),
+                "name": self._get_name(el),
+                "usage": self._get_usage(el),
+            }
+            optional_attributes = {
+                k: v for k, v in optional_attributes.items() if v is not None
+            }
+            attributes.update(optional_attributes)
 
             geometry = self._get_geometry(el)
 
@@ -352,12 +420,19 @@ class CityGMLParser:
 
 
 class PLATEAUCityGMLParser(CityGMLParser):
-    """A parser for PLATEAU CityGML."""
+    """A parser for PLATEAU CityGML.
+
+    Attributes:
+        target_epsg: Target EPSG code.
+        codelist_file_map: A map from codelist path to file object.
+    """
 
     target_epsg: int
+    codelist_file_map: dict[str, BinaryIO] | None = None
 
-    def __init__(self, target_epsg=4326):
+    def __init__(self, target_epsg: int = 4326, codelist_file_map=None):
         self.target_epsg = target_epsg
+        self.codelist_file_map = codelist_file_map
 
     def parse(self, infile):
         tree = etree.parse(infile)
@@ -367,9 +442,25 @@ class PLATEAUCityGMLParser(CityGMLParser):
 
         transformer = pyproj.Transformer.from_crs(src_epsg, self.target_epsg)
 
-        objects = []
+        # Parse codelists
+        codelist_map = None
 
-        co_parser = PLATEAUCityObjectParser(transformer=transformer)
+        if self.codelist_file_map:
+            codelist_map = dict()
+
+            parser = CodelistParser()
+
+            for path, file_obj in self.codelist_file_map.items():
+                codelist = parser.parse(file_obj)
+                codelist_map[path] = codelist
+
+        # print(codelist_map, "   " * 200)
+
+        co_parser = PLATEAUCityObjectParser(
+            transformer=transformer, codelist_map=codelist_map
+        )
+
+        objects = []
 
         for i, el in enumerate(root.iterfind(f"./core:cityObjectMember/*", nsmap)):
             obj = co_parser.parse(el)
