@@ -9,17 +9,19 @@ from geojson import FeatureCollection
 from plateaukit.logger import logger
 from ._single import geojson_from_gml_single
 
+
 def geojson_from_gml_serial_with_quit(
     infiles,
     outfile,
-    codelist_infiles,
+    codelist_infiles=None,
     types=None,
     zipfile=None,
     task_id=None,
-    quit=None,
+    _quit=None,
     _progress=None,
     **kwargs,
 ):
+    """Generate GeoJSON from multiple CityGML files."""
     features = []
 
     # Load codelists
@@ -46,7 +48,7 @@ def geojson_from_gml_serial_with_quit(
         if task_id is not None and _progress is not None:
             _progress[task_id] = {"progress": i + 1, "total": total}
 
-        if quit and quit.is_set():
+        if _quit and _quit.is_set():
             return
 
         logger.debug(f"infile: {infile}")

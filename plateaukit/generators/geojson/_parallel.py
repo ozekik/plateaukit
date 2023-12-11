@@ -15,10 +15,11 @@ from ._serial import geojson_from_gml_serial_with_quit
 def _geojson_from_citygml(
     infiles,
     outfile,
+    *,
     codelist_infiles,
-    types=None,
-    split=1,
-    zipfile=None,
+    types,
+    split,
+    zipfile,
     progress={},
     **kwargs,
 ):
@@ -32,7 +33,7 @@ def _geojson_from_citygml(
         overall_task_id = rprogress.add_task(description=overall_progress_description)
 
         with Manager() as manager:
-            quit = manager.Event()
+            _quit = manager.Event()
             _progress = manager.dict()
             with concurrent.futures.ProcessPoolExecutor(max_workers=None) as pool:
                 futures = []
@@ -50,12 +51,12 @@ def _geojson_from_citygml(
                         geojson_from_gml_serial_with_quit,
                         infile_group,
                         group_outfile,
-                        codelist_infiles,
+                        codelist_infiles=codelist_infiles,
                         types=types,
                         zipfile=zipfile,
                         task_id=task_id,
                         _progress=_progress,
-                        quit=None,
+                        _quit=_quit,
                         **kwargs,
                     )
                     futures.append(future)
@@ -68,7 +69,7 @@ def _geojson_from_citygml(
                 parallel.wait_futures(
                     futures,
                     pool,
-                    quit,
+                    _quit,
                     futures_status,
                     overall_progress={
                         "task_id": overall_task_id,
@@ -114,7 +115,7 @@ def geojson_from_citygml(
             _geojson_from_citygml(
                 infiles,
                 type_outfile,
-                codelist_infiles,
+                codelist_infiles=codelist_infiles,
                 types=["Building"],
                 split=split,
                 lod=[0],
@@ -128,7 +129,7 @@ def geojson_from_citygml(
             _geojson_from_citygml(
                 infiles,
                 type_outfile,
-                codelist_infiles,
+                codelist_infiles=codelist_infiles,
                 types=["Bridge"],
                 split=split,
                 lod=[2],
@@ -143,7 +144,7 @@ def geojson_from_citygml(
             _geojson_from_citygml(
                 infiles,
                 type_outfile,
-                codelist_infiles,
+                codelist_infiles=codelist_infiles,
                 types=["Road"],
                 split=split,
                 lod=[1],
