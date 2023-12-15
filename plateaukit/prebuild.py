@@ -8,7 +8,7 @@ from plateaukit.config import Config
 from plateaukit.dataset import load_dataset
 
 
-def prebuild(dataset_id: str) -> None:
+def prebuild(dataset_id: str, *, split: int = 10) -> None:
     """Prebuild PLATEAU datasets."""
 
     import geopandas as gpd
@@ -26,7 +26,6 @@ def prebuild(dataset_id: str) -> None:
 
     # TODO: All types
     types = ["bldg"]
-    split = 10
 
     with tempfile.TemporaryDirectory() as tdir:
         for type in types:

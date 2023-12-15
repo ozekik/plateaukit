@@ -175,10 +175,13 @@ def uninstall_cmd(dataset_id, formats, keep_files):
 
 @cli.command("prebuild")
 @click.argument("dataset_id", nargs=1, required=True)
-def prebuild_cmd(dataset_id):
+@click.option(
+    "--split", default=10, help="Split the output into specified number of files"
+)
+def prebuild_cmd(dataset_id, split):
     """Prebuild PLATEAU datasets."""
 
-    prebuild(dataset_id)
+    prebuild(dataset_id, split=split)
 
 
 @cli.command("generate-cityjson")
