@@ -60,6 +60,12 @@ def prebuild(dataset_id: str) -> None:
                 subdf = read_dataframe(filename)
                 df = pd.concat([df, subdf])
 
+            # TODO: Use more accurate CRS
+            centroid = df.to_crs(3857).centroid.to_crs(4326)
+
+            df["longitude"] = centroid.x
+            df["latitude"] = centroid.y
+
             dest_path = Path(config.data_dir, f"{dataset_id}.gpkg")
             write_dataframe(df, dest_path, driver="GPKG")
 
