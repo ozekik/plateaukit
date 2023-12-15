@@ -199,7 +199,9 @@ def prebuild_cmd(dataset_id):
 @click.option(
     "--split", default=1, help="Split the output into specified number of files"
 )
-@click.option("--ground", is_flag=True, default=False)
+@click.option(
+    "--ground", is_flag=True, default=False, help="Shift objects to the ground level"
+)
 # # @click.option(
 # #     "--precision",
 # #     help="Number of decimal places to keep for geometry vertices (default: 16).",
