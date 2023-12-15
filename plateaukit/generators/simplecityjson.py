@@ -80,11 +80,64 @@ def get_indexed_lod1_solid(city_obj, vertices_map: VerticesMap):
     return indexed_surfaces, vertices_map
 
 
-def get_indexed_boundaries(geometry, vertices_map: VerticesMap):
+def _get_nesting_level(l):
+    if isinstance(l, list):
+        return 1 + max([_get_nesting_level(x) for x in l])
+    else:
+        return 0
+
+
+def _shift_to_ground(boundaries: list):
+    level = _get_nesting_level(boundaries)
+
+    # Nest level 3
+    if level == 3:
+        min_z = min(
+            [
+                min([min([point[2] for point in region]) for region in surface])
+                for surface in boundaries
+            ]
+        )
+        boundaries = [
+            [
+                [(point[0], point[1], point[2] - min_z) for point in region]
+                for region in surface
+            ]
+            for surface in boundaries
+        ]
+    # Nest level 4
+    elif level == 4:
+        min_z = min(
+            [
+                min(
+                    [
+                        min([min([point[2] for point in shell]) for shell in solid])
+                        for solid in surface
+                    ]
+                )
+                for surface in boundaries
+            ]
+        )
+        boundaries = [
+            [
+                [
+                    [(point[0], point[1], point[2] - min_z) for point in shell]
+                    for shell in solid
+                ]
+                for solid in surface
+            ]
+            for surface in boundaries
+        ]
+
+    return boundaries
+
+
+def get_indexed_boundaries(geometry, vertices_map: VerticesMap, ground=False):
     # TODO: handling composite surface seriously
     # print("get_indexed_boundaries")
     # print("type", geometry["type"])
 
+    boundaries = geometry["boundaries"]
     indexed_boundaries = []
 
     if geometry["type"] == "MultiPoint":
@@ -103,7 +156,9 @@ def get_indexed_boundaries(geometry, vertices_map: VerticesMap):
         return indexed_boundaries, vertices_map
 
     elif geometry["type"] in ["MultiSurface", "CompositeSurface"]:
-        for surface in geometry["boundaries"]:
+        if ground:
+            boundaries = _shift_to_ground(geometry["boundaries"])
+        for surface in boundaries:
             # print("surface", surface)
             indexed_surface = []
             for region in surface:
@@ -126,7 +181,9 @@ def get_indexed_boundaries(geometry, vertices_map: VerticesMap):
         return indexed_boundaries, vertices_map
 
     elif geometry["type"] == "Solid":
-        for shell in geometry["boundaries"]:
+        if ground:
+            boundaries = _shift_to_ground(geometry["boundaries"])
+        for shell in boundaries:
             # print("shell", shell)
             indexed_shell = []
             for surface in shell:
@@ -222,8 +279,10 @@ class CityJSONConverter:
     def generate_city_object(
         self,
         infiles: list[str],
+        *,
         object_types: list[str] | None,
         lod: list[int],
+        ground: bool = False,
         codelist_infiles: list[str] | None = None,
         zipfile: str | PathLike | None = None,
         task_id=None,
@@ -287,7 +346,9 @@ class CityJSONConverter:
 
                     # print("geom", geom)
                     boundaries, vertices_map = get_indexed_boundaries(
-                        geom, self.vertices_map
+                        geom,
+                        self.vertices_map,
+                        ground=ground,
                     )
 
                     indexed_geom = dict(
@@ -341,6 +402,7 @@ def cityson_from_gml_serial_with_quit(
     outfile,
     object_types,
     lod,
+    ground,
     codelist_infiles,
     zipfile=None,
     task_id=None,
@@ -351,8 +413,10 @@ def cityson_from_gml_serial_with_quit(
     # TODO: logger does not work; must use QueueHandler
     logger.debug("[*] cityson_from_gml_serial_with_quit")
 
-    target_epsg = 3857
-    # target_epsg = 4326
+    target_epsg = 3857  # Web Mercator
+    # target_epsg = 4326  # WGS84
+    # target_epsg = 32654  # WGS84 / UTM zone 54N
+    # target_epsg = 6677  # JGD2011 / Japan Plane Rectangular CS IV
 
     converter = CityJSONConverter(target_epsg=target_epsg)
 
@@ -361,6 +425,7 @@ def cityson_from_gml_serial_with_quit(
             infiles,
             object_types=object_types,
             lod=lod,
+            ground=ground,
             codelist_infiles=codelist_infiles,
             zipfile=zipfile,
             task_id=task_id,
@@ -404,11 +469,13 @@ def cityson_from_gml_serial_with_quit(
 def cityjson_from_citygml(
     infiles,
     outfile,
+    *,
     split: int = 1,
     zipfile=None,
     precision=16,
     object_types=None,
     lod: list[int] = [1, 2],
+    ground: bool = False,
     codelist_infiles=None,
     progress={},
 ):
@@ -452,6 +519,7 @@ def cityjson_from_citygml(
                         group_outfile,
                         object_types=object_types,
                         lod=lod,
+                        ground=ground,
                         codelist_infiles=codelist_infiles,
                         zipfile=zipfile,
                         task_id=task_id,

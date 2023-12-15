@@ -237,6 +237,7 @@ class Dataset:
         types: list[str] = ["bldg"],
         object_types=None,  # TODO: Handle this
         lod=[1, 2],
+        ground: bool = False,
         split: int = 1,
         **kwargs,
     ):
@@ -301,6 +302,7 @@ class Dataset:
             split=split,
             zipfile=file_path,
             lod=lod,
+            ground=ground,
             codelist_infiles=codelist_infiles,
         )
 

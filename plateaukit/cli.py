@@ -199,11 +199,12 @@ def prebuild_cmd(dataset_id):
 @click.option(
     "--split", default=1, help="Split the output into specified number of files"
 )
+@click.option("--ground", is_flag=True, default=False)
 # # @click.option(
 # #     "--precision",
 # #     help="Number of decimal places to keep for geometry vertices (default: 16).",
 # )
-def generate_cityjson(infiles, outfile, dataset_id, types, split):
+def generate_cityjson(infiles, outfile, dataset_id, types, split, ground):
     """Generate CityJSON from PLATEAU datasets."""
 
     if not infiles and not dataset_id:
@@ -234,7 +235,7 @@ def generate_cityjson(infiles, outfile, dataset_id, types, split):
 
     if dataset_id:
         dataset = load_dataset(dataset_id)
-        dataset.to_cityjson(outfile, types=types, split=split, **params)
+        dataset.to_cityjson(outfile, types=types, split=split, ground=ground, **params)
 
     else:
         generators.simplecityjson.cityjson_from_citygml(infiles, outfile, **params)
