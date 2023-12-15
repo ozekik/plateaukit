@@ -6,6 +6,9 @@ import pyproj
 from plateaukit import extractors, utils
 from plateaukit.parsers.constants import nsmap
 
+MAPLIBRE_SCALE_FACTOR = 10000000
+MERCATOR_HALF_WORLD_LENGTH = 20037508.342789243906736373901367187500
+
 object_type_tags = {
     "Building": f"{{{nsmap['bldg']}}}Building",
     "Road": f"{{{nsmap['tran']}}}Road",
@@ -45,12 +48,43 @@ class GeometryParser:
 
     Attributes:
         transformer: A pyproj.Transformer instance.
+        maplibre: Whether to use MapLibre scale factor.
     """
 
     transformer: pyproj.Transformer
+    maplibre: bool = False
 
-    def __init__(self, transformer: pyproj.Transformer = None):
+    def __init__(self, transformer: pyproj.Transformer = None, maplibre: bool = False):
         self.transformer = transformer
+        self.maplibre = maplibre
+
+    def _transform(self, vertices, scale=(1, 1, 1), translate=(0, 0, 0)):
+        # TODO: numpy
+
+        transformed = []
+
+        for vertex in vertices:
+            x, y, z = vertex
+            nx = (x * scale[0]) + translate[0]
+            ny = (y * scale[1]) + translate[1]
+            nz = (z * scale[2]) + translate[2]
+            transformed.append((nx, ny, nz))
+
+        return transformed
+
+    def _adjust_mercator_to_maplibre(self, vertices):
+        transformed = self._transform(
+            vertices,
+            scale=[-(0.5 * MAPLIBRE_SCALE_FACTOR) / MERCATOR_HALF_WORLD_LENGTH] * 2
+            + [0.5 * MAPLIBRE_SCALE_FACTOR / MERCATOR_HALF_WORLD_LENGTH],
+            translate=(
+                0.5 * MAPLIBRE_SCALE_FACTOR,
+                0.5 * MAPLIBRE_SCALE_FACTOR,
+                0,
+            ),
+        )
+
+        return transformed
 
     def extract_chunked_poslists(self, root):
         path = "/".join(
@@ -65,13 +99,19 @@ class GeometryParser:
         # print(path)
         results = root.findall(path, nsmap)
 
-        # parsed = [list(map(Decimal, result.text.split(" "))) for result in results]
         parsed = []
+
         for result in results:
             poslist = list(map(float, result.text.split(" ")))
+
             chunked = list(utils.chunker(poslist, 3))
-            if self.transformer:
+
+            if self.maplibre and self.transformer:
                 chunked = list(self.transformer.itransform(chunked))
+                chunked = self._adjust_mercator_to_maplibre(chunked)
+            elif self.transformer:
+                chunked = list(self.transformer.itransform(chunked))
+
             surface = [chunked]
             parsed.append(surface)
 

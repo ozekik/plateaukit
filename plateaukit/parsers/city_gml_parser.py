@@ -42,6 +42,7 @@ class PLATEAUCityGMLParser(CityGMLParser):
 
         src_epsg = extractors.utils.extract_epsg(tree)  # 6697
 
+        # TODO: Accept options like always_xy
         transformer = pyproj.Transformer.from_crs(src_epsg, self.target_epsg)
 
         # Parse codelists
