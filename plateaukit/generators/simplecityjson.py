@@ -14,7 +14,7 @@ from rich.progress import Progress
 
 from plateaukit import parallel, utils
 from plateaukit.logger import logger
-from plateaukit.parsers import CodelistParser, PLATEAUCityGMLParser
+from plateaukit.parsers import PLATEAUCityGMLParser
 from plateaukit.utils import dict_key_to_camel_case
 
 # from json_stream import streamable_dict
@@ -46,38 +46,6 @@ class VerticesMap:
 
     def __contains__(self, vertex):
         return vertex in self.index_by_vertex
-
-
-def get_indexed_lod1_solid(city_obj, vertices_map: VerticesMap):
-    # TODO: handling composite surface seriously
-    # print("get_indexed_lod1_solid")
-
-    geom = next(
-        filter(lambda x: x["lod"] == 1 and x["type"] == "Solid", city_obj.geometry),
-        None,
-    )
-
-    # print("geom", geom)
-
-    indexed_surfaces = []
-
-    exterior = geom["boundaries"][0]
-
-    # print("exterior", exterior)
-
-    for surface in exterior:
-        unclosed_surface = surface[:-1]
-        # print("unclosed_surface", unclosed_surface)
-        single_exterior_surface_exterior = []
-
-        for chunk in unclosed_surface:
-            index = vertices_map.to_index(chunk)
-            single_exterior_surface_exterior.append(index)
-
-        indexed_surface = [single_exterior_surface_exterior]
-        indexed_surfaces.append(indexed_surface)
-
-    return indexed_surfaces, vertices_map
 
 
 def _get_nesting_level(l):
@@ -220,53 +188,6 @@ def get_indexed_boundaries(geometry, vertices_map: VerticesMap, ground=False):
     #     indexed_surfaces.append(indexed_surface)
 
     # return indexed_surfaces, vertices_map
-
-
-# def parse_lod2solid(element_cityObject, vertices_map: VerticesMap):
-#     # TODO: handling composite surface seriously
-#     elem_compositeSurface = element_cityObject.find(
-#         f"./{nsmap['bldg']}lod2Solid/{nsmap['gml']}Solid/{nsmap['gml']}exterior/{nsmap['gml']}CompositeSurface"
-#     )
-#     # print(elem_compositeSurface)
-
-#     elems_surfaceMember = elem_compositeSurface.iterfind(
-#         f".//{nsmap['gml']}surfaceMember"
-#     )
-
-#     hrefs = []
-#     for elem in elems_surfaceMember:
-#         # print(elem)
-#         href = elem.get(f"{nsmap['xlink']}href")
-#         # Remove hash
-#         href = href[1:]
-#         # print(href)
-#         hrefs.append(href)
-
-#     elems_member = []
-
-#     # Collect linked elements
-#     for href in hrefs:
-#         # NOTE: this may not be guaranteed
-#         elem = element_cityObject.find(f".//*[@{nsmap['gml']}id='{href}']")
-#         # print(elem)
-#         elems_member.append(elem)
-
-#     exterior_surfaces = []
-
-#     for elem in elems_member:
-#         els_list = elem.iterfind(f".//{nsmap['gml']}posList")
-#         for el in els_list:
-#             text = el.text
-#             chunks = parse_posList(text)
-#             logger.debug(chunks)
-#             single_exterior_surface_exterior = []
-#             for chunk in chunks:
-#                 index = vertices_map.to_index(chunk)
-#                 single_exterior_surface_exterior.append(index)
-#             single_exterior_surface = [single_exterior_surface_exterior]
-#             exterior_surfaces.append(single_exterior_surface)
-
-#     return exterior_surfaces, vertices_map
 
 
 class CityJSONConverter:
@@ -547,38 +468,3 @@ def cityjson_from_citygml(
                     rich_progress=rprogress,
                     shared_progress_status=_progress,
                 )
-
-                # try:
-                #     while (
-                #         n_finished := sum([future.done() for future in futures])
-                #     ) < len(futures):
-                #         rprogress.update(
-                #             overall_task_id,
-                #             completed=n_finished,
-                #             total=len(futures),
-                #         )
-                #         for task_id, status in _progress.items():
-                #             latest = status["progress"]
-                #             total = status["total"]
-
-                #             rprogress.update(
-                #                 task_id,
-                #                 completed=latest,
-                #                 total=total,
-                #                 visible=latest < total,
-                #             )
-
-                #     # Finish up the overall progress bar
-                #     rprogress.update(
-                #         overall_task_id,
-                #         completed=n_finished,
-                #         total=len(futures),
-                #         description="[green]Done",
-                #     )
-
-                # except KeyboardInterrupt:
-                #     quit.set()
-                #     pool.shutdown(wait=True, cancel_futures=True)
-                #     # pool._processes.clear()
-                #     # concurrent.futures.thread._threads_queues.clear()
-                #     raise
