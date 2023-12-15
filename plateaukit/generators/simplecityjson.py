@@ -215,16 +215,18 @@ class CityJSONConverter:
         # Load codelists
         codelist_file_map = None
 
+        if zipfile is not None:
+            zip_fs = open_fs(f"zip://{zipfile}")
+
         if codelist_infiles and infiles:
             base_path = Path(infiles[0]).parent  # TODO: Fix this
             codelist_file_map = dict()
 
             for codelist_infile in codelist_infiles:
                 if zipfile is not None:
-                    with open_fs(f"zip://{zipfile}") as zip_fs:
-                        with zip_fs.open(codelist_infile, "rb") as f:
-                            relative_path = os.path.relpath(codelist_infile, base_path)
-                            codelist_file_map[relative_path] = io.BytesIO(f.read())
+                    with zip_fs.open(codelist_infile, "rb") as f:
+                        relative_path = os.path.relpath(codelist_infile, base_path)
+                        codelist_file_map[relative_path] = io.BytesIO(f.read())
                 else:
                     with open(codelist_infile, "rb") as f:
                         relative_path = os.path.relpath(codelist_infile, base_path)
@@ -241,9 +243,8 @@ class CityJSONConverter:
                 _progress[task_id] = {"progress": i + 1, "total": total}
 
             if zipfile is not None:
-                with open_fs(f"zip://{zipfile}") as zip_fs:
-                    with zip_fs.open(infile, "r") as f:
-                        citygml = parser.parse(f)
+                with zip_fs.open(infile, "r") as f:
+                    citygml = parser.parse(f)
             else:
                 with open(infile, "r") as f:
                     # print(f"infile: {infile}")
@@ -316,6 +317,9 @@ class CityJSONConverter:
                     # ],
                     # "address": [{"Country": "日本", "Locality": "東京都新宿区西新宿一丁目"}],
                 }
+
+        if zipfile is not None:
+            zip_fs.close()
 
 
 def cityson_from_gml_serial_with_quit(

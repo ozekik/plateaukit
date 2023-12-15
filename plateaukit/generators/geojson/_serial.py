@@ -28,16 +28,18 @@ def geojson_from_gml_serial_with_quit(
     # Load codelists
     codelist_file_map = None
 
+    if zipfile is not None:
+        zip_fs = open_fs(f"zip://{zipfile}")
+
     if codelist_infiles and infiles:
         base_path = Path(infiles[0]).parent  # TODO: Fix this
         codelist_file_map = dict()
 
         for codelist_infile in codelist_infiles:
             if zipfile is not None:
-                with open_fs(f"zip://{zipfile}") as zip_fs:
-                    with zip_fs.open(codelist_infile, "rb") as f:
-                        relative_path = os.path.relpath(codelist_infile, base_path)
-                        codelist_file_map[relative_path] = io.BytesIO(f.read())
+                with zip_fs.openbin(codelist_infile, "r") as f:
+                    relative_path = os.path.relpath(codelist_infile, base_path)
+                    codelist_file_map[relative_path] = io.BytesIO(f.read())
             else:
                 with open(codelist_infile, "rb") as f:
                     relative_path = os.path.relpath(codelist_infile, base_path)
@@ -55,15 +57,14 @@ def geojson_from_gml_serial_with_quit(
         logger.debug(f"infile: {infile}")
 
         if zipfile:
-            with open_fs(f"zip://{zipfile}") as zip_fs:
-                with zip_fs.open(infile, "r") as f:
-                    collection = geojson_from_gml_single(
-                        f,
-                        types=types,
-                        codelist_file_map=codelist_file_map,
-                        include_type=include_type,
-                        **kwargs,
-                    )
+            with zip_fs.openbin(infile, "r") as f:
+                collection = geojson_from_gml_single(
+                    f,
+                    types=types,
+                    codelist_file_map=codelist_file_map,
+                    include_type=include_type,
+                    **kwargs,
+                )
         else:
             with open(infile, "r") as f:
                 collection = geojson_from_gml_single(
@@ -79,6 +80,9 @@ def geojson_from_gml_serial_with_quit(
             features.extend(collection["features"])
         except Exception as err:
             logger.debug(err)
+
+    if zipfile:
+        zip_fs.close()
 
     collection = FeatureCollection(features)
 
