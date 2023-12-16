@@ -142,23 +142,16 @@ plateaukit list
 
 都市モデルをダウンロード・追加するには、都市モデルのIDを指定して `plateaukit install` コマンドを実行します。
 
-```bash title="例: 東京都23区のデータをダウンロードして追加"
-plateaukit install plateau-tokyo23ku
+```bash title="例: 神奈川県箱根町のデータをダウンロードして追加"
+plateaukit install plateau-14382-hakone-machi-2020
 ```
 
 <div class="result" markdown>
 
 ```bash title="実行例"
-$ plateaukit install plateau-tokyo23ku
-Downloading as: /.../plateaukit/13100_tokyo23-ku_2020_citygml_3_2_op.zip
-100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4.18G/4.18G [03:18<00:00, 14.1MB/s]
-Saved: {
-  "data": {
-    "plateau-tokyo23ku": {
-      "citygml": "/.../plateaukit/13100_tokyo23-ku_2020_citygml_3_2_op.zip"
-    }
-  }
-}
+$ plateaukit install plateau-14382-hakone-machi-2020
+Download file as: .../plateaukit/data/14382_hakone-machi_2020_citygml_5_op.zip
+Downloading... ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 127.4/127.4 MB 0:00:00
 ```
 
 </div>
@@ -166,7 +159,7 @@ Saved: {
 または、事前にデータをダウンロードしておき、`--local` オプションにファイルを指定して追加することもできます。
 
 ```bash title="例: 事前にダウンロード済みの東京都23区のデータを追加 (CityGML)"
-plateaukit install plateau-tokyo23ku --local ./13100_tokyo23-ku_2020_citygml_3_2_op/ --format citygml
+plateaukit install plateau-tokyo23ku-2022 --local ./13100_tokyo23-ku_2022_citygml_1_2_op/ --format citygml
 ```
 
 !!! note ""
@@ -192,5 +185,5 @@ plateaukit list --local
 追加済みの都市モデルのデータを削除するには、`plateaukit uninstall` コマンドを使用します。
 
 ```bash
-plateaukit uninstall plateau-tokyo23ku # 東京都23区のデータを削除
+plateaukit uninstall plateau-tokyo23ku-2022 # 東京都23区のデータを削除
 ```
