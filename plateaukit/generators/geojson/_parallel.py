@@ -21,6 +21,7 @@ def _geojson_from_citygml(
     split,
     zipfile,
     progress={},
+    simple_output=False,
     **kwargs,
 ):
     group_size = math.ceil(len(infiles) / split)
@@ -44,9 +45,12 @@ def _geojson_from_citygml(
                         group_outfile = Path(outfile).with_stem(f"{stem}.{i + 1}")
                     else:
                         group_outfile = outfile
-                    task_id = rprogress.add_task(
-                        f"[cyan]Progress #{i + 1}", total=len(infile_group)
-                    )
+                    if simple_output:
+                        task_id = None
+                    else:
+                        task_id = rprogress.add_task(
+                            f"[cyan]Progress #{i + 1}", total=len(infile_group)
+                        )
                     future = pool.submit(
                         geojson_from_gml_serial_with_quit,
                         infile_group,

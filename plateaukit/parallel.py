@@ -37,12 +37,13 @@ def wait_futures(
                 latest = status["progress"]
                 total = status["total"]
 
-                rich_progress.update(
-                    task_id,
-                    completed=latest,
-                    total=total,
-                    visible=latest < total,
-                )
+                if task_id:
+                    rich_progress.update(
+                        task_id,
+                        completed=latest,
+                        total=total,
+                        visible=latest < total,
+                    )
 
             rich_progress.update(
                 overall_progress["task_id"],
@@ -57,7 +58,7 @@ def wait_futures(
             )
 
         for f in futures_status.values():
-            if f["failed"] is True:
+            if f["task_id"] and f["failed"] is True:
                 rich_progress.update(
                     f["task_id"],
                     description=f"[cyan]Progress #{f['counter']} [red]Failed",

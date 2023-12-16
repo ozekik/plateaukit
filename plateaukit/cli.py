@@ -131,7 +131,7 @@ def install_cmd(
             raise click.UsageError(str(e))
 
     if run_prebuild:
-        prebuild(dataset_id)
+        prebuild(dataset_id, simple_output=True)
 
 
 @cli.command("uninstall")
@@ -181,7 +181,7 @@ def uninstall_cmd(dataset_id, formats, keep_files):
 def prebuild_cmd(dataset_id, split):
     """Prebuild PLATEAU datasets."""
 
-    prebuild(dataset_id, split=split)
+    prebuild(dataset_id, split=split, simple_output=True)
 
 
 @cli.command("generate-cityjson")

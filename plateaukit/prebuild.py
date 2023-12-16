@@ -8,7 +8,7 @@ from plateaukit.config import Config
 from plateaukit.dataset import load_dataset
 
 
-def prebuild(dataset_id: str, *, split: int = 10) -> None:
+def prebuild(dataset_id: str, *, split: int = 10, simple_output=False) -> None:
     """Prebuild PLATEAU datasets."""
 
     import geopandas as gpd
@@ -40,6 +40,7 @@ def prebuild(dataset_id: str, *, split: int = 10) -> None:
                     include_type=True,
                     split=split,
                     progress={"description": "Generating GeoJSON files..."},
+                    simple_output=simple_output,
                 )
             else:
                 raise NotImplementedError()
