@@ -52,10 +52,10 @@ plateaukit generate-geojson --dataset plateau-tokyo23ku-2022 -t bldg /tmp/tokyo2
 
 ## CityGMLからCityJSONを生成
 
-`plateaukit generate-cityjson` コマンドを使用して、PLATEAU の CityGML ファイルを <a href="https://www.cityjson.org/" target="_blank">CityJSON</a> ファイルに変換することができます。(現在 LOD1 をサポート)
+`plateaukit generate-cityjson` コマンドを使用して、PLATEAU の CityGML ファイルを <a href="https://www.cityjson.org/" target="_blank">CityJSON</a> ファイルに変換することができます。(現在 LOD1, LOD2 をサポート)
 
-```bash title="例: 建造物 (bldg) データからLOD1相当のCityJSONを生成"
-plateaukit generate-cityjson --dataset plateau-tokyo23ku-2022 /tmp/tokyo23ku-bldg.city.json
+```bash title="例: 建造物 (bldg) データからLOD1とLOD2相当のCityJSONを生成"
+plateaukit generate-cityjson --dataset plateau-tokyo23ku-2022 /tmp/tokyo23ku-bldg.city.json -t bldg
 ```
 
 <div class="result" markdown>

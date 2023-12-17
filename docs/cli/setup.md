@@ -3,7 +3,7 @@
 
 ## 利用可能な都市モデルの一覧を表示
 
-利用可能な都市モデルの一覧を表示するには、`plateaukit list` コマンドを使用します。
+利用可能な都市モデルの一覧を表示するには、`plateaukit list` コマンドを実行します。
 
 ```bash
 plateaukit list
@@ -141,6 +141,9 @@ plateaukit list
 ## 都市モデルをダウンロード・追加
 
 都市モデルをダウンロード・追加するには、都市モデルのIDを指定して `plateaukit install` コマンドを実行します。
+
+!!! warning ""
+    サイズが大きいデータセットではダウンロードに時間がかかる場合があります。
 
 ```bash title="例: 神奈川県箱根町のデータをダウンロードして追加"
 plateaukit install plateau-14382-hakone-machi-2020
