@@ -68,7 +68,7 @@ nav:
   # - Get Started:
   # - Usage:
   - 開発に参加する: contributing.md
-  - 🚧 APIリファレンス: api.md
+  - 🚧 API リファレンス: api.md
 
 markdown_extensions:
   - tables
@@ -117,6 +117,7 @@ plugins:
       redirect_maps:
         "cli/usage.md": "cli/convert.md"
   - mkdocstrings:
+      default_handler: python
       handlers:
         python:
           paths: [.]
@@ -127,6 +128,9 @@ plugins:
             docstring_options:
               ignore_init_summary: true
             merge_init_into_class: true
+            inherited_members: true
+            show_submodules: true
+            docstring_section_style: spacy
             # extensions:
             #   - docs/plugins/griffe_doclinks.py
   # - mkdocs-simple-hooks:
@@ -134,6 +138,4 @@ plugins:
   #       on_pre_build: "docs.plugins.main:on_pre_build"
   #       on_files: "docs.plugins.main:on_files"
   #       on_page_markdown: "docs.plugins.main:on_page_markdown"
-  # - redirects:
-  #     redirect_maps:
   # - external-markdown:
