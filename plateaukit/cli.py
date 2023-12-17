@@ -28,13 +28,6 @@ def list_available_datasets(is_all=False):
     print(table)
 
 
-# def setup_property_db(infiles, db_filename):
-#     expanded_infiles = []
-#     for infile in infiles:
-#         expanded_infiles.extend(glob.glob(infile))
-#     run_async(extractors.commands.extract_properties(expanded_infiles, db_filename))
-
-
 # https://alexdelorenzo.dev/notes/click.html
 class OrderCommands(click.Group):
     def list_commands(self, ctx):

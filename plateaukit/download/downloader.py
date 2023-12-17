@@ -4,7 +4,6 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 import requests
-# from tqdm.auto import tqdm
 from rich.progress import wrap_file
 
 API_URL = "https://www.geospatial.jp/ckan/api/3"
@@ -26,7 +25,6 @@ def download_resource(resource_id, dest="/tmp"):
 
     with requests.get(file_url, stream=True) as r:
         total_length = int(r.headers.get("Content-Length"))
-        # with tqdm.wrapattr(r.raw, "read", total=total_length, desc="") as raw:
         with wrap_file(r.raw, total_length, description="Downloading...") as raw:
             with open(destfile_path, "wb") as output:
                 shutil.copyfileobj(raw, output)
