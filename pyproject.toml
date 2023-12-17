@@ -59,6 +59,7 @@ mkdocs-redirects = "^1.2.1"
 mkdocs-jupyter = "^0.24.6"
 notebook = "<7"  # Due to jupyter-nbextensions-configurator
 jupyter-contrib-nbextensions = "^0.7.0"
+mkdocs-click = "^0.8.1"
 
 [build-system]
 requires = ["poetry-core"]

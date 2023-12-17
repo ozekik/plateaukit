@@ -1986,6 +1986,21 @@ Markdown = ">=3.3"
 mkdocs = ">=1.1"
 
 [[package]]
+name = "mkdocs-click"
+version = "0.8.1"
+description = "An MkDocs extension to generate documentation for Click command line applications"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "mkdocs_click-0.8.1-py3-none-any.whl", hash = "sha256:a100ff938be63911f86465a1c21d29a669a7c51932b700fdb3daa90d13b61ee4"},
+    {file = "mkdocs_click-0.8.1.tar.gz", hash = "sha256:0a88cce04870c5d70ff63138e2418219c3c4119cc928a59c66b76eb5214edba6"},
+]
+
+[package.dependencies]
+click = ">=8.1"
+markdown = ">=3.3"
+
+[[package]]
 name = "mkdocs-exclude"
 version = "1.0.2"
 description = "A mkdocs plugin that lets you exclude files or trees."
@@ -4175,4 +4190,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "7d58fc79e724aa2ee123f94f08ff65e1a439268a4f56f700756b253913ffe763"
+content-hash = "9d8e928af33eaf37a0a4c4dfe14141773038caebb87f5b6cf05903bab30b8562"

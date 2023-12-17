@@ -59,6 +59,7 @@ nav:
   - コマンドラインでの利用:
       - PLATEAUデータの追加と削除: cli/setup.md
       - PLATEAUデータの変換: cli/convert.md
+      - CLI リファレンス: cli/reference.md
     # - 🚧 PLATEAUデータの情報を取得: cli/utility.md
   - ライブラリとして利用:
       - PLATEAUデータの追加と削除: library/setup.ipynb
@@ -75,6 +76,7 @@ markdown_extensions:
       permalink: true
       title: 項目
   - admonition
+  - mkdocs-click
   - pymdownx.tasklist:
       custom_checkbox: false
   - pymdownx.arithmatex:
@@ -88,7 +90,6 @@ markdown_extensions:
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
         #   - pymdownx.tabbed:
         #       alternate_style: true
-
   - pymdownx.superfences:
       custom_fences:
         - name: python
