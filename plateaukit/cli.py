@@ -106,8 +106,17 @@ def list_cmd(local, all):
 @click.option(
     "--list-all", is_flag=True, help="List all available datasets including old ones."
 )
+@click.option("-v", "is_verbose", is_flag=True, help="Verbose mode.")
 def install_cmd(
-    dataset_id, format, local, run_prebuild, force, download_only, list, list_all
+    dataset_id,
+    format,
+    local,
+    run_prebuild,
+    force,
+    download_only,
+    list,
+    list_all,
+    is_verbose,
 ):
     """Download and install PLATEAU datasets."""
     if not dataset_id and not (list or list_all):
@@ -124,7 +133,7 @@ def install_cmd(
             raise click.UsageError(str(e))
 
     if run_prebuild:
-        prebuild(dataset_id, simple_output=True)
+        prebuild(dataset_id, simple_output=False if is_verbose else True)
 
 
 @cli.command("uninstall")
@@ -171,10 +180,11 @@ def uninstall_cmd(dataset_id, formats, keep_files):
 @click.option(
     "--split", default=10, help="Split the output into specified number of files"
 )
-def prebuild_cmd(dataset_id, split):
+@click.option("-v", "is_verbose", is_flag=True, default=False, help="Verbose")
+def prebuild_cmd(dataset_id, split, is_verbose):
     """Prebuild PLATEAU datasets."""
 
-    prebuild(dataset_id, split=split, simple_output=True)
+    prebuild(dataset_id, split=split, simple_output=False if is_verbose else True)
 
 
 @cli.command("generate-cityjson")
