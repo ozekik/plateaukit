@@ -147,6 +147,7 @@ plateaukit list
 
 ```bash title="例: 神奈川県箱根町のデータをダウンロードして追加"
 plateaukit install plateau-14382-hakone-machi-2020
+plateaukit install plateau-14382-hakone-machi-2020 -v  # 進捗の詳細を表示
 ```
 
 <div class="result" markdown>
