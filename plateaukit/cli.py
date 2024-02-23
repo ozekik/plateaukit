@@ -98,7 +98,7 @@ def list_cmd(local, all):
 )
 @click.option("--local", help="Install local file. (without copying)")
 @click.option(
-    "--prebuild", "run_prebuild", is_flag=True, default=False, help="Prebuild dataset."
+    "--prebuild", "run_prebuild", is_flag=True, default=True, help="Prebuild dataset."
 )
 @click.option("--force", is_flag=True, default=False, help="Force install.")
 @click.option("--download-only", is_flag=True, default=False)
