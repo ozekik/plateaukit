@@ -1,5 +1,8 @@
 # PlateauKit のインストール
 
+!!! note ""
+    JupyterLabを利用する場合は、まず[チュートリアル](tutorial/jupyter.ipynb)がおすすめです。
+
 PlateauKit をインストールするには、ターミナルで以下のコマンドを実行します。
 
 ```bash
