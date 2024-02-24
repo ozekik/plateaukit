@@ -4,8 +4,9 @@ from os import PathLike
 from pathlib import Path
 
 import geopandas as gpd
+from pyogrio import read_dataframe
 
-from plateaukit import generators, geocoding
+from plateaukit import defaults, generators, geocoding
 from plateaukit.area import Area
 from plateaukit.config import Config
 from plateaukit.logger import logger
@@ -54,6 +55,9 @@ class Dataset:
     def get_area(self):
         """Get the entire area of the dataset."""
 
+        if self.dataset_id.endswith(".cloud"):
+            raise Exception("Not supported for cloud datasets")
+
         if self.gdf is None:
             self.load_gdf()
 
@@ -69,12 +73,22 @@ class Dataset:
                    If not specified, the area of the entire dataset will be returned.
         """
 
-        if self.gdf is None:
-            self.load_gdf()
+        if self.dataset_id.endswith(".cloud"):
+            # Load data from remote flatgeobuf
+            remote_fgb = defaults.cloud_base_url + self.dataset_id.replace(
+                ".cloud", ".fgb"
+            )
+            area_gdf = read_dataframe(
+                remote_fgb,
+                bbox=tuple(bbox),
+            )
+        else:
+            if self.gdf is None:
+                self.load_gdf()
 
-        area_gdf = (
-            self.gdf.cx[bbox[0] : bbox[2], bbox[1] : bbox[3]] if bbox else self.gdf
-        )
+            area_gdf = (
+                self.gdf.cx[bbox[0] : bbox[2], bbox[1] : bbox[3]] if bbox else self.gdf
+            )
 
         # TODO: Error handling when area_gdf is empty
 
@@ -86,6 +100,9 @@ class Dataset:
         Args:
             polygon: Polygon of the area of interest.
         """
+
+        if self.dataset_id.endswith(".cloud"):
+            raise Exception("Not supported for cloud datasets")
 
         if self.gdf is None:
             self.load_gdf()
@@ -104,9 +121,6 @@ class Dataset:
             size: Size of the area of interest in meters.
         """
 
-        if self.gdf is None:
-            self.load_gdf()
-
         bbox = geocoding._get_bbox(points)
         bbox = geocoding._pad_bbox(bbox, size)
 
@@ -120,9 +134,6 @@ class Dataset:
             size: Size of the area of interest in meters.
         """
 
-        if self.gdf is None:
-            self.load_gdf()
-
         bbox = geocoding.bbox_from_address(address, min_size=size)
 
         return self.area_from_bbox(bbox)
@@ -134,9 +145,6 @@ class Dataset:
             postcode: Postal code of the area of interest.
         """
 
-        if self.gdf is None:
-            self.load_gdf()
-
         bbox = geocoding.bbox_from_postcode(postcode)
 
         return self.area_from_bbox(bbox)
@@ -147,10 +155,6 @@ class Dataset:
         Args:
             landmark: Landmark of the area of interest.
         """
-
-        if self.gdf is None:
-            self.load_gdf()
-
         bbox = geocoding.bbox_from_landmark(landmark, min_size=min_size)
 
         return self.area_from_bbox(bbox)
