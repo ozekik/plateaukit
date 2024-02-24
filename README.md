@@ -5,7 +5,7 @@
 
 > Python library and converter for 3D city models by MLIT Project PLATEAU
 
-PlateauKit は、<a href="https://www.mlit.go.jp/plateau/" target="_blank">国土交通省PLATEAUプロジェクト</a> 3D都市モデルを利用するためのPythonライブラリおよび変換ツールです。(WIP)
+PlateauKit は、<a href="https://www.mlit.go.jp/plateau/" target="_blank">国土交通省PLATEAUプロジェクト</a> 3D都市モデルを利用するためのPythonライブラリおよび変換ツールです。
 
 **ドキュメント Documentation:** <https://ozekik.github.io/plateaukit/>
 
@@ -43,3 +43,9 @@ pip install plateaukit
 - Blender: [Plateau-Blender-Importer](https://github.com/nneri-hin/Plateau-Blender-Importer)
 - Unreal Engine: [PLATEAU-SDK-for-Unreal](https://github.com/Project-PLATEAU/PLATEAU-SDK-for-Unreal)
 - Unity: [PLATEAU-SDK-for-Unity](https://github.com/Project-PLATEAU/PLATEAU-SDK-for-Unity)
+
+## ライセンス License
+
+MIT License
+
+PLATEAUデータセットの利用については、[国土交通省 Project PLATEAU](https://www.mlit.go.jp/plateau/site-policy/) の利用規約に従ってください。

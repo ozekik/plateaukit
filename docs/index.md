@@ -27,4 +27,6 @@ pip install plateaukit
 
 MIT License
 
+PLATEAUデータセットの利用については、[国土交通省 Project PLATEAU](https://www.mlit.go.jp/plateau/site-policy/) の利用規約に従ってください。
+
 <div style="margin-bottom:10rem"></div>
