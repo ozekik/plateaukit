@@ -60,6 +60,7 @@ mkdocs-jupyter = "^0.24.6"
 notebook = "<7"  # Due to jupyter-nbextensions-configurator
 jupyter-contrib-nbextensions = "^0.7.0"
 mkdocs-click = "^0.8.1"
+pymdown-extensions = "^10.7"
 
 [build-system]
 requires = ["poetry-core"]
