@@ -33,8 +33,11 @@ pip install plateaukit
 - [ ] データセットの軽量版のバンドルを提供
 - [ ] ファイル分割の平均化
 - [ ] テストの整備
+- [ ] [ipydeck](https://github.com/ozekik/ipydeck)への移行
 
 ## その他のツール・ライブラリ Alternatives
+
+- [Awesome PLATEAU](https://japan-opendata.github.io/awesome-plateau/)
 
 ### Python
 
