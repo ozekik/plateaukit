@@ -11,6 +11,8 @@ PlateauLab は、<a href="https://jupyter.org" target="_blank">JupyterLab / Jupy
 
 **ドキュメント Documentation:** <https://ozekik.github.io/plateaukit/>
 
+<div><video controls src="https://github.com/ozekik/plateaukit/assets/32771324/ea02df34-82f9-462a-b2e7-3f71dd3201ea" muted="false"></video></div>
+
 ## 機能 Features
 
 - [x] PLATEAUデータセットのインストール・管理

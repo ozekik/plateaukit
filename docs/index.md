@@ -5,9 +5,11 @@
 
 PlateauKit は、<a href="https://www.mlit.go.jp/plateau/" target="_blank">国土交通省 Project PLATEAU</a> の3D都市モデルを扱うためのオープンソース Python ライブラリおよび変換ツールです。
 
-<figure markdown="span">
+<!-- <figure markdown="span">
   ![landing image](./assets/landing.png){ width="320" }
-</figure>
+</figure> -->
+
+<div><video controls src="assets/sample2-web.mp4" muted="false"></video></div>
 
 ## 機能 Features
 
