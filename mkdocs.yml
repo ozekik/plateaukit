@@ -7,8 +7,8 @@ theme:
   name: "material"
   language: ja
   logo: assets/icon.svg
-  font:
-    text: "Noto Sans JP"
+  # font:
+  #   text: "Noto Sans JP"
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
