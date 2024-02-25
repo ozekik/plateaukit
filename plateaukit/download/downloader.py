@@ -21,7 +21,14 @@ def download_resource(resource_id, dest="/tmp"):
 
     destfile_path = str(Path(dest, file_name))
 
-    print(f"Download file as: {destfile_path}")
+    # NOTE: If the destfile_path is in the home directory, replace it with ~ for better privacy
+    try:
+        _destfile_path = Path(destfile_path).relative_to(Path.home())
+        _destfile_path = str(Path("~", _destfile_path))
+    except:
+        _destfile_path = destfile_path
+
+    print(f"Download file as: {_destfile_path}")
 
     with requests.get(file_url, stream=True) as r:
         total_length = int(r.headers.get("Content-Length"))
