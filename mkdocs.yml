@@ -69,6 +69,7 @@ nav:
           # - PLATEAUデータの追加と削除: library/setup.ipynb
           - PLATEAUデータの読み込みと利用: library/dataset.ipynb
           - 範囲の選択と抽出: library/area.ipynb
+          - データ処理: library/data_processing.ipynb
       # - Get Started:
       # - Usage:
       - 開発に参加する: contributing.md
