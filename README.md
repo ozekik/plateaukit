@@ -34,6 +34,9 @@ pip install plateaukit
 - [ ] ファイル分割の平均化
 - [ ] テストの整備
 - [ ] [ipydeck](https://github.com/ozekik/ipydeck)への移行
+- [ ] JupyterLiteサポート
+- [ ] 標高データの可視化
+- [ ] LOD2サポート (WIP)
 
 ## その他のツール・ライブラリ Alternatives
 
