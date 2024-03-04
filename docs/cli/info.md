@@ -114,13 +114,13 @@ Attributes:
   植生 (veg):
     作成日 (core:creationDate)
     vegetationDataQualityAttribute (uro:vegetationDataQualityAttribute)
-    class ({http://www.opengis.net/citygml/vegetation/2.0}class)
-    height ({http://www.opengis.net/citygml/vegetation/2.0}height)
-    lod3Geometry ({http://www.opengis.net/citygml/vegetation/2.0}lod3Geometry)
-    averageHeight ({http://www.opengis.net/citygml/vegetation/2.0}averageHeight)
-    lod3MultiSurface ({http://www.opengis.net/citygml/vegetation/2.0}lod3MultiSurface)
-    lod2Geometry ({http://www.opengis.net/citygml/vegetation/2.0}lod2Geometry)
-    lod2MultiSurface ({http://www.opengis.net/citygml/vegetation/2.0}lod2MultiSurface)
+    class (veg:class)
+    height (veg:height)
+    lod3Geometry (veg:lod3Geometry)
+    averageHeight (veg:averageHeight)
+    lod3MultiSurface (veg:lod3MultiSurface)
+    lod2Geometry (veg:lod2Geometry)
+    lod2MultiSurface (veg:lod2MultiSurface)
 ```
 
 </div>
