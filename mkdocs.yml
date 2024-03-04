@@ -62,9 +62,9 @@ nav:
           - JupyterLabで試す: tutorial/jupyter.ipynb
       - コマンドラインでの利用:
           - PLATEAUデータの追加と削除: cli/setup.md
+          - PLATEAUデータの情報を取得: cli/info.md
           - PLATEAUデータの変換: cli/convert.md
           - CLI リファレンス: cli/reference.md
-        # - 🚧 PLATEAUデータの情報を取得: cli/utility.md
       - ライブラリとして利用:
           # - PLATEAUデータの追加と削除: library/setup.ipynb
           - PLATEAUデータの読み込みと利用: library/dataset.ipynb
