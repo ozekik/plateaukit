@@ -59,7 +59,10 @@ def cli(verbose):
     help="Show all versions of datasets including old ones.",
 )
 def list_cmd(local, all):
-    """List available and installed PLATEAU datasets."""
+    """List available and installed PLATEAU datasets.
+
+    利用可能およびインストール済みのデータセットを表示します。
+    """
     from plateaukit.download import city_list
 
     config = Config()
@@ -119,7 +122,10 @@ def install_cmd(
     list_all,
     is_verbose,
 ):
-    """Download and install PLATEAU datasets."""
+    """Download and install PLATEAU datasets.
+
+    PLATEAU データセットをダウンロード・インストールします。
+    """
     if not dataset_id and not (list or list_all):
         raise click.UsageError("Missing argument/option: dataset_id or -l/--list")
 
@@ -152,7 +158,10 @@ def install_cmd(
 )
 @click.option("--keep-files", is_flag=True, default=False)
 def uninstall_cmd(dataset_id, formats, keep_files):
-    """Uninstall PLATEAU datasets."""
+    """Uninstall PLATEAU datasets.
+
+    PLATEAU データセットをアンインストールします。
+    """
     if not dataset_id:
         raise Exception("Missing argument")
 
@@ -183,7 +192,10 @@ def uninstall_cmd(dataset_id, formats, keep_files):
 )
 @click.option("-v", "is_verbose", is_flag=True, default=False, help="Verbose")
 def prebuild_cmd(dataset_id, split, is_verbose):
-    """Prebuild PLATEAU datasets."""
+    """Prebuild PLATEAU datasets.
+
+    PLATEAU データセットを事前ビルドします。
+    """
 
     prebuild(dataset_id, split=split, simple_output=False if is_verbose else True)
 
@@ -214,7 +226,10 @@ def prebuild_cmd(dataset_id, split, is_verbose):
 # #     help="Number of decimal places to keep for geometry vertices (default: 16).",
 # )
 def generate_cityjson(infiles, outfile, dataset_id, types, split, ground):
-    """Generate CityJSON from PLATEAU datasets."""
+    """Generate CityJSON from PLATEAU datasets.
+
+    PLATEAU データセットから CityJSON を生成します。
+    """
 
     if not infiles and not dataset_id:
         raise click.UsageError("Missing argument/option: infiles or --dataset")
@@ -287,7 +302,10 @@ def _generate_geojson(
 )
 @click.option("--split", default=1)
 def generate_geojson(infiles, outfile, dataset_id: str, types: list[str], split: int):
-    """Generate GeoJSON from PLATEAU datasets."""
+    """Generate GeoJSON from PLATEAU datasets.
+
+    PLATEAU データセットから GeoJSON を生成します。
+    """
 
     _generate_geojson(infiles, outfile, dataset_id, types=types, split=split)
 
@@ -296,7 +314,10 @@ def generate_geojson(infiles, outfile, dataset_id: str, types: list[str], split:
 @click.argument("infiles", nargs=-1)
 @click.argument("outfile", nargs=1, required=True)
 def generate_qmesh(infiles, outfile):
-    """Generate Quantized Mesh from PLATEAU datasets."""
+    """Generate Quantized Mesh from PLATEAU datasets. (Requires `pip install 'plateaukit[quantized-mesh]'`)
+
+    PLATEAU データセットから Quantized Mesh を生成します。(要 `pip install 'plateaukit[quantized-mesh]'`)
+    """
 
     generators.triangles_from_gml(infiles)
 
@@ -335,7 +356,10 @@ def generate_qmesh(infiles, outfile):
 
 @cli.command("config")
 def info_cmd():
-    """Show PlateauKit configuration information."""
+    """Show PlateauKit configuration information.
+
+    PlateauKit の設定情報を表示します。
+    """
     import importlib.metadata
     import json
 
@@ -354,7 +378,10 @@ def info_cmd():
 @cli.command("info")
 @click.argument("dataset_id", nargs=1, required=True)
 def info_cmd(dataset_id):
-    """Show PLATEAU dataset information."""
+    """Show PLATEAU dataset information.
+
+    PLATEAU データセットの情報を表示します。
+    """
     from plateaukit.download import city_list
     from plateaukit.formats.citygml import CityGMLDataset
     from plateaukit.parsers import constants
