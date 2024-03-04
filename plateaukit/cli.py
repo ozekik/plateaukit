@@ -314,9 +314,9 @@ def generate_geojson(infiles, outfile, dataset_id: str, types: list[str], split:
 @click.argument("infiles", nargs=-1)
 @click.argument("outfile", nargs=1, required=True)
 def generate_qmesh(infiles, outfile):
-    """Generate Quantized Mesh from PLATEAU datasets. (Requires `pip install 'plateaukit[quantized-mesh]'`)
+    """Generate Quantized Mesh from PLATEAU datasets. (Requires `pip install 'plateaukit[quantized_mesh]'`)
 
-    PLATEAU データセットから Quantized Mesh を生成します。(要 `pip install 'plateaukit[quantized-mesh]'`)
+    PLATEAU データセットから Quantized Mesh を生成します。(要 `pip install 'plateaukit[quantized_mesh]'`)
     """
 
     generators.triangles_from_gml(infiles)
