@@ -52,6 +52,7 @@ seaborn = "^0.13.2"
 bokeh = "^3.3.4"
 plotly = "^5.19.0"
 altair = "^5.2.0"
+types-lxml = "^2024.2.9"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.5.2"

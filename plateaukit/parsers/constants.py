@@ -1,11 +1,135 @@
-nsmap = {
-    "gen": "http://www.opengis.net/citygml/generics/2.0",
-    "gml": "http://www.opengis.net/gml",
-    "core": "http://www.opengis.net/citygml/2.0",
-    "bldg": "http://www.opengis.net/citygml/building/2.0",
-    "tran": "http://www.opengis.net/citygml/transportation/2.0",
-    "brid": "http://www.opengis.net/citygml/bridge/2.0",
-    "xlink": "http://www.w3.org/1999/xlink",
-    "xAL": "urn:oasis:names:tc:ciq:xsdschema:xAL:2.0",
-    "uro": "https://www.geospatial.jp/iur/uro/2.0",
+from bidict import bidict
+
+nsmap = bidict(
+    {
+        "gen": "http://www.opengis.net/citygml/generics/2.0",
+        "gml": "http://www.opengis.net/gml",
+        "core": "http://www.opengis.net/citygml/2.0",
+        "bldg": "http://www.opengis.net/citygml/building/2.0",
+        "tran": "http://www.opengis.net/citygml/transportation/2.0",
+        "brid": "http://www.opengis.net/citygml/bridge/2.0",
+        "xlink": "http://www.w3.org/1999/xlink",
+        "xAL": "urn:oasis:names:tc:ciq:xsdschema:xAL:2.0",
+        "uro": "https://www.geospatial.jp/iur/uro/2.0",
+        "dem": "http://www.opengis.net/citygml/relief/2.0",
+        "frn": "http://www.opengis.net/citygml/cityfurniture/2.0",
+        "urf": "https://www.geospatial.jp/iur/urf/2.0",
+        "luse": "http://www.opengis.net/citygml/landuse/2.0",
+    }
+)
+
+# NOTE: https://www.mlit.go.jp/plateau/file/libraries/doc/plateau_doc_0001_ver02.pdf#page=336
+data_type_display_names = {
+    "bldg": {
+        "ja": "建築物",
+    },
+    # NOTE: brid is not defined in the specification
+    "brid": {
+        "ja": "橋梁",
+    },
+    "tran": {
+        "ja": "道路",
+    },
+    "urf": {
+        "ja": "都市計画決定情報",
+    },
+    "luse": {
+        "ja": "土地利用",
+    },
+    "fld": {
+        "ja": "洪水浸水想定区域",
+    },
+    "tnm": {
+        "ja": "津波浸水想定",
+    },
+    "lsld": {
+        "ja": "土砂災害警戒区域",
+    },
+    "htd": {
+        "ja": "高潮浸水想定区域",
+    },
+    "ifld": {
+        "ja": "内水浸水想定区域",
+    },
+    "frn": {
+        "ja": "都市設備",
+    },
+    "veg": {
+        "ja": "植生",
+    },
+    "dem": {
+        "ja": "起伏",
+    },
+}
+
+tag_display_names = {
+    "gml:name": {
+        "ja": "名称",
+    },
+    "gml:description": {
+        "ja": "説明",
+    },
+    "gml:boundedBy": {
+        "ja": "範囲",
+    },
+    "core:creationDate": {
+        "ja": "作成日",
+    },
+    "bldg:class": {
+        "ja": "分類",
+    },
+    "bldg:usage": {
+        "ja": "用途",
+    },
+    "bldg:measuredHeight": {
+        "ja": "計測高さ",
+    },
+    "bldg:storeysAboveGround": {
+        "ja": "地上階数",
+    },
+    "bldg:lod0RoofEdge": {
+        "ja": "lod0屋根面",
+    },
+    "bldg:lod0FootPrint": {
+        "ja": "lod0接地面",
+    },
+    "bldg:lod1Solid": {
+        "ja": "lod1立体",
+    },
+    "bldg:lod2Solid": {
+        "ja": "lod2立体",
+    },
+    "bldg:lod3Solid": {
+        "ja": "lod3立体",
+    },
+    "bldg:address": {
+        "ja": "住所",
+    },
+    "bldg:boundedBy": {
+        "ja": "境界面",
+    },
+    "bldg:outerBuildingInstallation": {
+        "ja": "建物付属物",
+    },
+    "bldg:consistsOfBuildingPart": {
+        "ja": "建物部品",
+    },
+    "tran:function": {
+        "ja": "機能",
+    },
+    "dem:reliefComponent": {
+        "ja": "地形構成要素",
+    },
+    "uro:buildingDataQualityAttribute": {
+        "ja": "データ品質",
+    },
+    "uro:buildingDetailAttribute": {
+        "ja": "建物利用現況",
+    },
+    "uro:buildingIDAttribute": {
+        "ja": "建物識別情報",
+    },
+    "uro:buildingDisasterRiskAttribute": {
+        "ja": "災害リスク",
+    },
 }
