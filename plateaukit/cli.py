@@ -1,5 +1,6 @@
 import click
 from prettytable import PrettyTable
+from rich.console import Console
 
 from plateaukit import generators
 from plateaukit.config import Config
@@ -332,7 +333,7 @@ def generate_qmesh(infiles, outfile):
 #     run_async(extractors.commands.extract_properties(expanded_infiles, outfile))
 
 
-@cli.command("info")
+@cli.command("config")
 def info_cmd():
     """Show PlateauKit configuration information."""
     import importlib.metadata
@@ -348,6 +349,60 @@ def info_cmd():
     click.echo(f"Config path: {config.path}")
     click.echo(f"Data directory: {config.data_dir}")
     click.echo(f"{json.dumps(config.datasets, indent=2, ensure_ascii=False)}")
+
+
+@cli.command("info")
+@click.argument("dataset_id", nargs=1, required=True)
+def info_cmd(dataset_id):
+    """Show PLATEAU dataset information."""
+    from plateaukit.download import city_list
+    from plateaukit.formats.citygml import CityGMLDataset
+    from plateaukit.parsers import constants
+
+    config = Config()
+
+    remote_info = next(filter(lambda x: x["dataset_id"] == dataset_id, city_list), None)
+
+    if not remote_info:
+        raise click.UsageError(f"Unknown dataset: {dataset_id}")
+
+    console = Console(highlight=False)
+
+    console.print(f"[b]{dataset_id}[/b]")
+    console.print(f"[u]{remote_info['homepage']}")
+    console.print(f"[b]Name:[/b] {remote_info['city_name']}")
+    console.print(f"[b]Version:[/b] {remote_info['version']}")
+
+    record = config.datasets.get(dataset_id, None)
+
+    if not record:
+        console.print(f"[b]Installed Files:[/b]\n  (None)")
+        return
+
+    console.print(f"[b]Installed Files:[/b]")
+    for format, path in record.items():
+        console.print(f"  {format}: {path}")
+
+    dataset = CityGMLDataset(dataset_id)
+    udx_dirs = dataset.udx_dirs()
+
+    console.print(f"[b]Data Types:[/b]")
+    for udx_type, path in udx_dirs.items():
+        type_name = constants.data_type_display_names.get(udx_type, {}).get(
+            "ja", udx_type
+        )
+        console.print(f"  {type_name} ({udx_type}): {path}")
+
+    console.print(f"[b]Attributes:[/b]")
+
+    with console.status("[bold]Processing...", spinner="simpleDotsScrolling") as status:
+        for udx_type in udx_dirs.keys():
+            type_name = constants.data_type_display_names.get(udx_type, {}).get(
+                "ja", udx_type
+            )
+            console.print(f"  [b]{type_name} ({udx_type}):[/b]")
+            for attr in dataset.scan_attributes(udx_type):
+                console.print(f"    {attr.get('name')} ({attr['tag']})")
 
 
 if __name__ == "__main__":
