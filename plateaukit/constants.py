@@ -1,11 +1,23 @@
-nsmap = {
-    "gen": "{http://www.opengis.net/citygml/generics/2.0}",
-    "gml": "{http://www.opengis.net/gml}",
-    "core": "{http://www.opengis.net/citygml/2.0}",
-    "bldg": "{http://www.opengis.net/citygml/building/2.0}",
-    "tran": "{http://www.opengis.net/citygml/transportation/2.0}",
-    "xlink": "{http://www.w3.org/1999/xlink}",
-}
+from bidict import bidict
+
+nsmap = bidict(
+    {
+        "gen": "http://www.opengis.net/citygml/generics/2.0",
+        "gml": "http://www.opengis.net/gml",
+        "core": "http://www.opengis.net/citygml/2.0",
+        "bldg": "http://www.opengis.net/citygml/building/2.0",
+        "tran": "http://www.opengis.net/citygml/transportation/2.0",
+        "brid": "http://www.opengis.net/citygml/bridge/2.0",
+        "xlink": "http://www.w3.org/1999/xlink",
+        "xAL": "urn:oasis:names:tc:ciq:xsdschema:xAL:2.0",
+        "uro": "https://www.geospatial.jp/iur/uro/2.0",
+        "dem": "http://www.opengis.net/citygml/relief/2.0",
+        "frn": "http://www.opengis.net/citygml/cityfurniture/2.0",
+        "urf": "https://www.geospatial.jp/iur/urf/2.0",
+        "luse": "http://www.opengis.net/citygml/landuse/2.0",
+        "veg": "http://www.opengis.net/citygml/vegetation/2.0",
+    }
+)
 
 prefectures = [
     "北海道",
