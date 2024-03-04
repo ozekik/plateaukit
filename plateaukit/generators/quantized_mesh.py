@@ -1,10 +1,9 @@
 import numpy as np
 from bidict import bidict
-from loguru import logger
 from lxml import etree
-from quantized_mesh_encoder import encode
 
 from plateaukit.constants import nsmap
+from plateaukit.logger import logger
 from plateaukit.utils import parse_posList
 
 
@@ -37,6 +36,12 @@ class VerticesMap:
 
 
 def triangles_from_gml(infiles, precision=8):
+    try:
+        from quantized_mesh_encoder import encode
+    except ImportError:
+        logger.error("quantized_mesh_encoder is not installed")
+        return
+
     vertices_map = VerticesMap()
 
     indices = []
@@ -53,7 +58,9 @@ def triangles_from_gml(infiles, precision=8):
                 # Cut off the last element identical to the first
                 triangle_vertices = pos_list[:3]
                 # print(triangle_vertices)
-                triangle_indices = tuple(vertices_map.to_index(v) for v in triangle_vertices)
+                triangle_indices = tuple(
+                    vertices_map.to_index(v) for v in triangle_vertices
+                )
                 # print(indices)
                 indices.append(triangle_indices)
 
