@@ -1,12 +1,12 @@
 # %%
 
+import re
 from dataclasses import dataclass
 from typing import Any, BinaryIO
 
 import pyproj
 from lxml import etree
 
-from plateaukit import extractors
 from plateaukit.parsers.city_object_parser import CityObject, PLATEAUCityObjectParser
 from plateaukit.parsers.codelist_parser import CodelistParser
 from plateaukit.parsers.constants import nsmap
@@ -36,11 +36,29 @@ class PLATEAUCityGMLParser(CityGMLParser):
         self.target_epsg = target_epsg
         self.codelist_file_map = codelist_file_map
 
+    def _get_epsg_code(self, tree: etree._Element) -> str | None:
+        """Extract EPSG code from CityGML tree."""
+
+        path = "./gml:boundedBy/gml:Envelope"
+        result = tree.find(path, nsmap)
+
+        if result is None:
+            raise Exception("EPSG code not found")
+
+        srs_name = result.get("srsName")
+
+        m = re.match(r"http://www.opengis.net/def/crs/EPSG/0/(\d+)", srs_name)
+
+        if not m:
+            raise Exception("Failed to parse EPSG code")
+
+        return m.group(1)
+
     def parse(self, infile):
         tree = etree.parse(infile)
         root = tree.getroot()
 
-        src_epsg = extractors.utils.extract_epsg(tree)  # 6697
+        src_epsg = self._get_epsg_code(tree)  # 6697
 
         # TODO: Accept options like always_xy
         transformer = pyproj.Transformer.from_crs(src_epsg, self.target_epsg)

@@ -1,9 +1,11 @@
+import warnings
 from dataclasses import dataclass
 from typing import Any
 
 import pyproj
+from lxml import etree
 
-from plateaukit import extractors, utils
+from plateaukit import utils
 from plateaukit.parsers.constants import nsmap
 
 MAPLIBRE_SCALE_FACTOR = 10000000
@@ -136,6 +138,23 @@ class CityObjectParser:
 
 class PLATEAUCityObjectParser(CityObjectParser):
     # TODO: uro: attributes
+
+    def _get_gml_id(self, root: etree._Element) -> str | None:
+        """Get gml:id of a CityGML object."""
+
+        path = "./[@gml:id]"
+        result = root.find(path, nsmap)
+
+        if result is None:
+            warnings.warn(
+                "gml:id not found"
+                # f"gml:id not found\n{etree.tostring(tree, pretty_print=True).decode()}"
+            )
+            return None
+
+        id = result.get(f"{{{nsmap['gml']}}}id")
+
+        return id if id is not None else None
 
     def _get_string_attribute(self, root, name):
         path = f"./gen:stringAttribute[@name='{name}']/gen:value"
@@ -353,7 +372,7 @@ class PLATEAUCityObjectParser(CityObjectParser):
         return geoms
 
     def parse(self, el):
-        citygml_id = extractors.utils.extract_gml_id(el)
+        citygml_id = self._get_gml_id(el)
         address = None  # self._get_address(el)
 
         attributes = dict()
