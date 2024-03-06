@@ -11,4 +11,4 @@ print(infile, outfile)
 
 df = pyogrio.read_dataframe(infile)
 print(df.head())
-# pyogrio.write_dataframe(df, outfile, driver="FlatGeobuf")
+pyogrio.write_dataframe(df, outfile, driver="FlatGeobuf")
