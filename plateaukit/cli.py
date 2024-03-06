@@ -139,7 +139,7 @@ def install_cmd(
         except Exception as e:
             raise click.UsageError(str(e))
 
-    if run_prebuild:
+    if run_prebuild and not download_only:
         prebuild(dataset_id, simple_output=False if is_verbose else True)
 
 
