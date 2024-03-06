@@ -12,7 +12,7 @@ from plateaukit.parsers import constants
 
 
 class CityGMLDataset:
-    """A parser for PLATEAU CityGML datasets.
+    """A (PLATEAU) CityGML dataset.
 
     Attributes:
         dataset_id: Dataset ID.

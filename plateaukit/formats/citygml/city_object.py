@@ -4,6 +4,8 @@ from typing import Any
 
 @dataclass
 class CityObject:
+    """A CityGML CityObject."""
+
     type: str
     id: str | None = None
     attributes: dict | None = None
