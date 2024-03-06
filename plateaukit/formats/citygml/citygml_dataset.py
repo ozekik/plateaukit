@@ -8,7 +8,6 @@ from lxml import etree
 
 from plateaukit import parsers
 from plateaukit.config import Config
-from plateaukit.logger import logger
 from plateaukit.parsers import constants
 
 
@@ -47,7 +46,7 @@ class CityGMLDataset:
     def udx_dirs(self):
         """List UDX directories in the dataset."""
 
-        pat = re.compile(rf".*udx\/([^\/]*?)\/$")
+        pat = re.compile(r".*udx\/([^\/]*?)\/$")
 
         with zipfile.ZipFile(self.file_path) as f:
             namelist = f.namelist()
@@ -133,7 +132,7 @@ class CityGMLDataset:
                                     key_name = codelist[key]
                                     prop["name"] = key_name
 
-                        if not "name" in prop:
+                        if "name" not in prop:
                             if qname in constants.tag_display_names:
                                 prop["name"] = constants.tag_display_names[qname].get(
                                     "ja", None
@@ -153,7 +152,7 @@ class CityGMLDataset:
 
         codelist_infiles = []
 
-        pat = re.compile(rf".*codelists\/.*\.xml$")
+        pat = re.compile(r".*codelists\/.*\.xml$")
 
         with zipfile.ZipFile(file_path) as f:
             namelist = f.namelist()

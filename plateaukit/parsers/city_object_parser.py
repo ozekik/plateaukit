@@ -168,25 +168,25 @@ class PLATEAUCityObjectParser(CityObjectParser):
         return None
 
     def _get_measured_height(self, root):
-        result = root.find(f"./bldg:measuredHeight", nsmap)
+        result = root.find("./bldg:measuredHeight", nsmap)
         value = result.text if result is not None else None
         value = float(value) if value is not None else None
         return value
 
     def _get_year_of_construction(self, root):
-        result = root.find(f"./bldg:yearOfConstruction", nsmap)
+        result = root.find("./bldg:yearOfConstruction", nsmap)
         value = result.text if result is not None else None
         value = int(value) if value is not None else None
         return value
 
     def _get_storeys_above_ground(self, root):
-        result = root.find(f"./bldg:storeysAboveGround", nsmap)
+        result = root.find("./bldg:storeysAboveGround", nsmap)
         value = result.text if result is not None else None
         value = int(value) if value is not None else None
         return value
 
     def _get_storeys_below_ground(self, root):
-        result = root.find(f"./bldg:storeysBelowGround", nsmap)
+        result = root.find("./bldg:storeysBelowGround", nsmap)
         value = result.text if result is not None else None
         value = int(value) if value is not None else None
         return value
@@ -220,8 +220,8 @@ class PLATEAUCityObjectParser(CityObjectParser):
         return value
 
     def _get_address(self, root):
-        el = root.find(f"./bldg:address", nsmap)
-        locality_name = el.find(f".//xAL:LocalityName", nsmap).text
+        el = root.find("./bldg:address", nsmap)
+        locality_name = el.find(".//xAL:LocalityName", nsmap).text
 
         addr = {
             "locality_name": locality_name,

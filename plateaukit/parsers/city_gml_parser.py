@@ -1,5 +1,5 @@
 import re
-from typing import Any, BinaryIO
+from typing import BinaryIO
 
 import pyproj
 from lxml import etree
@@ -74,7 +74,7 @@ class PLATEAUCityGMLParser(CityGMLParser):
 
         objects = []
 
-        for i, el in enumerate(root.iterfind(f"./core:cityObjectMember/*", nsmap)):
+        for i, el in enumerate(root.iterfind("./core:cityObjectMember/*", nsmap)):
             obj = co_parser.parse(el)
 
             # print(obj)
