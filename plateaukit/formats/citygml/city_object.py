@@ -1,0 +1,14 @@
+from dataclasses import dataclass
+from typing import Any
+
+
+@dataclass
+class CityObject:
+    type: str
+    id: str | None = None
+    attributes: dict | None = None
+    geometry: list[Any] | None = None
+    # children: list[Self] | None = None
+    # parent: Self | None = None
+
+# TODO: boundedBy

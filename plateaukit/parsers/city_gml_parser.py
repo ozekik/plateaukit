@@ -1,20 +1,13 @@
-# %%
-
 import re
-from dataclasses import dataclass
 from typing import Any, BinaryIO
 
 import pyproj
 from lxml import etree
 
-from plateaukit.parsers.city_object_parser import CityObject, PLATEAUCityObjectParser
+from plateaukit.formats.citygml import CityGML
+from plateaukit.parsers.city_object_parser import PLATEAUCityObjectParser
 from plateaukit.parsers.codelist_parser import CodelistParser
 from plateaukit.parsers.constants import nsmap
-
-
-@dataclass
-class CityGML:
-    city_objects: list[CityObject]
 
 
 class CityGMLParser:
@@ -88,9 +81,4 @@ class PLATEAUCityGMLParser(CityGMLParser):
 
             objects.append(obj)
 
-        return CityGML(
-            city_objects=objects,
-        )
-
-    # def city_objects(self):
-    #     pass
+        return CityGML(city_objects=objects)

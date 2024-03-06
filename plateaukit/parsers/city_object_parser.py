@@ -1,11 +1,11 @@
 import warnings
 from dataclasses import dataclass
-from typing import Any
 
 import pyproj
 from lxml import etree
 
 from plateaukit import utils
+from plateaukit.formats.citygml import CityObject
 from plateaukit.parsers.constants import nsmap
 
 MAPLIBRE_SCALE_FACTOR = 10000000
@@ -26,19 +26,6 @@ geometry_type_tags = [
     {"type": "lod1MultiSurface", "tag": f"{{{nsmap['tran']}}}lod1MultiSurface"},
     {"type": "lod2MultiSurface", "tag": f"{{{nsmap['brid']}}}lod2MultiSurface"},
 ]
-
-# TODO: boundedBy
-
-
-@dataclass
-class CityObject:
-    type: str
-    id: str | None = None
-    attributes: dict | None = None
-    geometry: list[Any] | None = None
-    # children: list[Self] | None = None
-    # parent: Self | None = None
-
 
 @dataclass
 class Building(CityObject):
