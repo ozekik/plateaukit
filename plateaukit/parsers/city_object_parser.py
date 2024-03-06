@@ -7,6 +7,7 @@ from lxml import etree
 from plateaukit import utils
 from plateaukit.formats.citygml import CityObject
 from plateaukit.parsers.constants import nsmap
+from plateaukit.parsers.extractors import city_object_extractors as extractors
 
 MAPLIBRE_SCALE_FACTOR = 10000000
 MERCATOR_HALF_WORLD_LENGTH = 20037508.342789243906736373901367187500
@@ -26,6 +27,7 @@ geometry_type_tags = [
     {"type": "lod1MultiSurface", "tag": f"{{{nsmap['tran']}}}lod1MultiSurface"},
     {"type": "lod2MultiSurface", "tag": f"{{{nsmap['brid']}}}lod2MultiSurface"},
 ]
+
 
 @dataclass
 class Building(CityObject):
@@ -124,8 +126,6 @@ class CityObjectParser:
 
 
 class PLATEAUCityObjectParser(CityObjectParser):
-    # TODO: uro: attributes
-
     def _get_gml_id(self, root: etree._Element) -> str | None:
         """Get gml:id of a CityGML object."""
 
@@ -142,54 +142,6 @@ class PLATEAUCityObjectParser(CityObjectParser):
         id = result.get(f"{{{nsmap['gml']}}}id")
 
         return id if id is not None else None
-
-    def _get_string_attribute(self, root, name):
-        path = f"./gen:stringAttribute[@name='{name}']/gen:value"
-        result = root.find(path, nsmap)
-        return result.text if result is not None else None
-
-    def _get_building_id(self, root):
-        try:
-            path = "./uro:buildingIDAttribute/uro:BuildingIDAttribute/uro:buildingID"
-            result = root.find(path, nsmap)
-            value = result.text if result is not None else None
-            assert value is not None
-            return value
-        except:
-            pass
-
-        try:
-            value = self._get_string_attribute(root, name="建物ID")
-            assert value is not None
-            return value
-        except:
-            pass
-
-        return None
-
-    def _get_measured_height(self, root):
-        result = root.find("./bldg:measuredHeight", nsmap)
-        value = result.text if result is not None else None
-        value = float(value) if value is not None else None
-        return value
-
-    def _get_year_of_construction(self, root):
-        result = root.find("./bldg:yearOfConstruction", nsmap)
-        value = result.text if result is not None else None
-        value = int(value) if value is not None else None
-        return value
-
-    def _get_storeys_above_ground(self, root):
-        result = root.find("./bldg:storeysAboveGround", nsmap)
-        value = result.text if result is not None else None
-        value = int(value) if value is not None else None
-        return value
-
-    def _get_storeys_below_ground(self, root):
-        result = root.find("./bldg:storeysBelowGround", nsmap)
-        value = result.text if result is not None else None
-        value = int(value) if value is not None else None
-        return value
 
     def __get_codespace_attribute(self, root, xpath) -> str | None:
         el = root.find(xpath, nsmap)
@@ -211,25 +163,13 @@ class PLATEAUCityObjectParser(CityObjectParser):
         value = el.text if el is not None else None
         return value
 
-    def _get_name(self, root):
+    def _get_name(self, root) -> str | None:
         value = self.__get_codespace_attribute(root, "./gml:name")
         return value
 
-    def _get_usage(self, root):
+    def _get_usage(self, root) -> str | None:
         value = self.__get_codespace_attribute(root, "./bldg:usage")
         return value
-
-    def _get_address(self, root):
-        el = root.find("./bldg:address", nsmap)
-        locality_name = el.find(".//xAL:LocalityName", nsmap).text
-
-        addr = {
-            "locality_name": locality_name,
-        }
-
-        # print(addr)
-
-        return addr
 
     def _get_geometry(self, root):
         geoms = []
@@ -358,21 +298,20 @@ class PLATEAUCityObjectParser(CityObjectParser):
 
         return geoms
 
-    def parse(self, el):
-        citygml_id = self._get_gml_id(el)
-        address = None  # self._get_address(el)
+    def _parse_attributes(self, el):
+        # TODO: parse `uro:` attributes
 
         attributes = dict()
 
         if el.tag == object_type_tags["Building"]:
-            attributes["building_id"] = self._get_building_id(el)
+            attributes["building_id"] = extractors._get_building_id(el)
 
             # Optional attributes
             optional_attributes = {
-                "measured_height": self._get_measured_height(el),
-                "year_of_construction": self._get_year_of_construction(el),
-                "storeys_above_ground": self._get_storeys_above_ground(el),
-                "storeys_below_ground": self._get_storeys_below_ground(el),
+                "measured_height": extractors._get_measured_height(el),
+                "year_of_construction": extractors._get_year_of_construction(el),
+                "storeys_above_ground": extractors._get_storeys_above_ground(el),
+                "storeys_below_ground": extractors._get_storeys_below_ground(el),
                 "name": self._get_name(el),
                 "usage": self._get_usage(el),
             }
@@ -380,6 +319,17 @@ class PLATEAUCityObjectParser(CityObjectParser):
                 k: v for k, v in optional_attributes.items() if v is not None
             }
             attributes.update(optional_attributes)
+
+        return attributes
+
+    def parse(self, el) -> CityObject:
+        citygml_id = self._get_gml_id(el)
+        address = None  # self._get_address(el)
+
+        attributes = self._parse_attributes(el)
+
+        if el.tag == object_type_tags["Building"]:
+            attributes["building_id"] = extractors._get_building_id(el)
 
             geometry = self._get_geometry(el)
 
