@@ -39,6 +39,11 @@ quantized_mesh = ["quantized-mesh-encoder"]
 [tool.poetry.scripts]
 plateaukit = "plateaukit.cli:cli"
 
+[tool.poetry.group.test.dependencies]
+pytest = "^8.0.2"
+coverage = { extras = ["toml"], version = "^7.4.3" }
+pytest-cov = "^4.1.0"
+
 [tool.poetry.group.dev.dependencies]
 pyglet = "^2.0.1"
 scipy = "^1.10.0"
@@ -62,8 +67,6 @@ mkdocs-exclude = "^1.0.2"
 markdown-exec = { extras = ["ansi"], version = "^1.6.0" }
 mkdocs-redirects = "^1.2.1"
 mkdocs-jupyter = "^0.24.6"
-notebook = "<7"                                           # Due to jupyter-nbextensions-configurator
-jupyter-contrib-nbextensions = "^0.7.0"
 mkdocs-click = "^0.8.1"
 pymdown-extensions = "^10.7"
 
