@@ -1,5 +1,6 @@
 import tempfile
 
+import pydeck
 from geopandas import GeoDataFrame
 
 
@@ -7,6 +8,7 @@ class Area:
     """This class represents an area of interest."""
 
     gdf: GeoDataFrame
+    # layers: list[pydeck.Layer]
 
     def __init__(self, gdf: GeoDataFrame) -> None:
         """Initialize an area from a GeoDataFrame.
@@ -41,9 +43,7 @@ class Area:
         bbox = self.gdf.total_bounds
         return [(bbox[0] + bbox[2]) / 2, (bbox[1] + bbox[3]) / 2]
 
-    def show(self, embed: bool = True):
-        import pydeck
-
+    def pydeck(self, opacity: float = 1):
         # cx, cy = self.get_centroid()
 
         bbox = self.gdf.total_bounds
@@ -55,6 +55,19 @@ class Area:
 
         deck = pydeck.Deck(
             layers=[
+                pydeck.Layer(
+                    "GeoJsonLayer",
+                    data=self.gdf,
+                    filled=True,
+                    get_fill_color="fill_color || color || [255, 255, 255]",
+                    # get_fill_color=[255, 255, 255, 240],
+                    # get_line_color=[255, 255, 255],
+                    opacity=opacity,
+                    extruded=True,
+                    # wireframe=True,
+                    get_elevation="measuredHeight",
+                    pickable=True,
+                )
                 # pydeck.Layer(
                 #     "PolygonLayer",
                 #     data=self.gdf,
@@ -64,18 +77,6 @@ class Area:
                 #     get_fill_color=[0, 0, 0, 20],
                 #     get_line_color=[0, 0, 0, 20],
                 # )
-                pydeck.Layer(
-                    "GeoJsonLayer",
-                    data=self.gdf,
-                    filled=True,
-                    get_fill_color="fill_color || color || [255, 255, 255]",
-                    # get_fill_color=[255, 255, 255, 240],
-                    # get_line_color=[255, 255, 255],
-                    extruded=True,
-                    # wireframe=True,
-                    get_elevation="measuredHeight",
-                    pickable=True,
-                )
             ],
             initial_view_state=view_state,
             # initial_view_state=pydeck.ViewState(
@@ -86,7 +87,6 @@ class Area:
             #     bearing=0,
             # ),
             tooltip={
-                "html": "<b>ID:</b> {buildingId}",
                 "style": {
                     "font-family": "sans-serif",
                     "font-size": "8px",
@@ -94,6 +94,20 @@ class Area:
                 },
             },
         )
+
+        return deck
+
+    def show(self, embed: bool = True):
+        deck = self.pydeck()
+
+        deck._tooltip = {
+            "html": "<b>ID:</b> {buildingId}",
+            "style": {
+                "font-family": "sans-serif",
+                "font-size": "8px",
+                "color": "white",
+            },
+        }
 
         try:
             if __IPYTHON__:  # type: ignore
