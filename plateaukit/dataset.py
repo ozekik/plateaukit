@@ -1,7 +1,7 @@
 import re
 import zipfile
 from os import PathLike
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 import geopandas as gpd
 from pyogrio import read_dataframe
@@ -205,7 +205,10 @@ class Dataset:
                     namelist = f.namelist()
                     targets = list(filter(lambda x: pat.match(x), namelist))
                     # print(targets)
-                    infiles += [str(Path("/", target)) for target in targets]
+
+                    # NOTE: zipfs requires POSIX path
+                    infiles += [str(PurePosixPath("/", target)) for target in targets]
+
                     # f.extractall(tdir, members=targets)
                     # infiles += [
                     #     str(Path(tdir, Path(file_path).stem, "udx", type, "*.gml"))
@@ -217,11 +220,19 @@ class Dataset:
 
         # Codelists
         codelist_infiles = []
-        pat = re.compile(rf".*codelists\/.*\.xml$")
-        with zipfile.ZipFile(file_path) as f:
-            namelist = f.namelist()
-            codelist_infiles = list(filter(lambda x: pat.match(x), namelist))
-            codelist_infiles = [str(Path("/", target)) for target in codelist_infiles]
+        pat = re.compile(r".*codelists\/.*\.xml$")
+
+        if zipfile.is_zipfile(file_path):
+            with zipfile.ZipFile(file_path) as f:
+                namelist = f.namelist()
+                codelist_infiles = list(filter(lambda x: pat.match(x), namelist))
+                # NOTE: zipfs requires POSIX path
+                codelist_infiles = [
+                    str(PurePosixPath("/", target)) for target in codelist_infiles
+                ]
+        else:
+            # TODO: Test support for non-zip codelists
+            codelist_infiles += [str(Path(file_path, "codelists", "*.xml"))]
 
         generators.geojson.geojson_from_citygml(
             infiles,
@@ -279,7 +290,8 @@ class Dataset:
                 with zipfile.ZipFile(file_path) as f:
                     namelist = f.namelist()
                     targets = list(filter(lambda x: pat.match(x), namelist))
-                    infiles += [str(Path("/", target)) for target in targets]
+                    # NOTE: zipfs requires POSIX path
+                    infiles += [str(PurePosixPath("/", target)) for target in targets]
             else:
                 infiles += [str(Path(file_path, "udx", type, "*.gml"))]
 
@@ -294,11 +306,19 @@ class Dataset:
 
         # Codelists
         codelist_infiles = []
-        pat = re.compile(rf".*codelists\/.*\.xml$")
-        with zipfile.ZipFile(file_path) as f:
-            namelist = f.namelist()
-            codelist_infiles = list(filter(lambda x: pat.match(x), namelist))
-            codelist_infiles = [str(Path("/", target)) for target in codelist_infiles]
+        pat = re.compile(r".*codelists\/.*\.xml$")
+
+        if zipfile.is_zipfile(file_path):
+            with zipfile.ZipFile(file_path) as f:
+                namelist = f.namelist()
+                codelist_infiles = list(filter(lambda x: pat.match(x), namelist))
+                # NOTE: zipfs requires POSIX path
+                codelist_infiles = [
+                    str(Path("/", target)) for target in codelist_infiles
+                ]
+        else:
+            # TODO: Test support for non-zip codelists
+            codelist_infiles += [str(Path(file_path, "codelists", "*.xml"))]
 
         generators.simplecityjson.cityjson_from_citygml(
             infiles,
