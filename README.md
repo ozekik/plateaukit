@@ -30,9 +30,8 @@ pip install plateaukit
 ## ロードマップ Roadmap
 
 - [x] ドキュメントの整備
-- [ ] データセットの軽量版のバンドルを提供
-- [ ] ファイル分割の平均化
 - [ ] テストの整備
+- [ ] 軽量版データセットの提供
 - [ ] [ipydeck](https://github.com/ozekik/ipydeck)への移行
 - [ ] JupyterLiteサポート
 - [ ] 標高データの可視化
