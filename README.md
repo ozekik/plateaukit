@@ -37,6 +37,7 @@ pip install plateaukit
 - [ ] JupyterLiteサポート
 - [ ] 標高データの可視化
 - [ ] LOD2サポート (WIP)
+- [ ] [ibis](https://github.com/ibis-project/ibis) (+geospatial) の検討
 
 ## その他のツール・ライブラリ Alternatives
 
