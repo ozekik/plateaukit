@@ -60,6 +60,7 @@ nav:
       - インストール: install.md
       - チュートリアル:
           - JupyterLabで試す: tutorial/jupyter.ipynb
+          - 都市モデルとレイヤーを重ねる: tutorial/maps-overlay.ipynb
       - コマンドラインでの利用:
           - PLATEAUデータの追加と削除: cli/setup.md
           - PLATEAUデータの情報を取得: cli/info.md
@@ -74,6 +75,8 @@ nav:
       # - Usage:
       - 開発に参加する: contributing.md
       - 🚧 API リファレンス: api.md
+      - FAQ:
+          - Windows: faq.md
       - ライセンス: license.md
   - PlateauLab:
       - PlateauLab について: lab/index.md
