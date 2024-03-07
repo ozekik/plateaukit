@@ -355,7 +355,7 @@ def generate_qmesh(infiles, outfile):
 
 
 @cli.command("config")
-def info_cmd():
+def config_cmd():
     """Show PlateauKit configuration information.
 
     PlateauKit の設定情報を表示します。
