@@ -38,33 +38,38 @@ def install_dataset(
     if not city:
         raise RuntimeError("Invalid dataset name")
 
+    installed = is_dataset_installed(dataset_id, format)
+
+    # Abort if a dataset is already installed
+    if not force and installed:
+        raise RuntimeError(
+            f'ERROR: Dataset "{dataset_id}" ({format}) is already installed'
+        )
+
     if local:
         local = Path(local).resolve()
+
         if not local.exists():
             raise RuntimeError("Local file not found")
-        # print(local)
+
         config = Config()
         config.datasets[dataset_id][format] = local
         config.save()
+
         return
     else:
-        # Abort if a dataset is already installed
-        installed = is_dataset_installed(dataset_id, format)
-        if not force and installed:
-            raise RuntimeError(
-                f'ERROR: Dataset "{dataset_id}" ({format}) is already installed'
-            )
-            return
-
         # TODO: Check beforehand if specified format is available in city_list
-        resource_id = city[format]
+        resource_id = city.get(format, None)
 
-        # print(dataset_id, resource_id)
+        if not resource_id:
+            raise RuntimeError(f"Format '{format}' is not available for '{dataset_id}'")
 
         config = Config()
         destfile_path = downloader.download_resource(resource_id, dest=config.data_dir)
+
         config.datasets[dataset_id][format] = destfile_path
         config.save()
+
         return
 
 

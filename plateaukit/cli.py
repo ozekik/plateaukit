@@ -135,7 +135,7 @@ def install_cmd(
 
     if dataset_id:
         try:
-            install_dataset(dataset_id, format, local, force)
+            install_dataset(dataset_id, format=format, local=local, force=force)
         except Exception as e:
             raise click.UsageError(str(e))
 
