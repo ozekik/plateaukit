@@ -1,6 +1,8 @@
 # PlateauKit + PlateauLab
 
 [![PyPI](https://img.shields.io/pypi/v/plateaukit.svg)](https://pypi.org/project/plateaukit/)
+[![build](https://github.com/ozekik/plateaukit/actions/workflows/ci.yaml/badge.svg)](https://github.com/ozekik/plateaukit/actions/workflows/ci.yaml)
+[![Coverage Status](https://codecov.io/gh/ozekik/plateaukit/branch/master/graph/badge.svg)](https://codecov.io/gh/ozekik/plateaukit)
 <!-- [![PyPI downloads](https://img.shields.io/pypi/dm/plateaukit.svg)](https://pypistats.org/packages/plateaukit) -->
 
 > Python library and utility for programming 3D city models by MLIT Project PLATEAU
