@@ -32,11 +32,12 @@ pip install plateaukit
 ## ロードマップ Roadmap
 
 - [x] ドキュメントの整備
-- [ ] テストの整備
+- [x] 最小限のテストの整備
 - [ ] 軽量版データセットの提供
 - [ ] [ipydeck](https://github.com/ozekik/ipydeck)への移行
 - [ ] JupyterLiteサポート
 - [ ] 標高データの可視化
+- [ ] テストの拡充
 - [ ] LOD2サポート (WIP)
 - [ ] [ibis](https://github.com/ibis-project/ibis) (+geospatial) の検討
 
@@ -53,8 +54,8 @@ pip install plateaukit
 ### その他
 
 - Blender: [Plateau-Blender-Importer](https://github.com/nneri-hin/Plateau-Blender-Importer)
-- Unreal Engine: [PLATEAU-SDK-for-Unreal](https://github.com/Project-PLATEAU/PLATEAU-SDK-for-Unreal)
-- Unity: [PLATEAU-SDK-for-Unity](https://github.com/Project-PLATEAU/PLATEAU-SDK-for-Unity)
+- Unreal Engine: [PLATEAU SDK for Unreal](https://github.com/Project-PLATEAU/PLATEAU-SDK-for-Unreal)
+- Unity: [PLATEAU SDK for Unity](https://github.com/Project-PLATEAU/PLATEAU-SDK-for-Unity)
 
 ## クレジット Credits
 
