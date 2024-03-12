@@ -29,16 +29,16 @@ class PLATEAUCityGMLParser(CityGMLParser):
         self.target_epsg = target_epsg
         self.codelist_file_map = codelist_file_map
 
-    def _get_epsg_code(self, tree: etree._Element) -> str | None:
+    def _get_epsg_code(self, tree: etree._ElementTree) -> str | None:
         """Extract EPSG code from CityGML tree."""
 
         path = "./gml:boundedBy/gml:Envelope"
         result = tree.find(path, nsmap)
-
-        if result is None:
-            raise Exception("EPSG code not found")
-
+        result = result if result is not None else {}
         srs_name = result.get("srsName")
+
+        if srs_name is None:
+            raise Exception("EPSG code not found")
 
         m = re.match(r"http://www.opengis.net/def/crs/EPSG/0/(\d+)", srs_name)
 

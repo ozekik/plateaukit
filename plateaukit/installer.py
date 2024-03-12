@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 import sys
 from os import PathLike
@@ -23,7 +25,7 @@ def list_installed_datasets():
 def install_dataset(
     dataset_id: str,
     format: str = "citygml",
-    local: str | PathLike = None,
+    local: str | PathLike | None = None,
     force: bool = False,
 ):
     """Download and install PLATEAU datasets."""

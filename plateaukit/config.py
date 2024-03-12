@@ -16,7 +16,7 @@ if pydantic_version.startswith("1"):
         _data_dir: str = PrivateAttr(
             default=str(Path(user_data_dir("plateaukit"), "data"))
         )
-        datasets: Any | None = None
+        datasets: Any = Field(default_factory=lambda: defaultdict(dict))
 
         @validator("path", pre=True, always=True)
         @classmethod
@@ -76,9 +76,9 @@ else:
         _data_dir: str = PrivateAttr(
             default=str(Path(user_data_dir("plateaukit"), "data"))
         )
-        datasets: DefaultDict[
-            str, Annotated[dict, Field(default_factory=dict)]
-        ] | None = None
+        datasets: DefaultDict[str, Annotated[dict, Field(default_factory=dict)]] = (
+            Field(default_factory=lambda: defaultdict(dict))
+        )
 
         @field_validator("path", mode="before")
         @classmethod
@@ -122,7 +122,7 @@ else:
         def save(self):
             with open(self.path, "w") as f:
                 data = self.model_dump_json(
-                    indent=2, exclude_none=True, exclude=["path"]
+                    indent=2, exclude_none=True, exclude={"path"}
                 )
                 # TODO: remove
                 # print("Saved:", data)

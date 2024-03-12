@@ -1,14 +1,15 @@
+from __future__ import annotations
+
 import traceback
-from concurrent.futures import Future
-from multiprocessing import Event
-from multiprocessing.pool import Pool
+from concurrent.futures import Future, ProcessPoolExecutor
+from threading import Event
 
 from plateaukit.logger import logger
 
 
 def wait_futures(
-    futures: Future,
-    pool: Pool,
+    futures: list[Future],
+    pool: ProcessPoolExecutor,
     quit: Event,
     futures_status: dict,
     overall_progress,

@@ -30,13 +30,15 @@ def geojson_from_gml_serial_with_quit(
 
     if zipfile is not None:
         zip_fs = open_fs(f"zip://{zipfile}")
+    else:
+        zip_fs = None
 
     if codelist_infiles and infiles:
         base_path = Path(infiles[0]).parent  # TODO: Fix this
         codelist_file_map = dict()
 
         for codelist_infile in codelist_infiles:
-            if zipfile is not None:
+            if zip_fs is not None:
                 with zip_fs.openbin(codelist_infile, "r") as f:
                     relative_path = os.path.relpath(codelist_infile, base_path)
                     codelist_file_map[relative_path] = io.BytesIO(f.read())
@@ -56,7 +58,7 @@ def geojson_from_gml_serial_with_quit(
 
         logger.debug(f"infile: {infile}")
 
-        if zipfile:
+        if zip_fs:
             with zip_fs.openbin(infile, "r") as f:
                 collection = geojson_from_gml_single(
                     f,
@@ -66,7 +68,7 @@ def geojson_from_gml_serial_with_quit(
                     **kwargs,
                 )
         else:
-            with open(infile, "r") as f:
+            with open(infile, "rb") as f:
                 collection = geojson_from_gml_single(
                     f,
                     types=types,
@@ -81,7 +83,7 @@ def geojson_from_gml_serial_with_quit(
         except Exception as err:
             logger.debug(err)
 
-    if zipfile:
+    if zip_fs:
         zip_fs.close()
 
     collection = FeatureCollection(features)
@@ -91,4 +93,5 @@ def geojson_from_gml_serial_with_quit(
         geojson.dump(collection, f, ensure_ascii=False, separators=(",", ":"))
 
     # Complete progress
-    _progress[task_id] = {"progress": total, "total": total}
+    if _progress:
+        _progress[task_id] = {"progress": total, "total": total}

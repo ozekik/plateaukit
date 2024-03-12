@@ -2,6 +2,7 @@ import re
 import zipfile
 from os import PathLike
 from pathlib import Path, PurePosixPath
+from typing import Sequence
 
 import geopandas as gpd
 from pyogrio import read_dataframe
@@ -112,7 +113,7 @@ class Dataset:
         return Area(area_gdf)
 
     def area_from_points(
-        self, points: list[list[float]], size: list[float] = [1000, 1000]
+        self, points: list[Sequence[float]], size: list[float] = [1000, 1000]
     ):
         """Get an area from the dataset by points.
 

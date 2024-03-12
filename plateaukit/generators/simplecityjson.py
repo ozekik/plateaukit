@@ -217,13 +217,15 @@ class CityJSONConverter:
 
         if zipfile is not None:
             zip_fs = open_fs(f"zip://{zipfile}")
+        else:
+            zip_fs = None
 
         if codelist_infiles and infiles:
             base_path = Path(infiles[0]).parent  # TODO: Fix this
             codelist_file_map = dict()
 
             for codelist_infile in codelist_infiles:
-                if zipfile is not None:
+                if zip_fs:
                     with zip_fs.open(codelist_infile, "rb") as f:
                         relative_path = os.path.relpath(codelist_infile, base_path)
                         codelist_file_map[relative_path] = io.BytesIO(f.read())
@@ -242,7 +244,7 @@ class CityJSONConverter:
             if task_id is not None and _progress is not None:
                 _progress[task_id] = {"progress": i + 1, "total": total}
 
-            if zipfile is not None:
+            if zip_fs:
                 with zip_fs.open(infile, "r") as f:
                     citygml = parser.parse(f)
             else:
@@ -262,25 +264,26 @@ class CityJSONConverter:
 
                 indexed_geoms = []
 
-                for geom in city_obj.geometry:
-                    if geom["lod"] not in lod:
-                        continue
+                if city_obj.geometry is not None:
+                    for geom in city_obj.geometry:
+                        if geom["lod"] not in lod:
+                            continue
 
-                    # print("geom", geom)
-                    boundaries, vertices_map = get_indexed_boundaries(
-                        geom,
-                        self.vertices_map,
-                        ground=ground,
-                    )
+                        # print("geom", geom)
+                        boundaries, vertices_map = get_indexed_boundaries(
+                            geom,
+                            self.vertices_map,
+                            ground=ground,
+                        )
 
-                    indexed_geom = dict(
-                        geom, lod=str(geom["lod"]), boundaries=boundaries
-                    )
+                        indexed_geom = dict(
+                            geom, lod=str(geom["lod"]), boundaries=boundaries
+                        )
 
-                    # print("indexed_geom", indexed_geom)
-                    indexed_geoms.append(indexed_geom)
+                        # print("indexed_geom", indexed_geom)
+                        indexed_geoms.append(indexed_geom)
 
-                    self.vertices_map = vertices_map
+                        self.vertices_map = vertices_map
 
                 # print("indexed_geoms", indexed_geoms)
 
@@ -289,7 +292,7 @@ class CityJSONConverter:
 
                 yield obj_id, {
                     "type": city_obj.type,  # TODO: There is no Track type etc. in CityJSON
-                    "attributes": dict_key_to_camel_case(city_obj.attributes),
+                    "attributes": dict_key_to_camel_case(city_obj.attributes or {}),
                     # "attributes": {"建物ID": "13104-bldg-52530", "measuredHeight": 61.9},
                     # "children": [
                     #     "ID_22730c8f-9fbc-4d58-88dd-5569d7480fad",
@@ -318,7 +321,7 @@ class CityJSONConverter:
                     # "address": [{"Country": "日本", "Locality": "東京都新宿区西新宿一丁目"}],
                 }
 
-        if zipfile is not None:
+        if zip_fs:
             zip_fs.close()
 
 
@@ -388,7 +391,8 @@ def cityson_from_gml_serial_with_quit(
     total = len(infiles) + 1  # + 1 for geojson.dump
 
     # Complete the progress bar
-    _progress[task_id] = {"progress": total, "total": total}
+    if _progress:
+        _progress[task_id] = {"progress": total, "total": total}
 
 
 def cityjson_from_citygml(

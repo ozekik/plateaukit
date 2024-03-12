@@ -1,8 +1,9 @@
 # %%
+from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import Optional
+from typing import Annotated, Optional, Sequence
 
 import requests
 from normalize_japanese_addresses import normalize
@@ -45,7 +46,9 @@ class ResultPoint:
     all: Optional[list[AddressPoint | LandmarkPoint]] = None
 
 
-def _get_bbox(points: list[tuple[float, float]]):
+def _get_bbox(
+    points: list[Annotated[Sequence[float], 2] | Annotated[Sequence[float], 3]]
+):
     """Returns a bounding box from a list of points."""
     xs = [p[0] for p in points]
     ys = [p[1] for p in points]
@@ -58,7 +61,7 @@ def _get_bbox_centroid(bbox: list[float]):
     return [(bbox[0] + bbox[2]) / 2, (bbox[1] + bbox[3]) / 2]
 
 
-def _pad_bbox(bbox: list[float], min_size: [float, float]):
+def _pad_bbox(bbox: list[float], min_size: Annotated[Sequence[float], 2]):
     """Returns a padded bounding box."""
 
     # print(bbox)
@@ -93,7 +96,12 @@ def address_from_postcode(code: str):
     >>> address_from_postcode("108-0073")
     PostalAddress(prefecture='東京都', address1='港区', address2='三田', address3='', address4='')
     """
+
     parsed = re.match(r"^([0-9]{3})\-?([0-9]{4})$", code)
+
+    if not parsed:
+        raise RuntimeError("Invalid postal code")
+
     first, second = parsed.groups()
     # Using a fork by arrow-payment of https://madefor.github.io/postal-code-api/api/v1/ . Thanks!
     resp = requests.get(
@@ -138,7 +146,9 @@ def point_from_address(address: str):
     )
 
 
-def bbox_from_address(address: str, min_size: [float, float] = [1000, 1000]):
+def bbox_from_address(
+    address: str, min_size: Annotated[Sequence[float], 2] = [1000, 1000]
+):
     """Returns a bounding box from an address."""
 
     point = point_from_address(address)
@@ -194,7 +204,9 @@ def point_from_postcode(code: str):
         raise NotImplementedError()
 
 
-def bbox_from_postcode(code: str, min_size: [float, float] = [1000, 1000]):
+def bbox_from_postcode(
+    code: str, min_size: Annotated[Sequence[float], 2] = [1000, 1000]
+):
     """Returns a bounding box from a Japanese postal code."""
 
     point = point_from_postcode(code)
@@ -236,10 +248,11 @@ def point_from_landmark(landmark_name: str):
 
     def parse_point(literal):
         m = re.match(r"^Point\(([0-9\.]+) ([0-9\.]+)\)$", literal)
-        try:
-            lng, lat = m.groups()
-        except:
+        if not m:
             raise RuntimeError("Failed to parse coordinate")
+
+        lng, lat = m.groups()
+
         return [float(lng), float(lat)]
 
     coordinate_raw = records[0]["coordinate_location"]["value"]
@@ -258,10 +271,17 @@ def point_from_landmark(landmark_name: str):
     )
 
 
-def bbox_from_landmark(landmark_name: str, min_size: [float, float] = [1000, 1000]):
+def bbox_from_landmark(
+    landmark_name: str, min_size: Annotated[Sequence[float], 2] = [1000, 1000]
+):
     """Returns a bounding box from a landmark."""
 
     point = point_from_landmark(landmark_name)
+
+    if point is None:
+        return None
+
     bbox = _get_bbox([(point.lng, point.lat)])
     bbox = _pad_bbox(bbox, min_size)
+
     return bbox

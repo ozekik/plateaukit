@@ -42,10 +42,12 @@ class GeometryParser:
         maplibre: Whether to use MapLibre scale factor.
     """
 
-    transformer: pyproj.Transformer
+    transformer: pyproj.Transformer | None
     maplibre: bool = False
 
-    def __init__(self, transformer: pyproj.Transformer = None, maplibre: bool = False):
+    def __init__(
+        self, transformer: pyproj.Transformer | None = None, maplibre: bool = False
+    ):
         self.transformer = transformer
         self.maplibre = maplibre
 
@@ -117,10 +119,10 @@ class CityObjectParser:
         codelist_map: A map from codelist path to corresponding dict.
     """
 
-    transformer: pyproj.Transformer
-    codelist_map: dict[str, dict[str, str]] | None = {}
+    transformer: pyproj.Transformer | None
+    codelist_map: dict[str, dict[str, str]] = {}
 
-    def __init__(self, transformer: pyproj.Transformer = None, codelist_map={}):
+    def __init__(self, transformer: pyproj.Transformer | None = None, codelist_map={}):
         self.transformer = transformer
         self.codelist_map = codelist_map or {}
 

@@ -1,6 +1,7 @@
 import io
 import re
 import zipfile
+from os import PathLike
 from pathlib import Path
 
 from fs import open_fs
@@ -20,7 +21,7 @@ class CityGMLDataset:
 
     dataset_id: str
 
-    def __init__(self, dataset_id: str):
+    def __init__(self, dataset_id: str | PathLike):
         """Initialize a dataset.
 
         Args:
@@ -28,7 +29,7 @@ class CityGMLDataset:
         """
         # TODO: Support zip file as input
 
-        self.dataset_id = dataset_id
+        self.dataset_id = str(dataset_id)
 
         config = Config()
         record = config.datasets.get(self.dataset_id, None)

@@ -61,7 +61,9 @@ def prebuild(dataset_id: str, *, split: int = 10, simple_output=False) -> None:
                 df = pd.concat([df, subdf])
 
             # TODO: Use more accurate CRS
-            centroid = df.to_crs(3857).centroid.to_crs(4326)
+            mercator = df.to_crs(3857)
+            centroid_mercator = mercator.centroid
+            centroid = centroid_mercator.to_crs(4326)
 
             df["longitude"] = centroid.x
             df["latitude"] = centroid.y

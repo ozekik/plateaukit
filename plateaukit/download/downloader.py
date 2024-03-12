@@ -31,10 +31,12 @@ def download_resource(resource_id, dest="/tmp"):
     print(f"Download file as: {_destfile_path}")
 
     with requests.get(file_url, stream=True) as r:
-        total_length = int(r.headers.get("Content-Length"))
-        with wrap_file(r.raw, total_length, description="Downloading...") as raw:
+        value = r.headers.get("Content-Length")
+        total_length = int(value) if value is not None else -1
+        with wrap_file(r.raw, total=total_length, description="Downloading...") as raw:
             with open(destfile_path, "wb") as output:
                 shutil.copyfileobj(raw, output)
+
     return destfile_path
 
 

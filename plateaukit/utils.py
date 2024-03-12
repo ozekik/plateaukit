@@ -1,9 +1,9 @@
 from decimal import Decimal
 from itertools import islice
-from typing import Any
+from typing import Any, Iterable
 
 
-def chunker(it: iter, size: int):
+def chunker(it: Iterable, size: int):
     """Turn an iterable into a tuple of chunks in a specified size."""
 
     iterator = iter(it)

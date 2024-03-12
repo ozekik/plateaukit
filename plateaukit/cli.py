@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import click
 from prettytable import PrettyTable
 from rich.console import Console
@@ -157,7 +159,7 @@ def install_cmd(
     multiple=True,
 )
 @click.option("--keep-files", is_flag=True, default=False)
-def uninstall_cmd(dataset_id, formats, keep_files):
+def uninstall_cmd(dataset_id, formats: list[str], keep_files):
     """Uninstall PLATEAU datasets.
 
     PLATEAU データセットをアンインストールします。
@@ -166,7 +168,7 @@ def uninstall_cmd(dataset_id, formats, keep_files):
         raise Exception("Missing argument")
 
     config = Config()
-    formats = formats or config.datasets[dataset_id].keys()
+    formats = formats or list(config.datasets[dataset_id].keys())
 
     # TODO: Fix duplicated code in uninstall_dataset
     if not keep_files:

@@ -84,7 +84,8 @@ def geojson_from_gml_single(
 
         polygons = [Polygon([base_polygon]) for base_polygon in base_polygons]
 
-        properties = dict(obj.attributes)
+        properties = dict(obj.attributes) if obj.attributes else {}
+
         if include_type:
             properties["type"] = obj.type
 
