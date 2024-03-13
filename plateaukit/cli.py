@@ -264,7 +264,7 @@ def generate_cityjson(infiles, outfile, dataset_id, types, split, ground):
         dataset.to_cityjson(outfile, types=types, split=split, ground=ground, **params)
 
     else:
-        generators.simplecityjson.cityjson_from_citygml(infiles, outfile, **params)
+        generators.cityjson.cityjson_from_citygml(infiles, outfile, **params)
 
 
 def _generate_geojson(

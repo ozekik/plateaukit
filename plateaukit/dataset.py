@@ -321,7 +321,7 @@ class Dataset:
             # TODO: Test support for non-zip codelists
             codelist_infiles += [str(Path(file_path, "codelists", "*.xml"))]
 
-        generators.simplecityjson.cityjson_from_citygml(
+        generators.cityjson.cityjson_from_citygml(
             infiles,
             outfile,
             split=split,
