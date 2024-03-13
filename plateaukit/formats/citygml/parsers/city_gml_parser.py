@@ -5,9 +5,9 @@ import pyproj
 from lxml import etree
 
 from plateaukit.formats.citygml import CityGML
-from plateaukit.parsers.city_object_parser import PLATEAUCityObjectParser
-from plateaukit.parsers.codelist_parser import CodelistParser
-from plateaukit.parsers.constants import nsmap
+from plateaukit.formats.citygml.parsers.city_object_parser import PLATEAUCityObjectParser
+from plateaukit.formats.citygml.parsers.codelist_parser import CodelistParser
+from plateaukit.formats.citygml.constants import nsmap
 
 
 class CityGMLParser:

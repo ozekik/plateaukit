@@ -1,4 +1,3 @@
-import warnings
 from dataclasses import dataclass
 
 import pyproj
@@ -6,8 +5,9 @@ from lxml import etree
 
 from plateaukit import utils
 from plateaukit.formats.citygml import CityObject
-from plateaukit.parsers.constants import nsmap
-from plateaukit.parsers.extractors import city_object_extractors as extractors
+from plateaukit.formats.citygml.constants import nsmap
+from plateaukit.formats.citygml.extractors import city_object_extractors as extractors
+from plateaukit.formats.citygml.parsers.xml_models.city_object import CityObjectXML
 
 MAPLIBRE_SCALE_FACTOR = 10000000
 MERCATOR_HALF_WORLD_LENGTH = 20037508.342789243906736373901367187500
@@ -116,11 +116,9 @@ class CityObjectParser:
 
     Attributes:
         transformer: A pyproj.Transformer instance.
-        codelist_map: A map from codelist path to corresponding dict.
     """
 
     transformer: pyproj.Transformer | None
-    codelist_map: dict[str, dict[str, str]] = {}
 
     def __init__(self, transformer: pyproj.Transformer | None = None, codelist_map={}):
         self.transformer = transformer
@@ -128,52 +126,7 @@ class CityObjectParser:
 
 
 class PLATEAUCityObjectParser(CityObjectParser):
-    def _get_gml_id(self, root: etree._Element) -> str | None:
-        """Get gml:id of a CityGML object."""
-
-        path = "./[@gml:id]"
-        result = root.find(path, nsmap)
-
-        if result is None:
-            warnings.warn(
-                "gml:id not found"
-                # f"gml:id not found\n{etree.tostring(tree, pretty_print=True).decode()}"
-            )
-            return None
-
-        id = result.get(f"{{{nsmap['gml']}}}id")
-
-        return id if id is not None else None
-
-    def __get_codespace_attribute(self, root, xpath) -> str | None:
-        el = root.find(xpath, nsmap)
-
-        if el is None:
-            return None
-
-        # Check if el has codeSpace attribute
-        if (code_space_path := el.get("codeSpace")) is not None:
-            code_dict = self.codelist_map.get(code_space_path, None)
-
-            if code_dict is None:
-                return None
-
-            key = el.text
-            value = code_dict.get(key, None)
-            return value
-
-        value = el.text if el is not None else None
-        return value
-
-    def _get_name(self, root) -> str | None:
-        value = self.__get_codespace_attribute(root, "./gml:name")
-        return value
-
-    def _get_usage(self, root) -> str | None:
-        value = self.__get_codespace_attribute(root, "./bldg:usage")
-        return value
-
-    def _get_geometry(self, root):
+    def _get_geometry(self, root: etree._Element):
         geoms = []
 
         parser = GeometryParser(transformer=self.transformer)
@@ -300,22 +253,23 @@ class PLATEAUCityObjectParser(CityObjectParser):
 
         return geoms
 
-    def _parse_attributes(self, el):
+    def _parse_attributes(self, el: CityObjectXML) -> dict:
         # TODO: parse `uro:` attributes
 
         attributes = dict()
 
-        if el.tag == object_type_tags["Building"]:
-            attributes["building_id"] = extractors._get_building_id(el)
+        if el.tree.tag == object_type_tags["Building"]:
+            attributes["building_id"] = extractors.get_building_id(el)
 
             # Optional attributes
+            # TODO: Change extractors to transformers
             optional_attributes = {
-                "measured_height": extractors._get_measured_height(el),
-                "year_of_construction": extractors._get_year_of_construction(el),
-                "storeys_above_ground": extractors._get_storeys_above_ground(el),
-                "storeys_below_ground": extractors._get_storeys_below_ground(el),
-                "name": self._get_name(el),
-                "usage": self._get_usage(el),
+                "measured_height": extractors.get_measured_height(el),
+                "year_of_construction": extractors.get_year_of_construction(el),
+                "storeys_above_ground": extractors.get_storeys_above_ground(el),
+                "storeys_below_ground": extractors.get_storeys_below_ground(el),
+                "name": extractors.get_name(el),
+                "usage": extractors.get_usage(el),
             }
             optional_attributes = {
                 k: v for k, v in optional_attributes.items() if v is not None
@@ -324,16 +278,18 @@ class PLATEAUCityObjectParser(CityObjectParser):
 
         return attributes
 
-    def parse(self, el) -> CityObject:
-        citygml_id = self._get_gml_id(el)
+    def parse(self, element: etree._Element) -> CityObject:
+        el = CityObjectXML(element, codelist_map=self.codelist_map)
+
+        citygml_id = el.get_gml_id()
         address = None  # self._get_address(el)
 
         attributes = self._parse_attributes(el)
 
-        if el.tag == object_type_tags["Building"]:
-            attributes["building_id"] = extractors._get_building_id(el)
+        if el.tree.tag == object_type_tags["Building"]:
+            attributes["building_id"] = extractors.get_building_id(el)
 
-            geometry = self._get_geometry(el)
+            geometry = self._get_geometry(el.tree)
 
             obj = Building(
                 type="Building",
@@ -342,8 +298,8 @@ class PLATEAUCityObjectParser(CityObjectParser):
                 geometry=geometry,
                 address=address,
             )
-        elif el.tag == object_type_tags["Road"]:
-            geometry = self._get_geometry(el)
+        elif el.tree.tag == object_type_tags["Road"]:
+            geometry = self._get_geometry(el.tree)
 
             obj = CityObject(
                 type="Road",
@@ -351,8 +307,8 @@ class PLATEAUCityObjectParser(CityObjectParser):
                 attributes=attributes,
                 geometry=geometry,
             )
-        elif el.tag == object_type_tags["Bridge"]:
-            geometry = self._get_geometry(el)
+        elif el.tree.tag == object_type_tags["Bridge"]:
+            geometry = self._get_geometry(el.tree)
 
             obj = CityObject(
                 type="Bridge",
@@ -361,6 +317,6 @@ class PLATEAUCityObjectParser(CityObjectParser):
                 geometry=geometry,
             )
         else:
-            raise NotImplementedError(f"Unknown object type: {el.tag}")
+            raise NotImplementedError(f"Unknown object type: {el.tree.tag}")
 
         return obj

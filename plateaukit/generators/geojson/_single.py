@@ -2,8 +2,8 @@ from typing import Any, BinaryIO
 
 from geojson import Feature, FeatureCollection, GeometryCollection, Polygon
 
+from plateaukit.formats.citygml import PLATEAUCityGMLParser
 from plateaukit.logger import logger
-from plateaukit.parsers import PLATEAUCityGMLParser
 from plateaukit.utils import dict_key_to_camel_case
 
 

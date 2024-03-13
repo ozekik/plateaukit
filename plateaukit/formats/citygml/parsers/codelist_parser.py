@@ -1,6 +1,6 @@
 from lxml import etree
 
-from plateaukit.parsers.constants import nsmap
+from plateaukit.formats.citygml.constants import nsmap
 
 
 class CodelistParser:
