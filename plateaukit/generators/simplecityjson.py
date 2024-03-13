@@ -13,8 +13,8 @@ from fs import open_fs
 from rich.progress import Progress
 
 from plateaukit import parallel, utils
+from plateaukit.formats.citygml import PLATEAUCityGMLParser
 from plateaukit.logger import logger
-from plateaukit.parsers import PLATEAUCityGMLParser
 from plateaukit.utils import dict_key_to_camel_case
 
 # from json_stream import streamable_dict

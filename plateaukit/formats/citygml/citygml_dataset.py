@@ -7,9 +7,9 @@ from pathlib import Path
 from fs import open_fs
 from lxml import etree
 
-from plateaukit import parsers
 from plateaukit.config import Config
-from plateaukit.parsers import constants
+from plateaukit.formats.citygml import constants
+from plateaukit.formats.citygml.parsers import CodelistParser
 
 
 class CityGMLDataset:
@@ -175,7 +175,7 @@ class CityGMLDataset:
         codelists = {}
 
         for codelist_infile, file_obj in codelist_file_map.items():
-            parser = parsers.CodelistParser()
+            parser = CodelistParser()
             codelists[codelist_infile] = parser.parse(file_obj)
 
         return codelists
