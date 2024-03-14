@@ -6,7 +6,7 @@ from rich.console import Console
 
 from plateaukit import generators
 from plateaukit.config import Config
-from plateaukit.dataset import load_dataset
+from plateaukit.core.dataset import load_dataset
 from plateaukit.installer import install_dataset, uninstall_dataset
 from plateaukit.logger import logger, set_log_level
 from plateaukit.prebuild import prebuild

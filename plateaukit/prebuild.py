@@ -5,7 +5,7 @@ from pathlib import Path
 from rich import get_console
 
 from plateaukit.config import Config
-from plateaukit.dataset import load_dataset
+from plateaukit.core.dataset import load_dataset
 
 
 def prebuild(dataset_id: str, *, split: int = 10, simple_output=False) -> None:

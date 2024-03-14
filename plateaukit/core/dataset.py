@@ -8,8 +8,8 @@ import geopandas as gpd
 from pyogrio import read_dataframe
 
 from plateaukit import defaults, generators, geocoding
-from plateaukit.area import Area
 from plateaukit.config import Config
+from plateaukit.core.area import Area
 from plateaukit.logger import logger
 
 # from pyogrio import read_dataframe
