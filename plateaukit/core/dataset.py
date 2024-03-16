@@ -12,7 +12,7 @@ try:
 except ImportError:
     read_dataframe = None
 
-from plateaukit import defaults, generators, geocoding
+from plateaukit import defaults, geocoding
 from plateaukit.config import Config
 from plateaukit.core.area import Area
 from plateaukit.logger import logger
@@ -193,6 +193,9 @@ class Dataset:
             split: Split the output into specified number of files.
             **kwargs: Keyword arguments for the generator.
         """
+        # NOTE: generators requires multiprocessing at the moment, unavailable in pyodide
+        from plateaukit import generators
+
         if not self.dataset_id:
             raise Exception("Missing dataset_id")
 
@@ -277,6 +280,9 @@ class Dataset:
             split: Split the output into specified number of files.
             **kwargs: Keyword arguments for the generator.
         """
+        # NOTE: generators requires multiprocessing at the moment, unavailable in pyodide
+        from plateaukit import generators
+
         params = {}
 
         # if precision:
