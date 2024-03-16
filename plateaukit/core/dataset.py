@@ -4,15 +4,18 @@ from os import PathLike
 from pathlib import Path, PurePosixPath
 from typing import Sequence
 
+import flatgeobuf as fgb
 import geopandas as gpd
-from pyogrio import read_dataframe
 
-from plateaukit import defaults, generators, geocoding
+try:
+    from pyogrio import read_dataframe
+except ImportError:
+    read_dataframe = None
+
+from plateaukit import defaults, geocoding
 from plateaukit.config import Config
 from plateaukit.core.area import Area
 from plateaukit.logger import logger
-
-# from pyogrio import read_dataframe
 
 
 class Dataset:
@@ -43,12 +46,14 @@ class Dataset:
     def load_gdf(self):
         """Load the GeoDataFrame from the prebuilt dataset."""
 
-        from pyogrio import read_dataframe
-
         config = Config()
         gpkg_path = config.datasets[self.dataset_id].get("gpkg")
 
         if gpkg_path:
+            if not read_dataframe:
+                raise ImportError(
+                    "Package pyogrio is required. Please install it using `pip install pyogrio`."
+                ) from None
             self.gdf = read_dataframe(gpkg_path)
         else:
             raise RuntimeError("Missing GeoPackage; Please prebuild the dataset first")
@@ -79,10 +84,17 @@ class Dataset:
             remote_fgb = defaults.cloud_base_url + self.dataset_id.replace(
                 ".cloud", ".fgb"
             )
-            area_gdf = read_dataframe(
-                remote_fgb,
-                bbox=tuple(bbox),
-            )
+            if read_dataframe:
+                area_gdf = read_dataframe(
+                    remote_fgb,
+                    bbox=tuple(bbox),
+                )
+            else:
+                feature_collection = fgb.load_http(
+                    remote_fgb,
+                    bbox=tuple(bbox),
+                )
+                area_gdf = gpd.GeoDataFrame.from_features(feature_collection)
         else:
             if self.gdf is None:
                 self.load_gdf()
@@ -181,6 +193,9 @@ class Dataset:
             split: Split the output into specified number of files.
             **kwargs: Keyword arguments for the generator.
         """
+        # NOTE: generators requires multiprocessing at the moment, unavailable in pyodide
+        from plateaukit import generators
+
         if not self.dataset_id:
             raise Exception("Missing dataset_id")
 
@@ -265,6 +280,9 @@ class Dataset:
             split: Split the output into specified number of files.
             **kwargs: Keyword arguments for the generator.
         """
+        # NOTE: generators requires multiprocessing at the moment, unavailable in pyodide
+        from plateaukit import generators
+
         params = {}
 
         # if precision:

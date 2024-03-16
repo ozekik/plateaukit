@@ -2,6 +2,8 @@ import glob
 import tempfile
 from pathlib import Path
 
+import geopandas as gpd
+import pandas as pd
 from rich import get_console
 
 from plateaukit.config import Config
@@ -10,10 +12,12 @@ from plateaukit.core.dataset import load_dataset
 
 def prebuild(dataset_id: str, *, split: int = 10, simple_output=False) -> None:
     """Prebuild PLATEAU datasets."""
-
-    import geopandas as gpd
-    import pandas as pd
-    from pyogrio import read_dataframe, write_dataframe
+    try:
+        from pyogrio import read_dataframe, write_dataframe
+    except ImportError:
+        raise ImportError(
+            "Package pyogrio is required. Please install it using `pip install pyogrio`."
+        ) from None
 
     console = get_console()
 
