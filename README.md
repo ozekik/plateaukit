@@ -34,9 +34,9 @@ pip install plateaukit
 
 - [x] ドキュメントの整備
 - [x] 最小限のテストの整備
-- [ ] 軽量版データセットの提供
 - [ ] [ipydeck](https://github.com/ozekik/ipydeck)への移行
 - [ ] JupyterLiteサポート
+- [ ] 軽量版データセットの提供
 - [ ] 標高データの可視化
 - [ ] テストの拡充
 - [ ] LOD2サポート (WIP)
