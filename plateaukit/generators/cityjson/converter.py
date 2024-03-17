@@ -183,10 +183,58 @@ def get_indexed_boundaries(geometry, vertices_map: VerticesMap, ground=False):
 
 
 class CityJSONConverter:
-    def __init__(self, target_epsg):
+    def __init__(self, target_epsg: int):
         self.target_epsg = target_epsg
 
         self.vertices_map = VerticesMap()
+
+    def convert(
+        self,
+        infiles: list[str],
+        *,
+        object_types: list[str] | None,
+        lod: list[int],
+        ground: bool = False,
+        codelist_infiles: list[str] | None = None,
+        zipfile: str | PathLike | None = None,
+        task_id=None,
+        quit=None,
+        _progress=None,
+    ):
+        city_objects = dict(
+            self.generate_city_object(
+                infiles,
+                object_types=object_types,
+                lod=lod,
+                ground=ground,
+                codelist_infiles=codelist_infiles,
+                zipfile=zipfile,
+                task_id=task_id,
+                quit=quit,
+                _progress=_progress,
+            )
+        )
+
+        # vertices = [
+        #     transformer.transform(*vertice) for vertice in converter.vertices_map.vertices
+        # ]
+        vertices = self.vertices_map.vertices
+
+        result = {
+            "type": "CityJSON",
+            "version": "2.0",
+            "extensions": {},
+            "transform": {"scale": [1.0, 1.0, 1.0], "translate": [0.0, 0.0, 0.0]},
+            "metadata": {
+                "referenceSystem": f"https://www.opengis.net/def/crs/EPSG/0/{self.target_epsg}",
+            },
+            "CityObjects": city_objects,
+            "vertices": vertices,
+            # "appearance": {},
+            # "geometry-templates": {},
+        }
+
+        return result
 
     # @streamable_dict
     def generate_city_object(

@@ -18,7 +18,7 @@ def cityson_from_gml_serial_with_quit(
     _progress=None,
     **opts,
 ):
-    # TODO: logger does not work; must use QueueHandler
+    # TODO: logger does not work in multiprocessing; must use QueueHandler
     logger.debug("[*] cityson_from_gml_serial_with_quit")
 
     target_epsg = 3857  # Web Mercator
@@ -28,42 +28,17 @@ def cityson_from_gml_serial_with_quit(
 
     converter = CityJSONConverter(target_epsg=target_epsg)
 
-    city_objects = dict(
-        converter.generate_city_object(
-            infiles,
-            object_types=object_types,
-            lod=lod,
-            ground=ground,
-            codelist_infiles=codelist_infiles,
-            zipfile=zipfile,
-            task_id=task_id,
-            quit=quit,
-            _progress=_progress,
-        )
+    result = converter.convert(
+        infiles,
+        object_types=object_types,
+        lod=lod,
+        ground=ground,
+        codelist_infiles=codelist_infiles,
+        zipfile=zipfile,
+        task_id=task_id,
+        quit=quit,
+        _progress=_progress,
     )
-
-    # print(city_objects)
-
-    # vertices = [
-    #     transformer.transform(*vertice) for vertice in converter.vertices_map.vertices
-    # ]
-    vertices = converter.vertices_map.vertices
-
-    result = {
-        "type": "CityJSON",
-        "version": "2.0",
-        "extensions": {},
-        "transform": {"scale": [1.0, 1.0, 1.0], "translate": [0.0, 0.0, 0.0]},
-        "metadata": {
-            "referenceSystem": f"https://www.opengis.net/def/crs/EPSG/0/{target_epsg}",
-        },
-        "CityObjects": city_objects,
-        "vertices": vertices,
-        # "appearance": {},
-        # "geometry-templates": {},
-    }
-    # result_debug = json.dumps(result, indent=2, ensure_ascii=False)
-    # print(result_debug)
 
     with open(outfile, "w") as f:
         json.dump(result, f, ensure_ascii=False, separators=(",", ":"))
