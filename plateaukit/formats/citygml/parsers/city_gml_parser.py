@@ -5,9 +5,11 @@ import pyproj
 from lxml import etree
 
 from plateaukit.formats.citygml import CityGML
-from plateaukit.formats.citygml.parsers.city_object_parser import PLATEAUCityObjectParser
-from plateaukit.formats.citygml.parsers.codelist_parser import CodelistParser
 from plateaukit.formats.citygml.constants import nsmap
+from plateaukit.formats.citygml.parsers.city_object_parser import (
+    PLATEAUCityObjectParser,
+)
+from plateaukit.formats.citygml.parsers.codelist_parser import CodelistParser
 
 
 class CityGMLParser:
@@ -47,7 +49,7 @@ class PLATEAUCityGMLParser(CityGMLParser):
 
         return m.group(1)
 
-    def parse(self, infile):
+    def parse(self, infile, selection: list[str] | None = None):
         tree = etree.parse(infile)
         root = tree.getroot()
 
@@ -77,7 +79,14 @@ class PLATEAUCityGMLParser(CityGMLParser):
         for i, el in enumerate(root.iterfind("./core:cityObjectMember/*", nsmap)):
             obj = co_parser.parse(el)
 
-            # print(obj)
+            # TODO: Improve performance
+            building_id = (
+                obj.attributes.get("building_id", None) if obj.attributes else None
+            )
+            if selection and (
+                obj.id not in selection and (building_id not in selection)
+            ):
+                continue
 
             objects.append(obj)
 

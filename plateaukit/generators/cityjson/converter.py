@@ -197,6 +197,7 @@ class CityJSONConverter:
         ground: bool = False,
         codelist_infiles: list[str] | None = None,
         zipfile: str | PathLike | None = None,
+        selection: list[str] | None = None,
         task_id=None,
         quit=None,
         _progress=None,
@@ -209,6 +210,7 @@ class CityJSONConverter:
                 ground=ground,
                 codelist_infiles=codelist_infiles,
                 zipfile=zipfile,
+                selection=selection,
                 task_id=task_id,
                 quit=quit,
                 _progress=_progress,
@@ -246,6 +248,7 @@ class CityJSONConverter:
         ground: bool = False,
         codelist_infiles: list[str] | None = None,
         zipfile: str | PathLike | None = None,
+        selection: list[str] | None = None,
         task_id=None,
         quit=None,
         _progress=None,
@@ -286,12 +289,12 @@ class CityJSONConverter:
 
             if zip_fs:
                 with zip_fs.open(infile, "r") as f:
-                    citygml = parser.parse(f)
+                    citygml = parser.parse(f, selection=selection)
             else:
                 with open(infile, "r") as f:
                     # print(f"infile: {infile}")
 
-                    citygml = parser.parse(f)
+                    citygml = parser.parse(f, selection=selection)
 
             for city_obj in citygml.city_objects:
                 if quit and quit.is_set():

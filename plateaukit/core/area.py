@@ -3,12 +3,11 @@ import tempfile
 import pydeck
 from geopandas import GeoDataFrame
 
+from plateaukit.logger import logger
+
 
 class Area:
     """This class represents an area of interest."""
-
-    gdf: GeoDataFrame
-    # layers: list[pydeck.Layer]
 
     def __init__(self, gdf: GeoDataFrame) -> None:
         """Initialize an area from a GeoDataFrame.
@@ -17,6 +16,7 @@ class Area:
             gdf: GeoDataFrame of the area of interest.
         """
         self.gdf = gdf
+        self._datasets: list[str] | None = None
 
     def __repr__(self) -> str:
         return f"Area()"
@@ -127,13 +127,26 @@ class Area:
         """Convert the area to GeoJSON."""
 
         data = self.gdf.to_json()
-        # print(data)
+
         return data
 
-    def to_cityjson(self):
+    def to_cityjson(self, file: str, type: list[str] = ["bldg"]):
         """Convert the area to CityJSON."""
 
-        raise NotImplementedError()
+        # TODO: Support IOBase as file
+
+        from plateaukit import Dataset
+
+        if self._datasets is None:
+            raise RuntimeError("Missing dataset information")
+
+        selection = self.gdf["buildingId"].tolist()
+
+        logger.debug(selection)
+
+        for dataset_id in self._datasets:
+            dataset = Dataset(dataset_id)
+            dataset.to_cityjson(file, selection=selection)
 
     @property
     def buildings(self):

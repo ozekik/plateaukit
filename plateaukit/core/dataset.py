@@ -105,7 +105,10 @@ class Dataset:
 
         # TODO: Error handling when area_gdf is empty
 
-        return Area(area_gdf)
+        area = Area(area_gdf)
+        area._datasets = [self.dataset_id]
+
+        return area
 
     def area_from_polygons(self, polygons: list[gpd.GeoDataFrame]):
         """Get an area from the dataset by polygons.
@@ -270,6 +273,7 @@ class Dataset:
         lod=[1, 2],
         ground: bool = False,
         split: int = 1,
+        selection: list[str] | None = None,
         **kwargs,
     ):
         """Generate CityJSON from PLATEAU datasets.
@@ -347,6 +351,7 @@ class Dataset:
             lod=lod,
             ground=ground,
             codelist_infiles=codelist_infiles,
+            selection=selection,
         )
 
 
