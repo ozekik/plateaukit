@@ -14,6 +14,7 @@ def cityson_from_gml_serial_with_quit(
     codelist_infiles,
     zipfile=None,
     selection: list[str] | None = None,
+    target_epsg: int | None = 3857,
     task_id=None,
     quit=None,
     _progress=None,
@@ -22,10 +23,11 @@ def cityson_from_gml_serial_with_quit(
     # TODO: logger does not work in multiprocessing; must use QueueHandler
     logger.debug("[*] cityson_from_gml_serial_with_quit")
 
-    target_epsg = 3857  # Web Mercator
-    # target_epsg = 4326  # WGS84
-    # target_epsg = 32654  # WGS84 / UTM zone 54N
-    # target_epsg = 6677  # JGD2011 / Japan Plane Rectangular CS IV
+    if not target_epsg:
+        target_epsg = 3857  # Web Mercator
+        # target_epsg = 4326  # WGS84
+        # target_epsg = 32654  # WGS84 / UTM zone 54N
+        # target_epsg = 6677  # JGD2011 / Japan Plane Rectangular CS IV
 
     converter = CityJSONConverter(target_epsg=target_epsg)
 

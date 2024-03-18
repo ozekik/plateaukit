@@ -23,6 +23,7 @@ def cityjson_from_citygml(
     ground: bool = False,
     codelist_infiles=None,
     selection: list[str] | None = None,
+    target_epsg: int | None = None,
     progress={},
 ):
     logger.debug("[*] cityjson_from_citygml")
@@ -69,6 +70,7 @@ def cityjson_from_citygml(
                         codelist_infiles=codelist_infiles,
                         zipfile=zipfile,
                         selection=selection,
+                        target_epsg=target_epsg,
                         task_id=task_id,
                         _progress=_progress,
                         quit=quit,

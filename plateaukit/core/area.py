@@ -130,7 +130,13 @@ class Area:
 
         return data
 
-    def to_cityjson(self, file: str, type: list[str] = ["bldg"]):
+    def to_cityjson(
+        self,
+        file: str,
+        type: list[str] = ["bldg"],
+        ground: bool = False,
+        target_epsg: int | None = None,
+    ):
         """Convert the area to CityJSON."""
 
         # TODO: Support IOBase as file
@@ -146,7 +152,9 @@ class Area:
 
         for dataset_id in self._datasets:
             dataset = Dataset(dataset_id)
-            dataset.to_cityjson(file, selection=selection)
+            dataset.to_cityjson(
+                file, ground=ground, selection=selection, target_epsg=target_epsg
+            )
 
     @property
     def buildings(self):

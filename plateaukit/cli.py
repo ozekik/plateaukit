@@ -223,11 +223,14 @@ def prebuild_cmd(dataset_id, split, is_verbose):
 @click.option(
     "--ground", is_flag=True, default=False, help="Shift objects to the ground level"
 )
+@click.option(
+    "--target-epsg", default=None, help="EPSG code for the output CityJSON file"
+)
 # # @click.option(
 # #     "--precision",
 # #     help="Number of decimal places to keep for geometry vertices (default: 16).",
 # )
-def generate_cityjson(infiles, outfile, dataset_id, types, split, ground):
+def generate_cityjson(infiles, outfile, dataset_id, types, split, ground, target_epsg):
     """Generate CityJSON from PLATEAU datasets.
 
     PLATEAU データセットから CityJSON を生成します。
@@ -261,7 +264,14 @@ def generate_cityjson(infiles, outfile, dataset_id, types, split, ground):
 
     if dataset_id:
         dataset = load_dataset(dataset_id)
-        dataset.to_cityjson(outfile, types=types, split=split, ground=ground, **params)
+        dataset.to_cityjson(
+            outfile,
+            types=types,
+            split=split,
+            ground=ground,
+            target_epsg=target_epsg,
+            **params,
+        )
 
     else:
         generators.cityjson.cityjson_from_citygml(infiles, outfile, **params)

@@ -277,6 +277,7 @@ class Dataset:
         ground: bool = False,
         split: int = 1,
         selection: list[str] | None = None,
+        target_epsg: int | None = None,
         **kwargs,
     ):
         """Generate CityJSON from PLATEAU datasets.
@@ -355,6 +356,7 @@ class Dataset:
             ground=ground,
             codelist_infiles=codelist_infiles,
             selection=selection,
+            target_epsg=target_epsg,
         )
 
 
