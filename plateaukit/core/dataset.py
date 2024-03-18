@@ -69,7 +69,10 @@ class Dataset:
 
         area_gdf = self.gdf
 
-        return Area(area_gdf)
+        area = Area(area_gdf)
+        area._datasets = [self.dataset_id]
+
+        return area
 
     def area_from_bbox(self, bbox: list[float] | None = None):
         """Get the specified area from the dataset.
