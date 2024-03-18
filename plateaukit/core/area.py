@@ -137,7 +137,7 @@ class Area:
 
     @property
     def buildings(self):
-        from plateaukit.models import Building
+        from plateaukit.core.models import Building
 
         # TODO: Filter and return buildings only
 
