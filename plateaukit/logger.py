@@ -1,3 +1,5 @@
+import warnings
+
 from loguru import logger
 from rich.logging import RichHandler
 
@@ -12,6 +14,21 @@ logger.configure(
         }
     ]
 )
+
+
+# https://loguru.readthedocs.io/en/stable/resources/recipes.html#capturing-standard-stdout-stderr-and-warnings
+def capture_warnings():
+    global warnings
+    showwarning_ = warnings.showwarning
+
+    def showwarning(message, *args, **kwargs):
+        logger.debug(message)
+        # showwarning_(message, *args, **kwargs)
+
+    warnings.showwarning = showwarning
+
+
+capture_warnings()
 
 
 def set_log_level(level: str):
