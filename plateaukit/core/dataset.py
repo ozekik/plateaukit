@@ -1,4 +1,5 @@
 import re
+import sys
 import zipfile
 from os import PathLike
 from pathlib import Path, PurePosixPath
@@ -83,6 +84,14 @@ class Dataset:
         """
 
         if self.dataset_id.endswith(".cloud"):
+            if "pyodide" in sys.modules:
+                try:
+                    import pyodide_http  # type: ignore
+
+                    pyodide_http.patch_all()
+                except Exception:
+                    pass
+
             # Load data from remote flatgeobuf
             remote_fgb = defaults.cloud_base_url + self.dataset_id.replace(
                 ".cloud", ".fgb"

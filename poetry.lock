@@ -2756,6 +2756,17 @@ pyyaml = "*"
 extra = ["pygments (>=2.12)"]
 
 [[package]]
+name = "pyodide-http"
+version = "0.2.1"
+description = "Patch requests, urllib and urllib3 to make them work in Pyodide"
+optional = false
+python-versions = "*"
+files = [
+    {file = "pyodide_http-0.2.1-py3-none-any.whl", hash = "sha256:504f62904536a91049c12d0b9162ebaa187a84a3dd877e17c04fd9bf6ec3b68e"},
+    {file = "pyodide_http-0.2.1.tar.gz", hash = "sha256:96afea01716c434025d70c45e255e28ac68ecddc196ddc2eafe8741c91661354"},
+]
+
+[[package]]
 name = "pyogrio"
 version = "0.7.2"
 description = "Vectorized spatial vector file format I/O using GDAL/OGR"
@@ -3944,4 +3955,4 @@ quantized-mesh = ["quantized-mesh-encoder"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "a028029fd824deb9e7dcd7a3498dc602e0a5ea1284d25f11ccd842ced54e63eb"
+content-hash = "5ff120f1c13c30498f42ec26b753ab48c607e31951e3e608056aac8b336bc02c"

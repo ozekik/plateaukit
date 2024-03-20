@@ -35,6 +35,7 @@ flatgeobuf = "^0.3.0"
 ipydeck = "^0.3.0"
 ipywidgets = "^8.1.2"
 ipython = "^8.22.2"
+pyodide-http = { version = "^0.2.1", markers = "sys_platform == 'emscripten'" }
 
 [tool.poetry.extras]
 all = ["pyogrio"]
