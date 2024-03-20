@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "plateaukit"
-version = "0.11.3"
+version = "0.12.0"
 description = "Python library and converter for 3D city models by MLIT Project PLATEAU"
 authors = ["Kentaro Ozeki <32771324+ozekik@users.noreply.github.com>"]
 readme = "README.md"
