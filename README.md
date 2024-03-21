@@ -3,11 +3,11 @@
 [![PyPI](https://img.shields.io/pypi/v/plateaukit.svg)](https://pypi.org/project/plateaukit/)
 [![build](https://github.com/ozekik/plateaukit/actions/workflows/ci.yaml/badge.svg)](https://github.com/ozekik/plateaukit/actions/workflows/ci.yaml)
 [![Coverage Status](https://codecov.io/gh/ozekik/plateaukit/branch/master/graph/badge.svg)](https://codecov.io/gh/ozekik/plateaukit)
-<!-- [![PyPI downloads](https://img.shields.io/pypi/dm/plateaukit.svg)](https://pypistats.org/packages/plateaukit) -->
+[![PyPI downloads](https://img.shields.io/pypi/dm/plateaukit.svg)](https://pypistats.org/packages/plateaukit)
 
 > Python library and utility for programming 3D city models by MLIT Project PLATEAU
 
-PlateauKit は、<a href="https://www.mlit.go.jp/plateau/" target="_blank">国土交通省PLATEAUプロジェクト</a>の3D都市モデルを利用するためのPythonライブラリおよび変換ツールです。
+PlateauKit は、<a href="https://www.mlit.go.jp/plateau/" target="_blank">国土交通省PLATEAUプロジェクト</a>の3D都市モデルを利用するための変換ツールおよびPythonライブラリです。
 
 PlateauLab は、<a href="https://jupyter.org" target="_blank">JupyterLab / Jupyter Notebook</a>上でPLATEAU都市モデルを扱うコーディング環境を実現するためのPythonライブラリです。 現在はPlateauKitの一部として提供しています。
 
