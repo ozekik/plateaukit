@@ -61,6 +61,7 @@ nav:
       - チュートリアル:
           - JupyterLabで試す: tutorial/jupyter.ipynb
           - 都市モデルとレイヤーを重ねる: tutorial/maps-overlay.ipynb
+          - 🚧 チャットAI (LLM) との連携: tutorial/llm.md
       - コマンドラインでの利用:
           - PLATEAUデータの追加と削除: cli/setup.md
           - PLATEAUデータの情報を取得: cli/info.md
