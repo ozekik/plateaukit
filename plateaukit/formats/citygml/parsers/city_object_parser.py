@@ -90,12 +90,12 @@ class GeometryParser:
             ]
         )
         # print(path)
-        results = root.findall(path, nsmap)
+        # results = root.findall(path, nsmap)
 
         parsed = []
 
-        for result in results:
-            poslist = list(map(float, result.text.split(" ")))
+        for result in root.iterfind(path, nsmap):
+            poslist = map(float, result.text.split(" "))
 
             chunked = list(utils.chunker(poslist, 3))
 
