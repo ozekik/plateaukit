@@ -7,12 +7,14 @@ from fs import open_fs
 from geojson import FeatureCollection
 
 from plateaukit.logger import logger
-from ._single import geojson_from_gml_single
+from ._single import geojson_from_gml_single, features_from_gml_single
 
 
 def geojson_from_gml_serial_with_quit(
     infiles,
     outfile,
+    *,
+    seq=False,
     codelist_infiles=None,
     types=None,
     include_type=False,
@@ -23,8 +25,6 @@ def geojson_from_gml_serial_with_quit(
     **kwargs,
 ):
     """Generate GeoJSON from multiple CityGML files."""
-    features = []
-
     # Load codelists
     codelist_file_map = None
 
@@ -49,48 +49,72 @@ def geojson_from_gml_serial_with_quit(
 
     total = len(infiles) + 1  # + 1 for geojson.dump
 
-    for i, infile in enumerate(infiles):
-        if task_id is not None and _progress is not None:
-            _progress[task_id] = {"progress": i + 1, "total": total}
+    if seq:
+        # NOTE: Precision https://github.com/jazzband/geojson#default-and-custom-precision
+        with open(outfile, "w") as obuf:
+            for i, infile in enumerate(infiles):
+                if task_id is not None and _progress is not None:
+                    _progress[task_id] = {"progress": i + 1, "total": total}
 
-        if _quit and _quit.is_set():
-            return
+                if _quit and _quit.is_set():
+                    return
 
-        logger.debug(f"infile: {infile}")
+                logger.debug(f"infile: {infile}")
 
-        if zip_fs:
-            with zip_fs.openbin(infile, "rb") as f:
-                collection = geojson_from_gml_single(
-                    f,
-                    types=types,
-                    codelist_file_map=codelist_file_map,
-                    include_type=include_type,
-                    **kwargs,
+                _open = zip_fs.openbin if zip_fs else open
+
+                with _open(infile, "rb") as inbuf:
+                    infile_features = features_from_gml_single(
+                        inbuf,
+                        types=types,
+                        codelist_file_map=codelist_file_map,
+                        include_type=include_type,
+                        **kwargs,
+                    )
+                    for feature in infile_features:
+                        geojson.dump(
+                            feature, obuf, ensure_ascii=False, separators=(",", ":")
+                        )
+                        obuf.write("\n")
+
+    else:
+        features = []
+
+        for i, infile in enumerate(infiles):
+            if task_id is not None and _progress is not None:
+                _progress[task_id] = {"progress": i + 1, "total": total}
+
+            if _quit and _quit.is_set():
+                return
+
+            logger.debug(f"infile: {infile}")
+
+            _open = zip_fs.openbin if zip_fs else open
+
+            with _open(infile, "rb") as f:
+                infile_features = list(
+                    features_from_gml_single(
+                        f,
+                        types=types,
+                        codelist_file_map=codelist_file_map,
+                        include_type=include_type,
+                        **kwargs,
+                    )
                 )
-        else:
-            with open(infile, "rb") as f:
-                collection = geojson_from_gml_single(
-                    f,
-                    types=types,
-                    codelist_file_map=codelist_file_map,
-                    include_type=include_type,
-                    **kwargs,
-                )
-                # TODO: fix
 
-        try:
-            features.extend(collection["features"])
-        except Exception as err:
-            logger.debug(err)
+            try:
+                features.extend(features)
+            except Exception as err:
+                logger.debug(err)
+
+        collection = FeatureCollection(features)
+
+        # NOTE: Precision https://github.com/jazzband/geojson#default-and-custom-precision
+        with open(outfile, "w") as f:
+            geojson.dump(collection, f, ensure_ascii=False, separators=(",", ":"))
 
     if zip_fs:
         zip_fs.close()
-
-    collection = FeatureCollection(features)
-
-    # NOTE: Precision https://github.com/jazzband/geojson#default-and-custom-precision
-    with open(outfile, "w") as f:
-        geojson.dump(collection, f, ensure_ascii=False, separators=(",", ":"))
 
     # Complete progress
     if _progress:

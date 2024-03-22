@@ -22,7 +22,7 @@ def _to_feature(feature_geometry, *, properties: dict[str, Any]):
     return feat
 
 
-def geojson_from_gml_single(
+def features_from_gml_single(
     infile: BinaryIO,
     types: list[str] | None = None,
     target_epsg: int = 4326,  # WGS
@@ -40,16 +40,14 @@ def geojson_from_gml_single(
     parser = PLATEAUCityGMLParser(
         target_epsg=target_epsg, codelist_file_map=codelist_file_map
     )
-    citygml = parser.parse(infile)
+    co_iter = parser.iterparse(infile)
 
     # logger.debug(f"citygml: {citygml}")
-
-    features = []
 
     if len(lod) > 1:
         raise NotImplementedError("too many LOD values")
 
-    for i, obj in enumerate(citygml.city_objects):
+    for i, obj in enumerate(co_iter):
         # logger.debug(f"{obj.id}")  # NOTE: Affect performance
 
         if types and obj.type not in types:
@@ -91,17 +89,44 @@ def geojson_from_gml_single(
 
         if len(polygons) == 1:
             feat = _to_feature(polygons[0], properties=properties)
-            features.append(feat)
+            yield feat
         else:
             if allow_geometry_collection:
                 feat = _to_feature(GeometryCollection(polygons), properties=properties)
-                features.append(feat)
+                yield feat
             else:
                 for polygon in polygons:
                     feat = _to_feature(polygon, properties=properties)
-                    features.append(feat)
+                    yield feat
                 # raise AssertionError("No geometry")
 
+
+def geojson_from_gml_single(
+    infile: BinaryIO,
+    types: list[str] | None = None,
+    target_epsg: int = 4326,  # WGS
+    altitude: bool = False,
+    lod: list[int] = [0],
+    codelist_file_map: dict[str, BinaryIO] | None = None,
+    attributes: list[str] = ["measuredHeight"],
+    allow_geometry_collection: bool = False,
+    include_type: bool = False,
+):
+    """Generate GeoJSON from a single CityGML file."""
+
+    features = list(
+        features_from_gml_single(
+            infile,
+            types=types,
+            target_epsg=target_epsg,
+            altitude=altitude,
+            lod=lod,
+            codelist_file_map=codelist_file_map,
+            attributes=attributes,
+            allow_geometry_collection=allow_geometry_collection,
+            include_type=include_type,
+        )
+    )
     collection = FeatureCollection(features)
 
     return collection

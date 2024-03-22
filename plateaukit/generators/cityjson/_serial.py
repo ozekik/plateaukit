@@ -8,10 +8,12 @@ from .converter import CityJSONConverter
 def cityson_from_gml_serial_with_quit(
     infiles,
     outfile,
+    *,
     object_types,
     lod,
     ground,
     codelist_infiles,
+    seq=False,
     zipfile=None,
     selection: list[str] | None = None,
     target_epsg: int | None = 3857,
@@ -29,23 +31,49 @@ def cityson_from_gml_serial_with_quit(
         # target_epsg = 32654  # WGS84 / UTM zone 54N
         # target_epsg = 6677  # JGD2011 / Japan Plane Rectangular CS IV
 
-    converter = CityJSONConverter(target_epsg=target_epsg)
+    if seq:
+        converter = CityJSONConverter(target_epsg=target_epsg)
 
-    result = converter.convert(
-        infiles,
-        object_types=object_types,
-        lod=lod,
-        ground=ground,
-        codelist_infiles=codelist_infiles,
-        zipfile=zipfile,
-        selection=selection,
-        task_id=task_id,
-        quit=quit,
-        _progress=_progress,
-    )
+        with open(outfile, "w") as f:
+            meta = converter.get_meta()
+            json.dump(meta, f, ensure_ascii=False, separators=(",", ":"))
+            f.write("\n")
 
-    with open(outfile, "w") as f:
-        json.dump(result, f, ensure_ascii=False, separators=(",", ":"))
+            features = converter.features(
+                infiles,
+                object_types=object_types,
+                lod=lod,
+                ground=ground,
+                codelist_infiles=codelist_infiles,
+                zipfile=zipfile,
+                selection=selection,
+                task_id=task_id,
+                quit=quit,
+                _progress=_progress,
+            )
+
+            for feature in features:
+                json.dump(feature, f, ensure_ascii=False, separators=(",", ":"))
+                f.write("\n")
+
+    else:
+        converter = CityJSONConverter(target_epsg=target_epsg)
+
+        result = converter.convert(
+            infiles,
+            object_types=object_types,
+            lod=lod,
+            ground=ground,
+            codelist_infiles=codelist_infiles,
+            zipfile=zipfile,
+            selection=selection,
+            task_id=task_id,
+            quit=quit,
+            _progress=_progress,
+        )
+
+        with open(outfile, "w") as f:
+            json.dump(result, f, ensure_ascii=False, separators=(",", ":"))
 
     total = len(infiles) + 1  # + 1 for geojson.dump
 

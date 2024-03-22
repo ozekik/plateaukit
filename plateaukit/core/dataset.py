@@ -197,6 +197,7 @@ class Dataset:
         types: list[str] = ["bldg"],
         altitude: bool = True,
         include_type: bool = False,
+        seq=False,
         split: int = 1,
         **kwargs,
     ):
@@ -272,6 +273,7 @@ class Dataset:
             altitude=altitude,
             include_type=include_type,
             split=split,
+            seq=seq,
             zipfile=file_path,
             codelist_infiles=codelist_infiles,
             **kwargs,
@@ -280,10 +282,12 @@ class Dataset:
     def to_cityjson(
         self,
         outfile: str | PathLike,
+        *,
         types: list[str] = ["bldg"],
         object_types=None,  # TODO: Handle this
         lod=[1, 2],
         ground: bool = False,
+        seq=False,
         split: int = 1,
         selection: list[str] | None = None,
         target_epsg: int | None = None,
@@ -295,6 +299,7 @@ class Dataset:
             outfile: Output file path.
             types: CityGML feature types.
             split: Split the output into specified number of files.
+            seq: Generate CityJSONSeq.
             **kwargs: Keyword arguments for the generator.
         """
         # NOTE: generators requires multiprocessing at the moment, unavailable in pyodide
@@ -363,6 +368,7 @@ class Dataset:
             zipfile=file_path,
             lod=lod,
             ground=ground,
+            seq=seq,
             codelist_infiles=codelist_infiles,
             selection=selection,
             target_epsg=target_epsg,
