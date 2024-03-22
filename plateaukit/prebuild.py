@@ -33,7 +33,7 @@ def prebuild(dataset_id: str, *, split: int = 10, simple_output=False) -> None:
 
     with tempfile.TemporaryDirectory() as tdir:
         for type in types:
-            outfile = Path(tdir, f"{dataset_id}.{type}.geojson")
+            outfile = Path(tdir, f"{dataset_id}.{type}.geojsonl")
 
             if dataset_id:
                 dataset = load_dataset(dataset_id)
@@ -42,8 +42,9 @@ def prebuild(dataset_id: str, *, split: int = 10, simple_output=False) -> None:
                     types=types,
                     altitude=False,  # TODO: Check this
                     include_type=True,
+                    seq=True,
                     split=split,
-                    progress={"description": "Generating GeoJSON files..."},
+                    progress={"description": "Generating GeoJSONSeq files..."},
                     simple_output=simple_output,
                 )
             else:
@@ -60,7 +61,7 @@ def prebuild(dataset_id: str, *, split: int = 10, simple_output=False) -> None:
         with console.status("Writing GeoPackage...") as status:
             df = gpd.GeoDataFrame()
 
-            for filename in glob.glob(str(Path(tdir, "*.geojson"))):
+            for filename in glob.glob(str(Path(tdir, "*.geojsonl"))):
                 subdf = read_dataframe(filename)
                 df = pd.concat([df, subdf])
 
