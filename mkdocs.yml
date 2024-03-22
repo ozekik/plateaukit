@@ -81,6 +81,10 @@ nav:
       - ライセンス: license.md
   - PlateauLab:
       - PlateauLab について: lab/index.md
+  - ブラウザで試す: /plateaukit/jupyterlite/notebooks/?path=demo.ipynb
+
+not_in_nav: |
+  ./jupyterlite/
 
 markdown_extensions:
   - tables
@@ -126,6 +130,7 @@ plugins:
   - mkdocs-jupyter:
       execute: false # true
       ignore_h1_titles: true
+      ignore: ["jupyterlite/**/*.ipynb"]
   - exclude:
       glob:
         - plugins/*
