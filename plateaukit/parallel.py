@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from time import sleep
 import traceback
 from concurrent.futures import Future, ProcessPoolExecutor
 from threading import Event
@@ -57,6 +58,8 @@ def wait_futures(
                 ),
                 total=n_futures,
             )
+
+            sleep(0.5)
 
         for f in futures_status.values():
             if f["task_id"] and f["failed"] is True:
