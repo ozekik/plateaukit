@@ -50,7 +50,7 @@ def geojson_from_gml_single(
         raise NotImplementedError("too many LOD values")
 
     for i, obj in enumerate(citygml.city_objects):
-        logger.debug(f"{obj.id}")
+        # logger.debug(f"{obj.id}")  # NOTE: Affect performance
 
         if types and obj.type not in types:
             continue

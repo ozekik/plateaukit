@@ -84,7 +84,10 @@ class PLATEAUCityGMLParser(CityGMLParser):
 
         tag = f"{{{nsmap['core']}}}cityObjectMember"
 
-        for _ev, el in etree.iterparse(infile, events=("end",), tag=tag):
+        itertree = etree.iterparse(infile, events=("end",), tag=tag)
+        _, root = next(itertree)
+
+        for _ev, el in itertree:
             it = el.iterchildren()
             co_element = next(it)
             obj = co_parser.parse(co_element)
@@ -98,9 +101,11 @@ class PLATEAUCityGMLParser(CityGMLParser):
             ):
                 continue
 
+            # TODO: Memory optimization
             objects.append(obj)
 
             el.clear()
+            root.clear()
 
         infile.seek(0)
 
