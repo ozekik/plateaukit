@@ -3,7 +3,8 @@
 [![PyPI](https://img.shields.io/pypi/v/plateaukit.svg)](https://pypi.org/project/plateaukit/)
 [![PyPI downloads](https://img.shields.io/pypi/dm/plateaukit.svg)](https://pypistats.org/packages/plateaukit)
 
-PlateauKit は、<a href="https://www.mlit.go.jp/plateau/" target="_blank">国土交通省 Project PLATEAU</a> の3D都市モデルを扱うための変換ツールおよび Python ライブラリです。
+PlateauKit は <a href="https://www.mlit.go.jp/plateau/" target="_blank">国土交通省 Project PLATEAU</a> の3D都市モデルを扱うための変換ツールおよび Python ライブラリです。<br />
+[JupyterLab / Jupyter Notebook](https://jupyter.org/)上で3D都市モデルを扱うための [PlateauLab](lab/index.md) ライブラリも同梱しています。
 
 - [ブラウザで試す (試験版)](/plateaukit/jupyterlite/notebooks/?path=demo.ipynb)
 
