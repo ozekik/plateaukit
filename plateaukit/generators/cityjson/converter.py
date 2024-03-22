@@ -288,10 +288,10 @@ class CityJSONConverter:
                 _progress[task_id] = {"progress": i + 1, "total": total}
 
             if zip_fs:
-                with zip_fs.open(infile, "r") as f:
+                with zip_fs.open(infile, "rb") as f:
                     citygml = parser.parse(f, selection=selection)
             else:
-                with open(infile, "r") as f:
+                with open(infile, "rb") as f:
                     # print(f"infile: {infile}")
 
                     citygml = parser.parse(f, selection=selection)

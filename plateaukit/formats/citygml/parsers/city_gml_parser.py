@@ -1,3 +1,4 @@
+from io import IOBase
 import re
 from typing import BinaryIO
 
@@ -31,13 +32,19 @@ class PLATEAUCityGMLParser(CityGMLParser):
         self.target_epsg = target_epsg
         self.codelist_file_map = codelist_file_map
 
-    def _get_epsg_code(self, tree: etree._ElementTree) -> str | None:
+    def _get_epsg_code(self, infile: IOBase) -> str | None:
         """Extract EPSG code from CityGML tree."""
+        tag = f"{{{nsmap['gml']}}}boundedBy"
+        path = "gml:Envelope"
 
-        path = "./gml:boundedBy/gml:Envelope"
-        result = tree.find(path, nsmap)
-        result = result if result is not None else {}
-        srs_name = result.get("srsName")
+        srs_name = None
+        for _ev, el in etree.iterparse(infile, events=("end",), tag=tag):
+            result = el.find(path, nsmap)
+            found = result is not None
+            if result is not None:
+                srs_name = result.get("srsName")
+                break
+            el.clear()
 
         if srs_name is None:
             raise Exception("EPSG code not found")
@@ -47,13 +54,12 @@ class PLATEAUCityGMLParser(CityGMLParser):
         if not m:
             raise Exception("Failed to parse EPSG code")
 
+        infile.seek(0)
+
         return m.group(1)
 
     def parse(self, infile, selection: list[str] | None = None):
-        tree = etree.parse(infile)
-        root = tree.getroot()
-
-        src_epsg = self._get_epsg_code(tree)  # 6697
+        src_epsg = self._get_epsg_code(infile)  # 6697
 
         # TODO: Accept options like always_xy
         transformer = pyproj.Transformer.from_crs(src_epsg, self.target_epsg)
@@ -76,8 +82,12 @@ class PLATEAUCityGMLParser(CityGMLParser):
 
         objects = []
 
-        for i, el in enumerate(root.iterfind("./core:cityObjectMember/*", nsmap)):
-            obj = co_parser.parse(el)
+        tag = f"{{{nsmap['core']}}}cityObjectMember"
+
+        for _ev, el in etree.iterparse(infile, events=("end",), tag=tag):
+            it = el.iterchildren()
+            co_element = next(it)
+            obj = co_parser.parse(co_element)
 
             # TODO: Improve performance
             building_id = (
@@ -89,5 +99,9 @@ class PLATEAUCityGMLParser(CityGMLParser):
                 continue
 
             objects.append(obj)
+
+            el.clear()
+
+        infile.seek(0)
 
         return CityGML(city_objects=objects)

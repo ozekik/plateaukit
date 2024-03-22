@@ -59,7 +59,7 @@ def geojson_from_gml_serial_with_quit(
         logger.debug(f"infile: {infile}")
 
         if zip_fs:
-            with zip_fs.openbin(infile, "r") as f:
+            with zip_fs.openbin(infile, "rb") as f:
                 collection = geojson_from_gml_single(
                     f,
                     types=types,
