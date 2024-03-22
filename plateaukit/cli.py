@@ -223,6 +223,7 @@ def prebuild_cmd(dataset_id, split, is_verbose):
 @click.option(
     "--ground", is_flag=True, default=False, help="Shift objects to the ground level"
 )
+@click.option("--seq", is_flag=True, default=False, help="Generate CityJSONSeq")
 @click.option(
     "--target-epsg", default=None, help="EPSG code for the output CityJSON file"
 )
@@ -230,7 +231,9 @@ def prebuild_cmd(dataset_id, split, is_verbose):
 # #     "--precision",
 # #     help="Number of decimal places to keep for geometry vertices (default: 16).",
 # )
-def generate_cityjson(infiles, outfile, dataset_id, types, split, ground, target_epsg):
+def generate_cityjson(
+    infiles, outfile, dataset_id, types, split, ground, seq, target_epsg
+):
     """Generate CityJSON from PLATEAU datasets.
 
     PLATEAU データセットから CityJSON を生成します。
@@ -268,6 +271,7 @@ def generate_cityjson(infiles, outfile, dataset_id, types, split, ground, target
             outfile,
             types=types,
             split=split,
+            seq=seq,
             ground=ground,
             target_epsg=target_epsg,
             **params,
@@ -278,7 +282,7 @@ def generate_cityjson(infiles, outfile, dataset_id, types, split, ground, target
 
 
 def _generate_geojson(
-    infiles, outfile, dataset_id: str, types: list[str], split: int, **kwargs
+    infiles, outfile, dataset_id: str, types: list[str], seq: bool, split: int, **kwargs
 ):
     """Generate GeoJSON from PLATEAU datasets."""
 
@@ -290,10 +294,10 @@ def _generate_geojson(
 
     if dataset_id:
         dataset = load_dataset(dataset_id)
-        dataset.to_geojson(outfile, types=types, split=split, **kwargs)
+        dataset.to_geojson(outfile, types=types, seq=seq, split=split, **kwargs)
     else:
         generators.geojson.geojson_from_citygml(
-            infiles, outfile, types=types, split=split, **kwargs
+            infiles, outfile, types=types, seq=seq, split=split, **kwargs
         )
 
 
@@ -312,14 +316,17 @@ def _generate_geojson(
     default=["bldg"],
     multiple=True,
 )
+@click.option("--seq", is_flag=True, default=False, help="Generate GeoJSONSeq")
 @click.option("--split", default=1)
-def generate_geojson(infiles, outfile, dataset_id: str, types: list[str], split: int):
+def generate_geojson(
+    infiles, outfile, dataset_id: str, types: list[str], seq: bool, split: int
+):
     """Generate GeoJSON from PLATEAU datasets.
 
     PLATEAU データセットから GeoJSON を生成します。
     """
 
-    _generate_geojson(infiles, outfile, dataset_id, types=types, split=split)
+    _generate_geojson(infiles, outfile, dataset_id, types=types, seq=seq, split=split)
 
 
 @cli.command("generate-qmesh")

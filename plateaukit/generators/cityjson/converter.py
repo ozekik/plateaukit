@@ -2,6 +2,7 @@ import io
 import os.path
 from os import PathLike
 from pathlib import Path
+from typing import Any, Generator
 
 from bidict import bidict
 from fs import open_fs
@@ -188,6 +189,65 @@ class CityJSONConverter:
 
         self.vertices_map = VerticesMap()
 
+    def get_meta(self):
+        return {
+            "type": "CityJSON",
+            "version": "2.0",
+            # "extensions": {},
+            "transform": {"scale": [1.0, 1.0, 1.0], "translate": [0.0, 0.0, 0.0]},
+            "metadata": {
+                "referenceSystem": f"https://www.opengis.net/def/crs/EPSG/0/{self.target_epsg}",
+            },
+            "vertices": [],
+            # "appearance": {},
+            # "geometry-templates": {},
+        }
+
+    def features(
+        self,
+        infiles: list[str],
+        *,
+        object_types: list[str] | None,
+        lod: list[int],
+        ground: bool = False,
+        codelist_infiles: list[str] | None = None,
+        zipfile: str | PathLike | None = None,
+        selection: list[str] | None = None,
+        task_id=None,
+        quit=None,
+        _progress=None,
+    ):
+        object_iter = self.generate_city_object(
+            infiles,
+            object_types=object_types,
+            lod=lod,
+            ground=ground,
+            codelist_infiles=codelist_infiles,
+            zipfile=zipfile,
+            selection=selection,
+            task_id=task_id,
+            quit=quit,
+            _progress=_progress,
+        )
+
+        for obj_id, obj in object_iter:
+            # vertices = [
+            #     transformer.transform(*vertice) for vertice in converter.vertices_map.vertices
+            # ]
+            vertices = self.vertices_map.vertices
+
+            result = {
+                "type": "CityJSONFeature",
+                "CityObjects": {obj_id: obj},
+                "vertices": vertices,
+                # "appearance": {},
+                # "geometry-templates": {},
+            }
+
+            self.vertices_map = VerticesMap()
+
+            yield result
+
     def convert(
         self,
         infiles: list[str],
@@ -252,7 +312,7 @@ class CityJSONConverter:
         task_id=None,
         quit=None,
         _progress=None,
-    ):
+    ) -> Generator[tuple[str | None, dict[str, Any]], None, None]:
         # vertices_map = VerticesMap()
 
         # Load codelists
@@ -287,82 +347,77 @@ class CityJSONConverter:
             if task_id is not None and _progress is not None:
                 _progress[task_id] = {"progress": i + 1, "total": total}
 
-            if zip_fs:
-                with zip_fs.open(infile, "rb") as f:
-                    citygml = parser.parse(f, selection=selection)
-            else:
-                with open(infile, "rb") as f:
-                    # print(f"infile: {infile}")
+            _open = zip_fs.open if zip_fs else open
 
-                    citygml = parser.parse(f, selection=selection)
+            with _open(infile, "rb") as f:
+                co_iter = parser.iterparse(f, selection=selection)
+                for city_obj in co_iter:
+                    if quit and quit.is_set():
+                        return
 
-            for city_obj in citygml.city_objects:
-                if quit and quit.is_set():
-                    return
+                    # print("city_obj", city_obj)
 
-                # print("city_obj", city_obj)
+                    if object_types is not None and city_obj.type not in object_types:
+                        continue
 
-                if object_types is not None and city_obj.type not in object_types:
-                    continue
+                    indexed_geoms = []
 
-                indexed_geoms = []
+                    if city_obj.geometry is not None:
+                        for geom in city_obj.geometry:
+                            if geom["lod"] not in lod:
+                                continue
 
-                if city_obj.geometry is not None:
-                    for geom in city_obj.geometry:
-                        if geom["lod"] not in lod:
-                            continue
+                            # print("geom", geom)
+                            boundaries, vertices_map = get_indexed_boundaries(
+                                geom,
+                                self.vertices_map,
+                                ground=ground,
+                            )
 
-                        # print("geom", geom)
-                        boundaries, vertices_map = get_indexed_boundaries(
-                            geom,
-                            self.vertices_map,
-                            ground=ground,
-                        )
+                            indexed_geom = dict(
+                                geom, lod=str(geom["lod"]), boundaries=boundaries
+                            )
 
-                        indexed_geom = dict(
-                            geom, lod=str(geom["lod"]), boundaries=boundaries
-                        )
+                            # print("indexed_geom", indexed_geom)
+                            indexed_geoms.append(indexed_geom)
 
-                        # print("indexed_geom", indexed_geom)
-                        indexed_geoms.append(indexed_geom)
+                            self.vertices_map = vertices_map
 
-                        self.vertices_map = vertices_map
+                    # print("indexed_geoms", indexed_geoms)
 
-                # print("indexed_geoms", indexed_geoms)
+                    # obj_id = city_obj.attributes.get("building_id", city_obj.id)
+                    obj_id = city_obj.id
 
-                # obj_id = city_obj.attributes.get("building_id", city_obj.id)
-                obj_id = city_obj.id
-
-                yield obj_id, {
-                    "type": city_obj.type,  # TODO: There is no Track type etc. in CityJSON
-                    "attributes": dict_key_to_camel_case(city_obj.attributes or {}),
-                    # "attributes": {"建物ID": "13104-bldg-52530", "measuredHeight": 61.9},
-                    # "children": [
-                    #     "ID_22730c8f-9fbc-4d58-88dd-5569d7480fad",
-                    #     "ID_598f2fab-030f-429c-b938-a222e04d8e4b",
-                    #     "ID_db473977-e95e-4075-b0be-55eb65974610",
-                    #     "ID_ac26b2cb-553e-428a-9f10-2659419e824d",
-                    # ],
-                    "geometry": indexed_geoms,
-                    # [
-                    # {
-                    #     "type": "MultiSurface",
-                    #     "lod": "0",
-                    #     "boundaries": [],
-                    # },
-                    # {
-                    #     "type": "Solid",
-                    #     "lod": "1",
-                    #     "boundaries": boundaries,
-                    #     # "semantics": {
-                    #     #     "surfaces": [],
-                    #     #     "values": [],
-                    #     # },
-                    #     # "texture": {"rgbTexture": {"values": []}},
-                    # },
-                    # ],
-                    # "address": [{"Country": "日本", "Locality": "東京都新宿区西新宿一丁目"}],
-                }
+                    yield obj_id, {
+                        "type": city_obj.type,  # TODO: There is no Track type etc. in CityJSON
+                        "attributes": dict_key_to_camel_case(city_obj.attributes or {}),
+                        # "attributes": {"建物ID": "13104-bldg-52530", "measuredHeight": 61.9},
+                        # "children": [
+                        #     "ID_22730c8f-9fbc-4d58-88dd-5569d7480fad",
+                        #     "ID_598f2fab-030f-429c-b938-a222e04d8e4b",
+                        #     "ID_db473977-e95e-4075-b0be-55eb65974610",
+                        #     "ID_ac26b2cb-553e-428a-9f10-2659419e824d",
+                        # ],
+                        "geometry": indexed_geoms,
+                        # [
+                        # {
+                        #     "type": "MultiSurface",
+                        #     "lod": "0",
+                        #     "boundaries": [],
+                        # },
+                        # {
+                        #     "type": "Solid",
+                        #     "lod": "1",
+                        #     "boundaries": boundaries,
+                        #     # "semantics": {
+                        #     #     "surfaces": [],
+                        #     #     "values": [],
+                        #     # },
+                        #     # "texture": {"rgbTexture": {"values": []}},
+                        # },
+                        # ],
+                        # "address": [{"Country": "日本", "Locality": "東京都新宿区西新宿一丁目"}],
+                    }
 
         if zip_fs:
             zip_fs.close()

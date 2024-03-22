@@ -58,6 +58,56 @@ class PLATEAUCityGMLParser(CityGMLParser):
 
         return m.group(1)
 
+    def iterparse(self, infile, selection: list[str] | None = None):
+        src_epsg = self._get_epsg_code(infile)  # 6697
+
+        # TODO: Accept options like always_xy
+        transformer = pyproj.Transformer.from_crs(src_epsg, self.target_epsg)
+
+        # Parse codelists
+        codelist_map = None
+
+        if self.codelist_file_map:
+            codelist_map = dict()
+
+            parser = CodelistParser()
+
+            for path, file_obj in self.codelist_file_map.items():
+                codelist = parser.parse(file_obj)
+                codelist_map[path] = codelist
+
+        co_parser = PLATEAUCityObjectParser(
+            transformer=transformer, codelist_map=codelist_map
+        )
+
+        objects = []
+
+        tag = f"{{{nsmap['core']}}}cityObjectMember"
+
+        itertree = etree.iterparse(infile, events=("end",), tag=tag)
+        _, root = next(itertree)
+
+        for _ev, el in itertree:
+            it = el.iterchildren()
+            co_element = next(it)
+            obj = co_parser.parse(co_element)
+
+            # TODO: Improve performance
+            building_id = (
+                obj.attributes.get("building_id", None) if obj.attributes else None
+            )
+            if selection and (
+                obj.id not in selection and (building_id not in selection)
+            ):
+                continue
+
+            yield obj
+
+            el.clear()
+            root.clear()
+
+        infile.seek(0)
+
     def parse(self, infile, selection: list[str] | None = None):
         src_epsg = self._get_epsg_code(infile)  # 6697
 
