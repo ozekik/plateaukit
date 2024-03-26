@@ -1,6 +1,7 @@
 import glob
 import tempfile
 from pathlib import Path
+from typing import Literal
 
 import geopandas as gpd
 import pandas as pd
@@ -8,10 +9,18 @@ from rich import get_console
 
 from plateaukit.config import Config
 from plateaukit.core.dataset import load_dataset
+from plateaukit.logger import logger
 
 
-def prebuild(dataset_id: str, *, split: int = 10, simple_output=False) -> None:
+def prebuild(
+    dataset_id: str,
+    *,
+    split: int = 10,
+    simple_output=False,
+    format: Literal["gpkg", "parquet"] = "parquet",
+) -> None:
     """Prebuild PLATEAU datasets."""
+
     try:
         from pyogrio import read_dataframe, write_dataframe
     except ImportError:
@@ -32,6 +41,8 @@ def prebuild(dataset_id: str, *, split: int = 10, simple_output=False) -> None:
     types = ["bldg"]
 
     with tempfile.TemporaryDirectory() as tdir:
+        logger.debug(f"Temporary directory: {tdir}")
+
         for type in types:
             outfile = Path(tdir, f"{dataset_id}.{type}.geojsonl")
 
@@ -49,36 +60,71 @@ def prebuild(dataset_id: str, *, split: int = 10, simple_output=False) -> None:
                 )
             else:
                 raise NotImplementedError()
-                # generators.geojson.geojson_from_citygml(
-                #     infiles,
-                #     outfile,
-                #     dataset_id,
-                #     types=types,
-                #     split=split,
-                #     progress={"description": "Generating GeoJSON files..."},
-                # )
 
-        with console.status("Writing GeoPackage...") as status:
-            df = gpd.GeoDataFrame()
+        if format == "parquet":
+            display_name = "Parquet files"
+        elif format == "gpkg":
+            display_name = "GeoPackage files"
+        else:
+            raise NotImplementedError()
 
-            for filename in glob.glob(str(Path(tdir, "*.geojsonl"))):
-                subdf = read_dataframe(filename)
-                df = pd.concat([df, subdf])
+        with console.status(f"Writing {display_name}...") as status:
+            if format == "gpkg":
+                df = gpd.GeoDataFrame()
 
-            # TODO: Use more accurate CRS
-            mercator = df.to_crs(3857)
-            centroid_mercator = mercator.centroid
-            centroid = centroid_mercator.to_crs(4326)
+                for filename in glob.glob(str(Path(tdir, "*.geojsonl"))):
+                    subdf = read_dataframe(filename)
+                    df = pd.concat([df, subdf])
 
-            df["longitude"] = centroid.x
-            df["latitude"] = centroid.y
+                # TODO: Use more accurate CRS
+                mercator = df.to_crs(3857)
+                centroid_mercator = mercator.centroid
+                centroid = centroid_mercator.to_crs(4326)
 
-            dest_path = Path(config.data_dir, f"{dataset_id}.gpkg")
-            write_dataframe(df, dest_path, driver="GPKG")
+                df["longitude"] = centroid.x
+                df["latitude"] = centroid.y
 
-            config.datasets[dataset_id]["gpkg"] = dest_path
-            config.save()
+                dest_path = Path(config.data_dir, f"{dataset_id}.gpkg")
+                write_dataframe(df, dest_path, driver="GPKG")
 
-        console.print("Writing GeoPackage... [green]Done")
+                config.datasets[dataset_id]["gpkg"] = dest_path
+                config.save()
+            elif format == "parquet":
+                tmp_file_paths = []
+
+                for filename in glob.glob(str(Path(tdir, "*.geojsonl"))):
+                    df = gpd.read_file(filename)
+
+                    # TODO: Use more accurate CRS
+                    mercator = df.to_crs(3857)
+                    centroid_mercator = mercator.centroid
+                    centroid = centroid_mercator.to_crs(4326)
+
+                    df["longitude"] = centroid.x
+                    df["latitude"] = centroid.y
+
+                    tmp_dest_path = str(Path(tdir, f"{filename}.parquet"))
+                    df.to_parquet(tmp_dest_path)
+
+                    tmp_file_paths.append(tmp_dest_path)
+
+                df = None
+                for filename in tmp_file_paths:
+                    subdf = gpd.read_parquet(filename)
+                    df = pd.concat([df, subdf]) if df is not None else subdf
+
+                if df is None:
+                    raise RuntimeError
+
+                dest_path = Path(config.data_dir, f"{dataset_id}.parquet")
+                df.to_parquet(dest_path, compression="zstd")
+
+                config.datasets[dataset_id]["parquet"] = dest_path
+                config.save()
+
+            else:
+                raise NotImplementedError()
+
+        console.print(f"Writing {display_name}... [green]Done")
 
         # click.echo(f"\nCreated: {dest_path}")
