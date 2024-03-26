@@ -39,7 +39,7 @@ class OrderCommands(click.Group):
 
 @click.group(
     cls=OrderCommands,
-    context_settings=dict(help_option_names=["-h", "--help"]),
+    context_settings=dict(help_option_names=["-h", "--help"], show_default=True),
     no_args_is_help=True,
 )
 @click.option(
