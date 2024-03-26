@@ -28,7 +28,7 @@ class Dataset:
     """
 
     dataset_id: str
-    gdf: gpd.GeoDataFrame | None = None
+    gdf: gpd.GeoDataFrame | None
 
     def __init__(self, dataset_id: str):
         """Initialize a dataset.
@@ -36,7 +36,10 @@ class Dataset:
         Args:
             dataset_id: Dataset ID
         """
+
         self.dataset_id = dataset_id
+        self.gdf = None
+
         # config = Config()
         # gpkg_path = config.data[dataset_id].get("gpkg")
         # self.gdf = read_dataframe(gpkg_path)
