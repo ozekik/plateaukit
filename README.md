@@ -38,10 +38,10 @@ pip install plateaukit
 - [x] [ipydeck](https://github.com/ozekik/ipydeck)対応
 - [x] JupyterLiteサポート
 - [ ] LOD2サポート (WIP)
-- [ ] CityJSON変換の高速化
 - [ ] 軽量版データセットの提供
 - [ ] 標高データの可視化
 - [ ] テストの拡充
+- [ ] CityJSON変換の高速化
 - [ ] [ibis](https://github.com/ibis-project/ibis) (+geospatial) 対応の検討
 
 ## その他のツール・ライブラリ Alternatives
