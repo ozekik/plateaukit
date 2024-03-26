@@ -3,7 +3,7 @@ import sys
 import zipfile
 from os import PathLike
 from pathlib import Path, PurePosixPath
-from typing import Sequence
+from typing import Literal, Sequence
 
 import flatgeobuf as fgb
 import geopandas as gpd
@@ -44,20 +44,40 @@ class Dataset:
     def __repr__(self):
         return f"Dataset({self.dataset_id})"
 
-    def load_gdf(self):
+    def load_gdf(self, format: Literal["parquet", "gpkg"] = "parquet"):
         """Load the GeoDataFrame from the prebuilt dataset."""
 
-        config = Config()
-        gpkg_path = config.datasets[self.dataset_id].get("gpkg")
+        # NOTE: Fallback to GeoPackage
+        def load_gdf_gpkg():
+            gpkg_path = config.datasets[self.dataset_id].get("gpkg")
 
-        if gpkg_path:
-            if not read_dataframe:
-                raise ImportError(
-                    "Package pyogrio is required. Please install it using `pip install pyogrio`."
-                ) from None
-            self.gdf = read_dataframe(gpkg_path)
+            if gpkg_path:
+                if not read_dataframe:
+                    raise ImportError(
+                        "Package pyogrio is required. Please install it using `pip install pyogrio`."
+                    ) from None
+                self.gdf = read_dataframe(gpkg_path)
+            else:
+                raise RuntimeError(
+                    "Missing GeoPackage; Please prebuild the dataset first"
+                )
+
+        config = Config()
+
+        if format == "parquet":
+            logger.debug("Loading Parquet file...")
+            parquet_path = config.datasets[self.dataset_id].get("parquet")
+
+            if parquet_path:
+                self.gdf = gpd.read_parquet(parquet_path)
+            else:
+                load_gdf_gpkg()
+
+        elif format == "gpkg":
+            load_gdf_gpkg()
+
         else:
-            raise RuntimeError("Missing GeoPackage; Please prebuild the dataset first")
+            raise ValueError("Invalid format")
 
     def get_area(self):
         """Get the entire area of the dataset."""
