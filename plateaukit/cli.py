@@ -190,16 +190,30 @@ def uninstall_cmd(dataset_id, formats: list[str], keep_files):
 @cli.command("prebuild")
 @click.argument("dataset_id", nargs=1, required=True)
 @click.option(
-    "--split", default=10, help="Split the output into specified number of files"
+    "--format",
+    type=click.Choice(
+        ["parquet", "gpkg"],
+        case_sensitive=False,
+    ),
+    default="parquet",
+    help="Internal output format.",
+)
+@click.option(
+    "--split", default=10, help="Split the output into specified number of files."
 )
 @click.option("-v", "is_verbose", is_flag=True, default=False, help="Verbose")
-def prebuild_cmd(dataset_id, split, is_verbose):
+def prebuild_cmd(dataset_id, format, split, is_verbose):
     """Prebuild PLATEAU datasets.
 
     PLATEAU データセットを事前ビルドします。
     """
 
-    prebuild(dataset_id, split=split, simple_output=False if is_verbose else True)
+    prebuild(
+        dataset_id,
+        format=format,
+        split=split,
+        simple_output=False if is_verbose else True,
+    )
 
 
 @cli.command("generate-cityjson")
