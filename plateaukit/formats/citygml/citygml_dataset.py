@@ -90,10 +90,19 @@ class CityGMLDataset:
             base_path = Path(file).parent
 
             with zip_fs.open(file, "rb") as f:
-                root = etree.parse(f).getroot()
-                for city_obj in root.iterfind(
-                    ".//core:cityObjectMember/*", constants.nsmap
-                ):
+                # root = etree.parse(f).getroot()
+                # for city_obj in root.iterfind(
+                #     ".//core:cityObjectMember/*", constants.nsmap
+                # ):
+
+                tag = f"{{{constants.nsmap['core']}}}cityObjectMember"
+                itertree = etree.iterparse(f, events=("end",), tag=tag)
+                _, root = next(itertree)
+
+                for _ev, co_root in itertree:
+                    it = co_root.iterchildren()
+                    city_obj = next(it)
+
                     for el in city_obj:
                         _qname = etree.QName(el)
                         ns = _qname.namespace
@@ -112,7 +121,7 @@ class CityGMLDataset:
                             name = el.attrib["name"]
                             prop["name"] = name
 
-                        if (
+                        elif (
                             el.tag
                             == f"{{{constants.nsmap['uro']}}}keyValuePairAttribute"
                         ):
@@ -145,6 +154,9 @@ class CityGMLDataset:
                             props.append(prop)
                             yield prop
                             # logger.debug(f"{prop}")
+
+                    # co_root.clear()  # NOTE: Bad performance impact
+                    root.clear()  # NOTE: Unnecessary?
 
     def codelists(self):
         """Get codelists from the dataset."""
