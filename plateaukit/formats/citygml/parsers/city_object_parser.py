@@ -3,14 +3,11 @@ from dataclasses import dataclass
 import pyproj
 from lxml import etree
 
-from plateaukit import utils
 from plateaukit.formats.citygml import CityObject
 from plateaukit.formats.citygml.constants import nsmap
 from plateaukit.formats.citygml.extractors import city_object_extractors as extractors
+from plateaukit.formats.citygml.parsers.geometry_parser import GeometryParser
 from plateaukit.formats.citygml.parsers.xml_models.city_object import CityObjectXML
-
-MAPLIBRE_SCALE_FACTOR = 10000000
-MERCATOR_HALF_WORLD_LENGTH = 20037508.342789243906736373901367187500
 
 object_type_tags = {
     "Building": f"{{{nsmap['bldg']}}}Building",
@@ -34,83 +31,6 @@ class Building(CityObject):
     address: dict | None = None
 
 
-class GeometryParser:
-    """A parser for CityGML geometries.
-
-    Attributes:
-        transformer: A pyproj.Transformer instance.
-        maplibre: Whether to use MapLibre scale factor.
-    """
-
-    transformer: pyproj.Transformer | None
-    maplibre: bool = False
-
-    def __init__(
-        self, transformer: pyproj.Transformer | None = None, maplibre: bool = False
-    ):
-        self.transformer = transformer
-        self.maplibre = maplibre
-
-    def _transform(self, vertices, scale=(1, 1, 1), translate=(0, 0, 0)):
-        # TODO: numpy
-
-        transformed = []
-
-        for vertex in vertices:
-            x, y, z = vertex
-            nx = (x * scale[0]) + translate[0]
-            ny = (y * scale[1]) + translate[1]
-            nz = (z * scale[2]) + translate[2]
-            transformed.append((nx, ny, nz))
-
-        return transformed
-
-    def _adjust_mercator_to_maplibre(self, vertices):
-        transformed = self._transform(
-            vertices,
-            scale=[-(0.5 * MAPLIBRE_SCALE_FACTOR) / MERCATOR_HALF_WORLD_LENGTH] * 2
-            + [0.5 * MAPLIBRE_SCALE_FACTOR / MERCATOR_HALF_WORLD_LENGTH],
-            translate=(
-                0.5 * MAPLIBRE_SCALE_FACTOR,
-                0.5 * MAPLIBRE_SCALE_FACTOR,
-                0,
-            ),
-        )
-
-        return transformed
-
-    def extract_chunked_poslists(self, root):
-        path = "/".join(
-            [
-                ".//gml:surfaceMember",  # TODO: Check this
-                "gml:Polygon",
-                "gml:exterior",
-                "gml:LinearRing",
-                "gml:posList",
-            ]
-        )
-        # print(path)
-        # results = root.findall(path, nsmap)
-
-        parsed = []
-
-        for result in root.iterfind(path, nsmap):
-            poslist = map(float, result.text.split(" "))
-
-            chunked = list(utils.chunker(poslist, 3))
-
-            if self.maplibre and self.transformer:
-                chunked = list(self.transformer.itransform(chunked))
-                chunked = self._adjust_mercator_to_maplibre(chunked)
-            elif self.transformer:
-                chunked = list(self.transformer.itransform(chunked))
-
-            surface = [chunked]
-            parsed.append(surface)
-
-        return parsed
-
-
 class CityObjectParser:
     """A parser for CityGML objects.
 
@@ -120,12 +40,18 @@ class CityObjectParser:
 
     transformer: pyproj.Transformer | None
 
-    def __init__(self, transformer: pyproj.Transformer | None = None, codelist_map={}):
+    def __init__(
+        self,
+        transformer: pyproj.Transformer | None = None,
+        codelist_map: dict | None = {},
+    ):
         self.transformer = transformer
         self.codelist_map = codelist_map or {}
 
 
 class PLATEAUCityObjectParser(CityObjectParser):
+    """A parser for PLATEAU CityGML objects."""
+
     def _get_geometry(self, root: etree._Element):
         geoms = []
 
