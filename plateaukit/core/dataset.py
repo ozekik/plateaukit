@@ -310,7 +310,7 @@ class Dataset:
         object_types=None,  # TODO: Handle this
         lod=[1, 2],
         ground: bool = False,
-        seq=False,
+        seq: bool = False,
         split: int = 1,
         selection: list[str] | None = None,
         target_epsg: int | None = None,
@@ -395,6 +395,7 @@ class Dataset:
             codelist_infiles=codelist_infiles,
             selection=selection,
             target_epsg=target_epsg,
+            **kwargs,
         )
 
 
