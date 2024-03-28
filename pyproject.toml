@@ -34,7 +34,7 @@ fs = "^2.4.16"
 flatgeobuf = "^0.3.0"
 ipydeck = "^0.3.0"
 ipywidgets = "^8.1.2"
-ipython = "^8.22.2"
+ipython = ">=7.34.0,<9"
 pyodide-http = { version = "^0.2.1", markers = "sys_platform == 'emscripten'" }
 pyarrow = "^15.0.2"
 

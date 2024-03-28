@@ -631,6 +631,17 @@ tomli = {version = "*", optional = true, markers = "python_full_version <= \"3.1
 toml = ["tomli"]
 
 [[package]]
+name = "cssselect"
+version = "1.2.0"
+description = "cssselect parses CSS3 Selectors and translates them to XPath 1.0"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "cssselect-1.2.0-py2.py3-none-any.whl", hash = "sha256:da1885f0c10b60c03ed5eccbb6b68d6eff248d91976fcde348f395d54c9fd35e"},
+    {file = "cssselect-1.2.0.tar.gz", hash = "sha256:666b19839cfaddb9ce9d36bfe4c969132c647b92fc9088c4e23f786b30f1b3dc"},
+]
+
+[[package]]
 name = "cycler"
 version = "0.12.1"
 description = "Composable style cycles"
@@ -1018,13 +1029,13 @@ anywidget = ">=0.9.3,<0.10.0"
 
 [[package]]
 name = "ipykernel"
-version = "6.29.3"
+version = "6.29.4"
 description = "IPython Kernel for Jupyter"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "ipykernel-6.29.3-py3-none-any.whl", hash = "sha256:5aa086a4175b0229d4eca211e181fb473ea78ffd9869af36ba7694c947302a21"},
-    {file = "ipykernel-6.29.3.tar.gz", hash = "sha256:e14c250d1f9ea3989490225cc1a542781b095a18a19447fcf2b5eaf7d0ac5bd2"},
+    {file = "ipykernel-6.29.4-py3-none-any.whl", hash = "sha256:1181e653d95c6808039c509ef8e67c4126b3b3af7781496c7cbfb5ed938a27da"},
+    {file = "ipykernel-6.29.4.tar.gz", hash = "sha256:3d44070060f9475ac2092b760123fadf105d2e2493c24848b6691a7c4f42af5c"},
 ]
 
 [package.dependencies]
@@ -3841,21 +3852,22 @@ files = [
 
 [[package]]
 name = "types-lxml"
-version = "2024.2.9"
+version = "2024.3.27"
 description = "Complete lxml external type annotation"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "types-lxml-2024.2.9.tar.gz", hash = "sha256:f584856fe84cc05f7f5fd0da00308101f75a94a1d4e48ca6e6ab9eade0052d49"},
-    {file = "types_lxml-2024.2.9-py3-none-any.whl", hash = "sha256:740e3f09ba8e264c81fe0e1ea79171157f42489fab235c92b0d03ca00963b238"},
+    {file = "types-lxml-2024.3.27.tar.gz", hash = "sha256:c03bef3c9a3a9e2b48b413ae106e0607d3a7bb893cdbf48449e293c691be46d3"},
+    {file = "types_lxml-2024.3.27-py3-none-any.whl", hash = "sha256:26a6d59403827d9d42fc617b90fa2851df0752e258115adda1ac2938f077cffc"},
 ]
 
 [package.dependencies]
+cssselect = ">=1.2,<2.0"
 types-beautifulsoup4 = "*"
 typing-extensions = ">=4.5,<5.0"
 
 [package.extras]
-dev = ["tox (>=4.0,<5.0)"]
+test = ["html5lib (==1.1)", "lxml (==5.1.*)", "mypy (==1.5.1)", "pyright (>=1.1.289)", "pytest (>=7.0,<9)", "pytest-mypy-plugins (>1.10.0,<2.0)", "tox (>=4.0,<5.0)", "typeguard (>=3.0,<5)"]
 
 [[package]]
 name = "typing-extensions"
@@ -4003,4 +4015,4 @@ quantized-mesh = ["quantized-mesh-encoder"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "5b1a0ae7724868f970dd48a5637c8b5d99d22b1e11fb7ecce8751517d34586a1"
+content-hash = "ca6acbc9356cc66f030cd6030910ea5150c018cd8830b41fee64de53798ada8c"
