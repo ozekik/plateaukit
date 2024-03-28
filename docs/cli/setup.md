@@ -13,7 +13,6 @@ plateaukit list
 
     |                   id                   |       name       | version |                                    homepage                                   |
     |:--------------------------------------:|:----------------:|:-------:|:-----------------------------------------------------------------------------:|
-    |                  all                   |     (全都市)     |         |                                                                               |
     |     plateau-01100-sapporo-shi-2020     |   北海道札幌市   |   2020  |     https://www.geospatial.jp/ckan/dataset/plateau-01100-sapporo-shi-2020     |
     |   plateau-01639-sarabetsu-mura-2022    |   北海道更別村   |   2022  |    https://www.geospatial.jp/ckan/dataset/plateau-01639-sarabetsu-mura-2022   |
     |     plateau-01205-muroran-shi-2022     |   北海道室蘭市   |   2022  |     https://www.geospatial.jp/ckan/dataset/plateau-01205-muroran-shi-2022     |
