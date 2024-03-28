@@ -17,7 +17,7 @@ def list_available_datasets(is_all=False):
 
     table = PrettyTable()
     table.field_names = ["id", "name", "version", "homepage"]
-    table.add_row(["all", "(全都市)", "", ""])
+    # table.add_row(["all", "(全都市)", "", ""])
     for city in city_list:
         if city.get("latest", False) or is_all:
             table.add_row(
