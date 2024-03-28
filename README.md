@@ -19,7 +19,7 @@
 - [x] PLATEAUデータセットのインストール・管理
 - [x] GeoJSON / CityJSONへの変換
     - Java製の外部ライブラリ (citygml4j, citygml-tools) 非依存
-    - 並列処理による変換速度の向上
+    - 並列処理に対応 (変換速度の向上)
     - 圧縮ファイルのまま変換可能 (省容量)
 - [x] JupyterLab / Jupyer Notebookでの3D都市モデル表示 (LOD1)
 
@@ -50,9 +50,9 @@ pip install plateaukit
 
 ### Python
 
-- [plateaupy](https://github.com/AcculusSasao/plateaupy)
+- [plateaupy](https://github.com/AcculusSasao/plateaupy) (Open3D/Blender)
   - [rhenerose/plateaupy](https://github.com/rhenerose/plateaupy)
-- [plateau-geo-tools](https://github.com/raokiey/plateau-geo-tools)
+- [plateau-geo-tools](https://github.com/raokiey/plateau-geo-tools) (GeoJSON)
 
 ### その他
 
