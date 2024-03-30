@@ -2,13 +2,13 @@
 
 [[package]]
 name = "altair"
-version = "5.2.0"
+version = "5.3.0"
 description = "Vega-Altair: A declarative statistical visualization library for Python."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "altair-5.2.0-py3-none-any.whl", hash = "sha256:8c4888ad11db7c39f3f17aa7f4ea985775da389d79ac30a6c22856ab238df399"},
-    {file = "altair-5.2.0.tar.gz", hash = "sha256:2ad7f0c8010ebbc46319cc30febfb8e59ccf84969a201541c207bc3a4fa6cf81"},
+    {file = "altair-5.3.0-py3-none-any.whl", hash = "sha256:7084a1dab4d83c5e7e5246b92dc1b4451a6c68fd057f3716ee9d315c8980e59a"},
+    {file = "altair-5.3.0.tar.gz", hash = "sha256:5a268b1a0983b23d8f9129f819f956174aa7aea2719ed55a52eba9979b9f6675"},
 ]
 
 [package.dependencies]
@@ -21,7 +21,8 @@ toolz = "*"
 typing-extensions = {version = ">=4.0.1", markers = "python_version < \"3.11\""}
 
 [package.extras]
-dev = ["anywidget", "geopandas", "hatch", "ipython", "m2r", "mypy", "pandas-stubs", "pyarrow (>=11)", "pytest", "pytest-cov", "ruff (>=0.1.3)", "types-jsonschema", "types-setuptools", "vega-datasets", "vegafusion[embed] (>=1.4.0)", "vl-convert-python (>=1.1.0)"]
+all = ["altair-tiles (>=0.3.0)", "anywidget (>=0.9.0)", "pyarrow (>=11)", "vega-datasets (>=0.9.0)", "vegafusion[embed] (>=1.6.6)", "vl-convert-python (>=1.3.0)"]
+dev = ["geopandas", "hatch", "ipython", "m2r", "mypy", "pandas-stubs", "pytest", "pytest-cov", "ruff (>=0.3.0)", "types-jsonschema", "types-setuptools"]
 doc = ["docutils", "jinja2", "myst-parser", "numpydoc", "pillow (>=9,<10)", "pydata-sphinx-theme (>=0.14.1)", "scipy", "sphinx", "sphinx-copybutton", "sphinx-design", "sphinxext-altair"]
 
 [[package]]
@@ -2506,33 +2507,33 @@ test = ["enum34", "ipaddress", "mock", "pywin32", "wmi"]
 
 [[package]]
 name = "psygnal"
-version = "0.10.2"
+version = "0.11.0"
 description = "Fast python callback/event system modeled after Qt Signals"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "psygnal-0.10.2-cp310-cp310-macosx_10_16_arm64.whl", hash = "sha256:004def7d5334dfad12b3d0dcfb7e16c6e3a948c42998eda0472fcc73bb5ae85d"},
-    {file = "psygnal-0.10.2-cp310-cp310-macosx_10_16_x86_64.whl", hash = "sha256:a3fbbac9445871b57726d41e4d0262f738c6ecc60e3a48572f3fe5829471f1ee"},
-    {file = "psygnal-0.10.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:55378d0eb4821875649da13d9524aad75542479e1f5817f44754622571ac4a75"},
-    {file = "psygnal-0.10.2-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:09bc8121adf93cca7d5110900e26252ac3b3fe0dacdb96297e1b7d93b80c4525"},
-    {file = "psygnal-0.10.2-cp311-cp311-macosx_10_16_arm64.whl", hash = "sha256:7bd295bcabcce237bf5d2c05e51c946f83d399bedc92bd0a1d5ab8eb82b7b69c"},
-    {file = "psygnal-0.10.2-cp311-cp311-macosx_10_16_x86_64.whl", hash = "sha256:2a453304c48f61613d82461cc6cfa390b972cf41db8f834d3a48ee90471cd818"},
-    {file = "psygnal-0.10.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:fffea50e36e1ff3073bc6d8d8481d4d7707e298f9f379e1824de6dee71908045"},
-    {file = "psygnal-0.10.2-cp311-cp311-musllinux_1_1_x86_64.whl", hash = "sha256:cd758ca3ef9a4c36589492117cf8a7dbc0f92cef8d3c179f8efb66190ce66f18"},
-    {file = "psygnal-0.10.2-cp312-cp312-macosx_10_16_arm64.whl", hash = "sha256:407729dda66b67b0f19c5a49b33c14b657e994ce4807cbdf82efc723a909b0ac"},
-    {file = "psygnal-0.10.2-cp312-cp312-macosx_10_16_x86_64.whl", hash = "sha256:92e61acfd42ed89b5c6df84ce19eb4d12f9376d2ac8d47f9cd903ae95ebd0813"},
-    {file = "psygnal-0.10.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:c56ecf7a5f4125bc0b3721c46efe80756df4ebf394aad435ae8114c95a5316c6"},
-    {file = "psygnal-0.10.2-cp312-cp312-musllinux_1_1_x86_64.whl", hash = "sha256:12a73bebc739a6331a618ecaa7ad0aee410b5009ec7fa0cd5f55e521ee776132"},
-    {file = "psygnal-0.10.2-cp38-cp38-macosx_10_16_arm64.whl", hash = "sha256:3ace1fa396190e3a08c8a8f3e9d59c030535987d59950da19589c6003a0b02f6"},
-    {file = "psygnal-0.10.2-cp38-cp38-macosx_10_16_x86_64.whl", hash = "sha256:dc6a974700a1273fffe0ceecb0f4e331d41c570a86047f89383811c94d7b9157"},
-    {file = "psygnal-0.10.2-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:09c6cdd85976c1d8b8064481ec581d72efaa52eeff232e479454c412260d26e9"},
-    {file = "psygnal-0.10.2-cp38-cp38-musllinux_1_1_x86_64.whl", hash = "sha256:b9cf48ef4be9ef473edb68fb89241a0d6ee787e1c4c8c81a19a41b16db90bcb3"},
-    {file = "psygnal-0.10.2-cp39-cp39-macosx_10_16_arm64.whl", hash = "sha256:9b904424fb994e6c0088b3aab1d15305d8f27fa716c435dd5ebd5d58f1d6087b"},
-    {file = "psygnal-0.10.2-cp39-cp39-macosx_10_16_x86_64.whl", hash = "sha256:e9a5ed1a1843e81928490919a09af33301fb9d7920195bbae13f050e4664e4ae"},
-    {file = "psygnal-0.10.2-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:6e56ef3992e3f09e76cacec79563ec4a65c584f86742fc099adbf7d2f61e94ef"},
-    {file = "psygnal-0.10.2-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:a4738f8b53cd3ad268e474e4570f734ac4a23951123d14a1573e199c5294b103"},
-    {file = "psygnal-0.10.2-py3-none-any.whl", hash = "sha256:4c42f76058fa89b1cc128be55d174ff79f06cd8b6cc4e0ed3eadd5d6cf9520b7"},
-    {file = "psygnal-0.10.2.tar.gz", hash = "sha256:adb2c38d5cecfdb1212970a3123079f6d97241ac0e772c3db79418a5cabef079"},
+    {file = "psygnal-0.11.0-cp310-cp310-macosx_10_16_arm64.whl", hash = "sha256:ec29354483a4771864799d1c680e75b0175b18af3bfdf3ca57009c26ca41d3a2"},
+    {file = "psygnal-0.11.0-cp310-cp310-macosx_10_16_x86_64.whl", hash = "sha256:c5ba0cd1d1544a3cc622ad40d41a1fc567b9415cec01204286ce75bd83d91a61"},
+    {file = "psygnal-0.11.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:353e136cadd61fba2a43bfe6a7ed02bf3475766beaed8439cbccc191e600a75e"},
+    {file = "psygnal-0.11.0-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:9df6e0625acb9820e076a9a2eb456d8b754ac998ae0c247d13d176306edfa6c5"},
+    {file = "psygnal-0.11.0-cp311-cp311-macosx_10_16_arm64.whl", hash = "sha256:698b1fd559aba2eccfada1a6d41bef73875a0093f62f599b1915f0820ea9bc0b"},
+    {file = "psygnal-0.11.0-cp311-cp311-macosx_10_16_x86_64.whl", hash = "sha256:a841376635af537af63197ed282e4688df19911cdb58d12f04ff528b4aa24dc4"},
+    {file = "psygnal-0.11.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:6e20ba244394a191b1faea0345c321c4819e8804a5cbad3792694475988ae23e"},
+    {file = "psygnal-0.11.0-cp311-cp311-musllinux_1_1_x86_64.whl", hash = "sha256:b87466ac06b5967be25b9eb6e85fa51133670e01370ddbab857e9ac9a5ba30fb"},
+    {file = "psygnal-0.11.0-cp312-cp312-macosx_10_16_arm64.whl", hash = "sha256:c2a41669d010cb22ed8d38a5e9c982e0949797af48cdc2ec9d29b774382c1e9e"},
+    {file = "psygnal-0.11.0-cp312-cp312-macosx_10_16_x86_64.whl", hash = "sha256:c9423f1734ce4aacd8d068225d8b1ccfe4fb5f4472bfa05f4f5b76317c7124bb"},
+    {file = "psygnal-0.11.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e153bd1e5d7a0970693dc23c3122169994b03f3e2a4e9de42717e53d4fed1c31"},
+    {file = "psygnal-0.11.0-cp312-cp312-musllinux_1_1_x86_64.whl", hash = "sha256:8897e84c34388a45b4c68a22c363e349d76be581711a30b6478fbfb9911f1dd9"},
+    {file = "psygnal-0.11.0-cp38-cp38-macosx_10_16_arm64.whl", hash = "sha256:309d872eac9da37282433d2934beebb316a4272b828bd857159f210608d1dbc9"},
+    {file = "psygnal-0.11.0-cp38-cp38-macosx_10_16_x86_64.whl", hash = "sha256:33c270a7877d9a4bf6daaec19f048ad8573ba0b6adea4fba45efed97f26bf0de"},
+    {file = "psygnal-0.11.0-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ecce1d07aa8715c9b25cbd0dbfe12bae6b80099cbe20b4a4d4c356839750d269"},
+    {file = "psygnal-0.11.0-cp38-cp38-musllinux_1_1_x86_64.whl", hash = "sha256:db3fccec88ccc0f1f59e40ca9f29aa539b557125aa23fb98781717fb37f16ed3"},
+    {file = "psygnal-0.11.0-cp39-cp39-macosx_10_16_arm64.whl", hash = "sha256:036499cec39743381ed4f4426af0800d73b0950fe93b7b662b1bab2d0ae5577c"},
+    {file = "psygnal-0.11.0-cp39-cp39-macosx_10_16_x86_64.whl", hash = "sha256:50677d18e181cd6f8c80d5bb911ef5ddbcdbd490801d7205a0cd9e7bd587f163"},
+    {file = "psygnal-0.11.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e4b0bbac69dacdbfe9e12b2db8fc517ddeaf8b0c7e283f5d16eb1510eb7ad0ef"},
+    {file = "psygnal-0.11.0-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:1cd43e31333982833dbfd51364b6b1a2f1906a1f1372d033015c0692912eeb47"},
+    {file = "psygnal-0.11.0-py3-none-any.whl", hash = "sha256:7338f125d0fefc1a2b39451a693bf447016ab45459771324d1423931a3e10432"},
+    {file = "psygnal-0.11.0.tar.gz", hash = "sha256:50731c7f9e4c52fc0a5e9c533c7a1bb528ce39cc4f4059fe433d3f76e1c46ca0"},
 ]
 
 [package.extras]
@@ -2618,13 +2619,13 @@ numpy = ">=1.16.6,<2"
 
 [[package]]
 name = "pycparser"
-version = "2.21"
+version = "2.22"
 description = "C parser in Python"
 optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+python-versions = ">=3.8"
 files = [
-    {file = "pycparser-2.21-py2.py3-none-any.whl", hash = "sha256:8ee45429555515e1f6b185e78100aea234072576aa43ab53aefcae078162fca9"},
-    {file = "pycparser-2.21.tar.gz", hash = "sha256:e644fdec12f7872f86c58ff790da456218b10f863970249516d60a5eaca77206"},
+    {file = "pycparser-2.22-py3-none-any.whl", hash = "sha256:c3702b6d3dd8c7abc1afa565d7e63d53a1d0bd86cdc24edd75470f4de499cfcc"},
+    {file = "pycparser-2.22.tar.gz", hash = "sha256:491c8be9c040f5390f5bf44a5b07752bd07f56edf992381b05c701439eec10f6"},
 ]
 
 [[package]]
