@@ -48,7 +48,7 @@ def _get_nesting_level(l):
         return 0
 
 
-def _shift_to_ground(boundaries: list):
+def _get_min_z(boundaries: list):
     level = _get_nesting_level(boundaries)
 
     # Nest level 3
@@ -59,13 +59,6 @@ def _shift_to_ground(boundaries: list):
                 for surface in boundaries
             ]
         )
-        boundaries = [
-            [
-                [(point[0], point[1], point[2] - min_z) for point in region]
-                for region in surface
-            ]
-            for surface in boundaries
-        ]
     # Nest level 4
     elif level == 4:
         min_z = min(
@@ -79,6 +72,26 @@ def _shift_to_ground(boundaries: list):
                 for surface in boundaries
             ]
         )
+    else:
+        raise NotImplementedError()
+
+    return min_z
+
+
+def _shift_to_ground(boundaries: list, min_z: float):
+    level = _get_nesting_level(boundaries)
+
+    # Nest level 3
+    if level == 3:
+        boundaries = [
+            [
+                [(point[0], point[1], point[2] - min_z) for point in region]
+                for region in surface
+            ]
+            for surface in boundaries
+        ]
+    # Nest level 4
+    elif level == 4:
         boundaries = [
             [
                 [
@@ -93,7 +106,9 @@ def _shift_to_ground(boundaries: list):
     return boundaries
 
 
-def get_indexed_boundaries(geometry, vertices_map: VerticesMap, ground=False):
+def get_indexed_boundaries(
+    geometry, vertices_map: VerticesMap, min_z: float | None = None
+):
     # TODO: handling composite surface seriously
     # print("get_indexed_boundaries")
     # print("type", geometry["type"])
@@ -117,8 +132,8 @@ def get_indexed_boundaries(geometry, vertices_map: VerticesMap, ground=False):
         return indexed_boundaries, vertices_map
 
     elif geometry["type"] in ["MultiSurface", "CompositeSurface"]:
-        if ground:
-            boundaries = _shift_to_ground(geometry["boundaries"])
+        if min_z:
+            boundaries = _shift_to_ground(geometry["boundaries"], min_z)
         for surface in boundaries:
             # print("surface", surface)
             indexed_surface = []
@@ -142,8 +157,8 @@ def get_indexed_boundaries(geometry, vertices_map: VerticesMap, ground=False):
         return indexed_boundaries, vertices_map
 
     elif geometry["type"] == "Solid":
-        if ground:
-            boundaries = _shift_to_ground(geometry["boundaries"])
+        if min_z:
+            boundaries = _shift_to_ground(geometry["boundaries"], min_z)
         for shell in boundaries:
             # print("shell", shell)
             indexed_shell = []
@@ -363,6 +378,18 @@ class CityJSONConverter:
                     indexed_geoms = []
 
                     if city_obj.geometry is not None:
+                        min_z = None
+
+                        if ground:
+                            min_z = 0xFFFF
+                            for geom in city_obj.geometry:
+                                if geom["lod"] not in lod:
+                                    continue
+
+                                # print("geom", geom)
+                                min_z = min(min_z, _get_min_z(geom["boundaries"]))
+                            # print("min_z", min_z)
+
                         for geom in city_obj.geometry:
                             if geom["lod"] not in lod:
                                 continue
@@ -371,7 +398,7 @@ class CityJSONConverter:
                             boundaries, vertices_map = get_indexed_boundaries(
                                 geom,
                                 self.vertices_map,
-                                ground=ground,
+                                min_z=min_z,
                             )
 
                             indexed_geom = dict(
