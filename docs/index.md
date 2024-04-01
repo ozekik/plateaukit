@@ -19,7 +19,7 @@ PlateauKit は <a href="https://www.mlit.go.jp/plateau/" target="_blank">国土�
 - [x] PLATEAUデータセットのインストール・管理
 - [x] GeoJSON / CityJSONへの変換
     - Java製の外部ライブラリ (citygml4j, citygml-tools) 非依存
-    - 並列処理による変換速度の向上
+    - 並列処理に対応 (変換速度の向上)
     - 圧縮ファイルのまま変換可能 (省容量)
 - [x] JupyterLab / Jupyer Notebookでの3D都市モデル表示 (LOD1)
 

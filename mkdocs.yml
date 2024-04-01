@@ -74,7 +74,7 @@ nav:
           - データ処理: library/data-processing.ipynb
       # - Get Started:
       # - Usage:
-      - 開発に参加する: contributing.md
+      - 開発に参加する / バグ報告・機能要望: contributing.md
       - 🚧 API リファレンス: api.md
       - FAQ:
           - Windows: faq.md
