@@ -42,7 +42,6 @@ pip install plateaukit
 - [ ] 標高データの可視化
 - [ ] テストの拡充
 - [ ] CityJSON変換の高速化
-- [ ] [ibis](https://github.com/ibis-project/ibis) (+geospatial) 対応の検討
 
 ## その他のツール・ライブラリ Alternatives
 
