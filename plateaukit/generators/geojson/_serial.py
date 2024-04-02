@@ -103,7 +103,7 @@ def geojson_from_gml_serial_with_quit(
                 )
 
             try:
-                features.extend(features)
+                features.extend(infile_features)
             except Exception as err:
                 logger.debug(err)
 

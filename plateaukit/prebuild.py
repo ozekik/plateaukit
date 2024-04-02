@@ -74,7 +74,8 @@ def prebuild(
 
                 for filename in glob.glob(str(Path(tdir, "*.geojsonl"))):
                     subdf = read_dataframe(filename)
-                    df = pd.concat([df, subdf])
+                    # NOTE: set ignore_index True for re-indexing
+                    df = pd.concat([df, subdf], ignore_index=True)
 
                 # TODO: Use more accurate CRS
                 mercator = df.to_crs(3857)
@@ -104,14 +105,19 @@ def prebuild(
                     df["latitude"] = centroid.y
 
                     tmp_dest_path = str(Path(tdir, f"{filename}.parquet"))
-                    df.to_parquet(tmp_dest_path)
+                    df.to_parquet(tmp_dest_path, index=False)
 
                     tmp_file_paths.append(tmp_dest_path)
 
                 df = None
                 for filename in tmp_file_paths:
                     subdf = gpd.read_parquet(filename)
-                    df = pd.concat([df, subdf]) if df is not None else subdf
+                    # NOTE: set ignore_index True for re-indexing
+                    df = (
+                        pd.concat([df, subdf], ignore_index=True)
+                        if df is not None
+                        else subdf
+                    )
 
                 if df is None:
                     raise RuntimeError
