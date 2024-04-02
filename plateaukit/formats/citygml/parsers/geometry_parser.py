@@ -81,7 +81,9 @@ class GeometryParser:
         parsed = []
 
         for result in root.iterfind(path, nsmap):
-            poslist = map(float, result.text.split(" "))
+            # TODO: Handle cases where result.text is None
+            text = result.text.strip()
+            poslist = map(float, text.split(" "))
 
             chunked = list(utils.chunker(poslist, 3))
 
