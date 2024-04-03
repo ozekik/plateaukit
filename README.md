@@ -61,7 +61,7 @@ pip install plateaukit
 
 ## クレジット Credits
 
-- `tests/fixtures/30422_taiji-cho_2021_citygml_2_op.zip`: PLATEAUデータセット ([国土交通省 Project PLATEAU](https://www.mlit.go.jp/plateau/site-policy/), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/deed.ja))
+- `tests/fixtures/30422_taiji-cho_2021_citygml_2_op.zip`, `tests/fixtures/30422_taiji-cho_city_2021_citygml_4_op.zip`: PLATEAUデータセット ([国土交通省 Project PLATEAU](https://www.mlit.go.jp/plateau/site-policy/), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/deed.ja))
 
 ## ライセンス License
 

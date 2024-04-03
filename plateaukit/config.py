@@ -6,6 +6,21 @@ from typing import Annotated, Any, DefaultDict
 from platformdirs import user_config_dir, user_data_dir
 from pydantic import __version__ as pydantic_version
 
+
+def _get_data_items(entry: dict[str, str]):
+    return dict(filter(lambda x: not x[0].startswith("_"), entry.items()))
+
+
+def _sort_dataset_entry(entry: dict[str, str]):
+    metadata_items = list(filter(lambda x: x[0].startswith("_"), entry.items()))
+    data_items = list(filter(lambda x: not x[0].startswith("_"), entry.items()))
+
+    metadata_items.sort(key=lambda x: x[0])
+    data_items.sort(key=lambda x: x[0])
+
+    return dict(metadata_items + data_items)
+
+
 if pydantic_version.startswith("1"):
     from pydantic import BaseModel, Field, PrivateAttr, validator
 

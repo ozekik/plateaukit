@@ -4,6 +4,7 @@ import zipfile
 from os import PathLike
 from pathlib import Path
 
+from bidict import bidict
 from fs import open_fs
 from lxml import etree
 
@@ -67,7 +68,7 @@ class CityGMLDataset:
         if udx_type not in udx_dirs:
             raise RuntimeError(f"Missing udx directory: {udx_type}")
 
-        pat = re.compile(rf".*\/udx\/{udx_type}\/[^\/]*\.gml$")
+        pat = re.compile(rf".*udx\/{udx_type}\/[^\/]*\.gml$")
         with zipfile.ZipFile(self.file_path) as f:
             namelist = f.namelist()
             files = list(filter(lambda x: pat.match(x), namelist))
@@ -90,12 +91,13 @@ class CityGMLDataset:
             base_path = Path(file).parent
 
             with zip_fs.open(file, "rb") as f:
-                # root = etree.parse(f).getroot()
-                # for city_obj in root.iterfind(
-                #     ".//core:cityObjectMember/*", constants.nsmap
-                # ):
+                # Get namespace map
+                itertree = etree.iterparse(f, events=("end",))
+                _, root = next(itertree)
+                f.seek(0)
+                infile_nsmap = bidict(root.nsmap)
 
-                tag = f"{{{constants.nsmap['core']}}}cityObjectMember"
+                tag = f"{{{infile_nsmap['core']}}}cityObjectMember"
                 itertree = etree.iterparse(f, events=("end",), tag=tag)
                 _, root = next(itertree)
 
@@ -107,7 +109,7 @@ class CityGMLDataset:
                         _qname = etree.QName(el)
                         ns = _qname.namespace
                         localname = _qname.localname
-                        ns_prefix = constants.nsmap.inverse.get(ns, None)
+                        ns_prefix = infile_nsmap.inverse.get(ns, None)
                         if ns_prefix:
                             qname = f"{ns_prefix}:{localname}"
                         else:
@@ -117,19 +119,23 @@ class CityGMLDataset:
                             "tag": qname,
                         }
 
-                        if el.tag == f"{{{constants.nsmap['gen']}}}stringAttribute":
+                        if (
+                            "gen" in infile_nsmap
+                            and el.tag == f"{{{infile_nsmap['gen']}}}stringAttribute"
+                        ):
                             name = el.attrib["name"]
                             prop["name"] = name
 
                         elif (
-                            el.tag
-                            == f"{{{constants.nsmap['uro']}}}keyValuePairAttribute"
+                            "uro" in infile_nsmap
+                            and el.tag
+                            == f"{{{infile_nsmap['uro']}}}keyValuePairAttribute"
                         ):
                             for child in el.iterfind(
-                                "./uro:KeyValuePairAttribute", constants.nsmap
+                                "./uro:KeyValuePairAttribute", infile_nsmap
                             ):
                                 # print("child", child)
-                                el_key = child.find("./uro:key", constants.nsmap)
+                                el_key = child.find("./uro:key", infile_nsmap)
                                 key = el_key.text
                                 codelist_path = el_key.attrib.get("codeSpace", None)
                                 codelist_path = str(

@@ -2,7 +2,7 @@ import numpy as np
 from bidict import bidict
 from lxml import etree
 
-from plateaukit.constants import nsmap
+from plateaukit.constants import default_nsmap
 from plateaukit.logger import logger
 from plateaukit.utils import parse_posList
 
@@ -49,10 +49,10 @@ def triangles_from_gml(infiles, precision=8):
     for infile in infiles:
         with open(infile, "r") as f:
             root = etree.parse(f)
-            elems_Triangle = root.iterfind(f".//{nsmap['gml']}Triangle")
+            elems_Triangle = root.iterfind(f".//{default_nsmap['gml']}Triangle")
             for elem_Triangle in elems_Triangle:
                 elem_posList = elem_Triangle.find(
-                    f"./{nsmap['gml']}exterior/{nsmap['gml']}LinearRing/{nsmap['gml']}posList"
+                    f"./{default_nsmap['gml']}exterior/{default_nsmap['gml']}LinearRing/{default_nsmap['gml']}posList"
                 )
                 pos_list = parse_posList(elem_posList.text)
                 # Cut off the last element identical to the first

@@ -1,10 +1,9 @@
-from plateaukit.formats.citygml.constants import nsmap
 from plateaukit.formats.citygml.parsers.xml_models.city_object import CityObjectXML
 
 
 def _get_string_attribute(xml: CityObjectXML, name) -> str | None:
     path = f"./gen:stringAttribute[@name='{name}']/gen:value"
-    result = xml.find(path, nsmap)
+    result = xml.find(path, xml.nsmap)
     return result.text if result is not None else None
 
 
@@ -21,7 +20,7 @@ def get_usage(xml: CityObjectXML) -> str | None:
 def get_building_id(xml: CityObjectXML) -> str | None:
     try:
         path = "./uro:buildingIDAttribute/uro:BuildingIDAttribute/uro:buildingID"
-        result = xml.find(path, nsmap)
+        result = xml.find(path, xml.nsmap)
         value = result.text if result is not None else None
         assert value is not None
         return value
@@ -39,40 +38,40 @@ def get_building_id(xml: CityObjectXML) -> str | None:
 
 
 def get_measured_height(xml: CityObjectXML) -> float | None:
-    result = xml.find("./bldg:measuredHeight", nsmap)
+    result = xml.find("./bldg:measuredHeight", xml.nsmap)
     value = result.text if result is not None else None
     value = float(value) if value is not None else None
     return value
 
 
 def get_year_of_construction(xml: CityObjectXML) -> int | None:
-    result = xml.find("./bldg:yearOfConstruction", nsmap)
+    result = xml.find("./bldg:yearOfConstruction", xml.nsmap)
     value = result.text if result is not None else None
     value = int(value) if value is not None else None
     return value
 
 
 def get_storeys_above_ground(xml: CityObjectXML) -> int | None:
-    result = xml.find("./bldg:storeysAboveGround", nsmap)
+    result = xml.find("./bldg:storeysAboveGround", xml.nsmap)
     value = result.text if result is not None else None
     value = int(value) if value is not None else None
     return value
 
 
 def get_storeys_below_ground(xml: CityObjectXML) -> int | None:
-    result = xml.find("./bldg:storeysBelowGround", nsmap)
+    result = xml.find("./bldg:storeysBelowGround", xml.nsmap)
     value = result.text if result is not None else None
     value = int(value) if value is not None else None
     return value
 
 
 def get_address(xml: CityObjectXML) -> dict | None:
-    el = xml.find("./bldg:address", nsmap)
+    el = xml.find("./bldg:address", xml.nsmap)
 
     if el is None:
         return None
 
-    result = el.find(".//xAL:LocalityName", nsmap)
+    result = el.find(".//xAL:LocalityName", xml.nsmap)
 
     if result is None:
         return None

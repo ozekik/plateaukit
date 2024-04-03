@@ -7,7 +7,8 @@ from fs import open_fs
 from geojson import FeatureCollection
 
 from plateaukit.logger import logger
-from ._single import geojson_from_gml_single, features_from_gml_single
+
+from ._single import features_from_gml_single
 
 
 def geojson_from_gml_serial_with_quit(

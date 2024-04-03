@@ -3,7 +3,7 @@ from __future__ import annotations
 import click
 from rich.console import Console
 
-from plateaukit.config import Config
+from plateaukit.config import Config, _get_data_items
 
 
 @click.command("info")
@@ -36,8 +36,17 @@ def info_cmd(dataset_id):
         console.print("[b]Installed Files:[/b]\n  (None)")
         return
 
+    # COMPAT: Default to v2
+    spec_version = record.get("_spec", "2")
+    if spec_version == "2":
+        data_type_display_names = constants.data_type_display_names_v2
+    elif spec_version == "3":
+        data_type_display_names = constants.data_type_display_names_v3
+    else:
+        raise RuntimeError(f"Unknown spec version: {spec_version}")
+
     console.print("[b]Installed Files:[/b]")
-    for format, path in record.items():
+    for format, path in _get_data_items(record).items():
         console.print(f"  {format}: {path}")
 
     dataset = CityGMLDataset(dataset_id)
@@ -45,9 +54,7 @@ def info_cmd(dataset_id):
 
     console.print("[b]Data Types:[/b]")
     for udx_type, path in udx_dirs.items():
-        type_name = constants.data_type_display_names.get(udx_type, {}).get(
-            "ja", udx_type
-        )
+        type_name = data_type_display_names.get(udx_type, {}).get("ja", udx_type)
         console.print(f"  {type_name} ({udx_type}): {path}")
 
     console.print("[b]Attributes:[/b]")
@@ -56,9 +63,7 @@ def info_cmd(dataset_id):
         "[bold]Processing...", spinner="simpleDotsScrolling"
     ) as _status:
         for udx_type in udx_dirs.keys():
-            type_name = constants.data_type_display_names.get(udx_type, {}).get(
-                "ja", udx_type
-            )
+            type_name = data_type_display_names.get(udx_type, {}).get("ja", udx_type)
             console.print(f"  [b]{type_name} ({udx_type}):[/b]")
             for attr in dataset.scan_attributes(udx_type):
                 console.print(f"    {attr.get('name')} ({attr['tag']})")
