@@ -6,7 +6,7 @@ import pyproj
 from lxml import etree
 
 from plateaukit.formats.citygml import CityGML
-from plateaukit.formats.citygml.constants import nsmap
+from plateaukit.formats.citygml.constants import default_nsmap
 from plateaukit.formats.citygml.parsers.city_object_parser import (
     PLATEAUCityObjectParser,
 )
@@ -34,12 +34,12 @@ class PLATEAUCityGMLParser(CityGMLParser):
 
     def _get_epsg_code(self, infile: IOBase) -> str | None:
         """Extract EPSG code from CityGML tree."""
-        tag = f"{{{nsmap['gml']}}}boundedBy"
+        tag = f"{{{default_nsmap['gml']}}}boundedBy"
         path = "gml:Envelope"
 
         srs_name = None
         for _ev, el in etree.iterparse(infile, events=("end",), tag=tag):
-            result = el.find(path, nsmap)
+            result = el.find(path, default_nsmap)
             found = result is not None
             if result is not None:
                 srs_name = result.get("srsName")
@@ -57,6 +57,17 @@ class PLATEAUCityGMLParser(CityGMLParser):
         infile.seek(0)
 
         return m.group(1)
+
+    def _get_nsmap(self, infile: IOBase) -> dict[str, str]:
+        """Extract namespace map from CityGML document."""
+
+        itertree = etree.iterparse(infile)
+        _, root = next(itertree)
+        nsmap = root.nsmap
+
+        infile.seek(0)
+
+        return nsmap  # TODO: Fix typing
 
     def iterparse(self, infile, selection: list[str] | None = None):
         src_epsg = self._get_epsg_code(infile)  # 6697
@@ -76,8 +87,10 @@ class PLATEAUCityGMLParser(CityGMLParser):
                 codelist = parser.parse(file_obj)
                 codelist_map[path] = codelist
 
+        nsmap = self._get_nsmap(infile)
+
         co_parser = PLATEAUCityObjectParser(
-            transformer=transformer, codelist_map=codelist_map
+            transformer=transformer, nsmap=nsmap, codelist_map=codelist_map
         )
 
         objects = []
@@ -126,8 +139,10 @@ class PLATEAUCityGMLParser(CityGMLParser):
                 codelist = parser.parse(file_obj)
                 codelist_map[path] = codelist
 
+        nsmap = self._get_nsmap(infile)
+
         co_parser = PLATEAUCityObjectParser(
-            transformer=transformer, codelist_map=codelist_map
+            transformer=transformer, nsmap=nsmap, codelist_map=codelist_map
         )
 
         objects = []

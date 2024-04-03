@@ -4,26 +4,10 @@ import pyproj
 from lxml import etree
 
 from plateaukit.formats.citygml import CityObject
-from plateaukit.formats.citygml.constants import nsmap
+
 from plateaukit.formats.citygml.extractors import city_object_extractors as extractors
 from plateaukit.formats.citygml.parsers.geometry_parser import GeometryParser
 from plateaukit.formats.citygml.parsers.xml_models.city_object import CityObjectXML
-
-object_type_tags = {
-    "Building": f"{{{nsmap['bldg']}}}Building",
-    "Road": f"{{{nsmap['tran']}}}Road",
-    "Bridge": f"{{{nsmap['brid']}}}Bridge",
-}
-
-geometry_type_tags = [
-    {"type": "lod0RoofEdge", "tag": f"{{{nsmap['bldg']}}}lod0RoofEdge"},
-    {"type": "lod0FootPrint", "tag": f"{{{nsmap['bldg']}}}lod0FootPrint"},
-    {"type": "lod1Solid", "tag": f"{{{nsmap['bldg']}}}lod1Solid"},
-    {"type": "lod2Solid", "tag": f"{{{nsmap['bldg']}}}lod2Solid"},
-    {"type": "lod2MultiSurface", "tag": f"{{{nsmap['bldg']}}}lod2MultiSurface"},
-    {"type": "lod1MultiSurface", "tag": f"{{{nsmap['tran']}}}lod1MultiSurface"},
-    {"type": "lod2MultiSurface", "tag": f"{{{nsmap['brid']}}}lod2MultiSurface"},
-]
 
 
 @dataclass
@@ -39,14 +23,34 @@ class CityObjectParser:
     """
 
     transformer: pyproj.Transformer | None
+    nsmap: dict[str, str]
 
     def __init__(
         self,
+        *,
         transformer: pyproj.Transformer | None = None,
+        nsmap: dict[str, str],
         codelist_map: dict | None = {},
     ):
         self.transformer = transformer
+        self.nsmap = nsmap
         self.codelist_map = codelist_map or {}
+
+        self.object_type_tags = {
+            "Building": f"{{{nsmap['bldg']}}}Building",
+            "Road": f"{{{nsmap['tran']}}}Road",
+            "Bridge": f"{{{nsmap['brid']}}}Bridge",
+        }
+
+        self.geometry_type_tags = [
+            {"type": "lod0RoofEdge", "tag": f"{{{nsmap['bldg']}}}lod0RoofEdge"},
+            {"type": "lod0FootPrint", "tag": f"{{{nsmap['bldg']}}}lod0FootPrint"},
+            {"type": "lod1Solid", "tag": f"{{{nsmap['bldg']}}}lod1Solid"},
+            {"type": "lod2Solid", "tag": f"{{{nsmap['bldg']}}}lod2Solid"},
+            {"type": "lod2MultiSurface", "tag": f"{{{nsmap['bldg']}}}lod2MultiSurface"},
+            {"type": "lod1MultiSurface", "tag": f"{{{nsmap['tran']}}}lod1MultiSurface"},
+            {"type": "lod2MultiSurface", "tag": f"{{{nsmap['brid']}}}lod2MultiSurface"},
+        ]
 
 
 class PLATEAUCityObjectParser(CityObjectParser):
@@ -57,11 +61,11 @@ class PLATEAUCityObjectParser(CityObjectParser):
 
         parser = GeometryParser(transformer=self.transformer)
 
-        for type_tag in geometry_type_tags:
+        for type_tag in self.geometry_type_tags:
             type = type_tag["type"]
             tag = type_tag["tag"]
 
-            el = root.find(f"./{tag}", nsmap)
+            el = root.find(f"./{tag}", self.nsmap)
 
             if el is None:
                 continue
@@ -142,14 +146,14 @@ class PLATEAUCityObjectParser(CityObjectParser):
                 geoms.append(geom)
 
         # Look through boundedBy
-        bound_els = list(root.iterfind("./bldg:boundedBy", nsmap))
+        bound_els = list(root.iterfind("./bldg:boundedBy", self.nsmap))
         for bound_el in bound_els:
             # TODO: Check semantics
-            for type_tag in geometry_type_tags:
+            for type_tag in self.geometry_type_tags:
                 type = type_tag["type"]
                 tag = type_tag["tag"]
 
-                el = bound_el.find(f".//{tag}", nsmap)
+                el = bound_el.find(f".//{tag}", self.nsmap)
 
                 if el is None:
                     continue
@@ -184,7 +188,7 @@ class PLATEAUCityObjectParser(CityObjectParser):
 
         attributes = dict()
 
-        if el.tree.tag == object_type_tags["Building"]:
+        if el.tree.tag == self.object_type_tags["Building"]:
             attributes["building_id"] = extractors.get_building_id(el)
 
             # Optional attributes
@@ -205,14 +209,14 @@ class PLATEAUCityObjectParser(CityObjectParser):
         return attributes
 
     def parse(self, element: etree._Element) -> CityObject:
-        el = CityObjectXML(element, codelist_map=self.codelist_map)
+        el = CityObjectXML(element, nsmap=self.nsmap, codelist_map=self.codelist_map)
 
         citygml_id = el.get_gml_id()
         address = None  # self._get_address(el)
 
         attributes = self._parse_attributes(el)
 
-        if el.tree.tag == object_type_tags["Building"]:
+        if el.tree.tag == self.object_type_tags["Building"]:
             attributes["building_id"] = extractors.get_building_id(el)
 
             geometry = self._get_geometry(el.tree)
@@ -224,7 +228,7 @@ class PLATEAUCityObjectParser(CityObjectParser):
                 geometry=geometry,
                 address=address,
             )
-        elif el.tree.tag == object_type_tags["Road"]:
+        elif el.tree.tag == self.object_type_tags["Road"]:
             geometry = self._get_geometry(el.tree)
 
             obj = CityObject(
@@ -233,7 +237,7 @@ class PLATEAUCityObjectParser(CityObjectParser):
                 attributes=attributes,
                 geometry=geometry,
             )
-        elif el.tree.tag == object_type_tags["Bridge"]:
+        elif el.tree.tag == self.object_type_tags["Bridge"]:
             geometry = self._get_geometry(el.tree)
 
             obj = CityObject(

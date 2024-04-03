@@ -2,7 +2,7 @@ import pyproj
 from lxml import etree
 
 from plateaukit import utils
-from plateaukit.formats.citygml.constants import nsmap
+from plateaukit.formats.citygml.constants import default_nsmap
 
 MAPLIBRE_SCALE_FACTOR = 10000000
 MERCATOR_HALF_WORLD_LENGTH = 20037508.342789243906736373901367187500
@@ -80,7 +80,7 @@ class GeometryParser:
 
         parsed = []
 
-        for result in root.iterfind(path, nsmap):
+        for result in root.iterfind(path, default_nsmap):
             # TODO: Handle cases where result.text is None
             text = result.text.strip()
             poslist = map(float, text.split(" "))

@@ -1,4 +1,4 @@
-from plateaukit.constants import nsmap
+from plateaukit.constants import default_nsmap
 
 # NOTE: https://www.mlit.go.jp/plateau/file/libraries/doc/plateau_doc_0002_ver03.pdf#page=60
 data_type_display_names_v3 = {

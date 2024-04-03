@@ -2,8 +2,6 @@ import warnings
 
 from lxml import etree
 
-from plateaukit.formats.citygml.constants import nsmap
-
 
 # TODO: Inherit etree.Element?
 # NOTE: This class MUST be lightweight
@@ -14,16 +12,22 @@ class CityObjectXML:
         codelist_map: A map from codelist path to corresponding dict.
     """
 
+    nsmap: dict[str, str]
     codelist_map: dict[str, dict[str, str]]  # TODO: Class or instance variable?
 
     def __init__(
-        self, el: etree._Element, codelist_map: dict[str, dict[str, str]] = {}
+        self,
+        el: etree._Element,
+        *,
+        nsmap: dict[str, str],
+        codelist_map: dict[str, dict[str, str]] = {},
     ):
         self.tree = el
+        self.nsmap = nsmap
         self.codelist_map = codelist_map
 
     def _get_codespace_attribute(self, xpath) -> str | None:
-        el = self.tree.find(xpath, nsmap)
+        el = self.tree.find(xpath, self.nsmap)
 
         if el is None:
             return None
@@ -46,7 +50,7 @@ class CityObjectXML:
         """Get gml:id of a CityGML object."""
 
         path = "./[@gml:id]"
-        result = self.tree.find(path, nsmap)
+        result = self.tree.find(path, self.nsmap)
 
         if result is None:
             warnings.warn(
@@ -55,7 +59,7 @@ class CityObjectXML:
             )
             return None
 
-        id = result.get(f"{{{nsmap['gml']}}}id")
+        id = result.get(f"{{{self.nsmap['gml']}}}id")
 
         return id if id is not None else None
 
