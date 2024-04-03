@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import os
 import sys
+from copy import deepcopy
 from os import PathLike
 from pathlib import Path
 from typing import Optional
 
-from plateaukit.config import Config
+from plateaukit.config import Config, _get_data_items, _sort_dataset_entry
 from plateaukit.download import downloader
 
 
@@ -48,14 +49,32 @@ def install_dataset(
             f'ERROR: Dataset "{dataset_id}" ({format}) is already installed'
         )
 
+    config = Config()
+
+    current_entry = config.datasets[dataset_id] or dict()
+    new_entry = deepcopy(current_entry)
+
+    # COMPAT: If dataset_id entry is not empty and missing _spec, set _spec to 2
+    if len(current_entry.keys()) > 0 and "_spec" not in current_entry:
+        current_entry["_spec"] = "2"
+
+    # If spec is mismatched, raise an error
+    if "_spec" in current_entry and current_entry["_spec"] != city["spec"]:
+        raise RuntimeError(
+            f"Spec version mismatch: Installing v{city['spec']}, but v{current_entry['_spec']} is already installed."
+            + f" Uninstall `{dataset_id}` first and try again."
+        )
+    else:
+        new_entry["_spec"] = city["spec"]
+
     if local:
         local = Path(local).resolve()
 
         if not local.exists():
             raise RuntimeError("Local file not found")
 
-        config = Config()
-        config.datasets[dataset_id][format] = local
+        new_entry[format] = str(local)
+        config.datasets[dataset_id] = _sort_dataset_entry(new_entry)
         config.save()
 
         return
@@ -69,7 +88,8 @@ def install_dataset(
         config = Config()
         destfile_path = downloader.download_resource(resource_id, dest=config.data_dir)
 
-        config.datasets[dataset_id][format] = destfile_path
+        new_entry[format] = destfile_path
+        config.datasets[dataset_id] = _sort_dataset_entry(new_entry)
         config.save()
 
         return
@@ -81,7 +101,7 @@ def uninstall_dataset(
     """Uninstall PLATEAU datasets."""
 
     config = Config()
-    formats = formats or list(config.datasets[dataset_id].keys())
+    formats = formats or list(_get_data_items(config.datasets[dataset_id]).keys())
 
     if not keep_files:
         paths = []
@@ -99,7 +119,7 @@ def uninstall_dataset(
         if format in config.datasets[dataset_id]:
             del config.datasets[dataset_id][format]
 
-    if len(config.datasets[dataset_id].items()) == 0:
+    if len(_get_data_items(config.datasets[dataset_id]).items()) == 0:
         del config.datasets[dataset_id]
 
     config.save()

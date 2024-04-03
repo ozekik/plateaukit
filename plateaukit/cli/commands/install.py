@@ -12,7 +12,7 @@ def list_available_datasets(is_all=False):
     from plateaukit.download import city_list
 
     table = PrettyTable()
-    table.field_names = ["id", "name", "version", "homepage"]
+    table.field_names = ["id", "name", "version", "spec", "homepage"]
     # table.add_row(["all", "(全都市)", "", ""])
     for city in city_list:
         if city.get("latest", False) or is_all:
@@ -21,6 +21,7 @@ def list_available_datasets(is_all=False):
                     city["dataset_id"],
                     city["city_name"],
                     city["version"],
+                    f"v{city['spec']}",
                     city["homepage"],
                 ]
             )

@@ -4,7 +4,7 @@ import pyproj
 from lxml import etree
 
 from plateaukit.formats.citygml import CityObject
-
+from plateaukit.formats.citygml.constants import default_nsmap
 from plateaukit.formats.citygml.extractors import city_object_extractors as extractors
 from plateaukit.formats.citygml.parsers.geometry_parser import GeometryParser
 from plateaukit.formats.citygml.parsers.xml_models.city_object import CityObjectXML
@@ -37,19 +37,31 @@ class CityObjectParser:
         self.codelist_map = codelist_map or {}
 
         self.object_type_tags = {
-            "Building": f"{{{nsmap['bldg']}}}Building",
-            "Road": f"{{{nsmap['tran']}}}Road",
-            "Bridge": f"{{{nsmap['brid']}}}Bridge",
+            "Building": f"{{{default_nsmap['bldg']}}}Building",
+            "Road": f"{{{default_nsmap['tran']}}}Road",
+            "Bridge": f"{{{default_nsmap['brid']}}}Bridge",
         }
 
         self.geometry_type_tags = [
-            {"type": "lod0RoofEdge", "tag": f"{{{nsmap['bldg']}}}lod0RoofEdge"},
-            {"type": "lod0FootPrint", "tag": f"{{{nsmap['bldg']}}}lod0FootPrint"},
-            {"type": "lod1Solid", "tag": f"{{{nsmap['bldg']}}}lod1Solid"},
-            {"type": "lod2Solid", "tag": f"{{{nsmap['bldg']}}}lod2Solid"},
-            {"type": "lod2MultiSurface", "tag": f"{{{nsmap['bldg']}}}lod2MultiSurface"},
-            {"type": "lod1MultiSurface", "tag": f"{{{nsmap['tran']}}}lod1MultiSurface"},
-            {"type": "lod2MultiSurface", "tag": f"{{{nsmap['brid']}}}lod2MultiSurface"},
+            {"type": "lod0RoofEdge", "tag": f"{{{default_nsmap['bldg']}}}lod0RoofEdge"},
+            {
+                "type": "lod0FootPrint",
+                "tag": f"{{{default_nsmap['bldg']}}}lod0FootPrint",
+            },
+            {"type": "lod1Solid", "tag": f"{{{default_nsmap['bldg']}}}lod1Solid"},
+            {"type": "lod2Solid", "tag": f"{{{default_nsmap['bldg']}}}lod2Solid"},
+            {
+                "type": "lod2MultiSurface",
+                "tag": f"{{{default_nsmap['bldg']}}}lod2MultiSurface",
+            },
+            {
+                "type": "lod1MultiSurface",
+                "tag": f"{{{default_nsmap['tran']}}}lod1MultiSurface",
+            },
+            {
+                "type": "lod2MultiSurface",
+                "tag": f"{{{default_nsmap['brid']}}}lod2MultiSurface",
+            },
         ]
 
 

@@ -68,7 +68,7 @@ class CityGMLDataset:
         if udx_type not in udx_dirs:
             raise RuntimeError(f"Missing udx directory: {udx_type}")
 
-        pat = re.compile(rf".*\/udx\/{udx_type}\/[^\/]*\.gml$")
+        pat = re.compile(rf".*udx\/{udx_type}\/[^\/]*\.gml$")
         with zipfile.ZipFile(self.file_path) as f:
             namelist = f.namelist()
             files = list(filter(lambda x: pat.match(x), namelist))
@@ -119,12 +119,17 @@ class CityGMLDataset:
                             "tag": qname,
                         }
 
-                        if el.tag == f"{{{infile_nsmap['gen']}}}stringAttribute":
+                        if (
+                            "gen" in infile_nsmap
+                            and el.tag == f"{{{infile_nsmap['gen']}}}stringAttribute"
+                        ):
                             name = el.attrib["name"]
                             prop["name"] = name
 
                         elif (
-                            el.tag == f"{{{infile_nsmap['uro']}}}keyValuePairAttribute"
+                            "uro" in infile_nsmap
+                            and el.tag
+                            == f"{{{infile_nsmap['uro']}}}keyValuePairAttribute"
                         ):
                             for child in el.iterfind(
                                 "./uro:KeyValuePairAttribute", infile_nsmap
