@@ -45,6 +45,8 @@ def info_cmd(dataset_id):
     else:
         raise RuntimeError(f"Unknown spec version: {spec_version}")
 
+    console.print(f"[b]PLATEAU CityGML Spec:[/b] v{spec_version}")
+
     console.print("[b]Installed Files:[/b]")
     for format, path in _get_data_items(record).items():
         console.print(f"  {format}: {path}")
