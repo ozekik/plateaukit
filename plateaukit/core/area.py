@@ -9,6 +9,12 @@ from plateaukit.core.widgets.interactive_deck import InteraciveDeck
 from plateaukit.logger import logger
 
 
+def _is_colab():
+    import sys
+
+    return "google.colab.output" in sys.modules
+
+
 class Area:
     """This class represents an area of interest."""
 
@@ -177,7 +183,10 @@ class Area:
 
         self.selection = deck.selection
 
-        return deck.widget
+        if _is_colab():
+            return deck.deck
+        else:
+            return deck.widget
 
     def show(
         self,
