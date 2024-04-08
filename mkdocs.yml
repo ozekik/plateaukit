@@ -130,7 +130,8 @@ plugins:
   - mkdocs-jupyter:
       execute: false # true
       ignore_h1_titles: true
-      ignore: ["jupyterlite/**/*.ipynb"]
+      ignore: ["jupyterlite/**/*.ipynb", ".ipynb_checkpoints/**/*.ipynb"]
+      include_requirejs: true
   - exclude:
       glob:
         - plugins/*
