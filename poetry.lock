@@ -1016,17 +1016,17 @@ files = [
 
 [[package]]
 name = "ipydeck"
-version = "0.4.0"
+version = "0.4.1"
 description = "Yet another Jupyter widget for deck.gl"
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "ipydeck-0.4.0-py3-none-any.whl", hash = "sha256:c41598ac1fee78ec53a0b8be0ac6df47933cc54feb03115ac597c9d76851e1e6"},
-    {file = "ipydeck-0.4.0.tar.gz", hash = "sha256:eedbabfa7b6ab46157080c7691536e97a84c433954b4d51a90b4c8c05618e562"},
+    {file = "ipydeck-0.4.1-py3-none-any.whl", hash = "sha256:43ad35344ebd8cc36a4bf1cc531d6f789aad0a82338e8968bdc3b077935fb93b"},
+    {file = "ipydeck-0.4.1.tar.gz", hash = "sha256:0863d20877525cda6b35f59afc68721c618f0f88be1f548cf5bb5e903cddcecf"},
 ]
 
 [package.dependencies]
-anywidget = ">=0.9.3,<0.10.0"
+anywidget = "0.9.6"
 
 [[package]]
 name = "ipykernel"
@@ -4018,4 +4018,4 @@ quantized-mesh = ["quantized-mesh-encoder"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "b2589ded4bb70e11e4a192f7bab163e8dd65cb5c70ad1249870722d03a041228"
+content-hash = "cac3354963f5dd127b8ec7679b5565c5c39d8e0d8f9784a1bae2de8fd4e042a6"
