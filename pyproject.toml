@@ -36,7 +36,7 @@ ipydeck = "^0.4.0"
 ipywidgets = "^8.1.2"
 ipython = ">=7.34.0,<9"
 pyodide-http = { version = "^0.2.1", markers = "sys_platform == 'emscripten'" }
-pyarrow = "^15.0.2"
+pyarrow = { version = "^15.0.2", markers = "sys_platform != 'emscripten'" }
 
 [tool.poetry.extras]
 all = ["pyogrio"]

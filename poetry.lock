@@ -4018,4 +4018,4 @@ quantized-mesh = ["quantized-mesh-encoder"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "63a22864bd71df42883dbe89300925366c3e4094f600f2d774bc54676d8c7a2a"
+content-hash = "b2589ded4bb70e11e4a192f7bab163e8dd65cb5c70ad1249870722d03a041228"
