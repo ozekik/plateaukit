@@ -1,0 +1,5 @@
+{
+  "@jupyterlab/translation-extension:plugin": {
+    "locale": "ja-JP"
+  }
+}

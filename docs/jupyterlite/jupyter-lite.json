@@ -22,7 +22,7 @@
       {
         "extension": "./extension",
         "liteExtension": false,
-        "load": "./static/remoteEntry.24c18011.js",
+        "load": "./static/remoteEntry.dfbf6f67.js",
         "name": "anywidget"
       },
       {
@@ -320,6 +320,11 @@
         "pipliteUrls": [
           "./extensions/@jupyterlite/pyodide-kernel-extension/static/pypi/all.json?sha256=347ef7784cbabf42964174d3d5cca9b4a4fa94ee59bab5975edc948f4c7ea7cf"
         ]
+      }
+    },
+    "settingsOverrides": {
+      "@jupyterlab/translation-extension:plugin": {
+        "locale": "ja-JP"
       }
     }
   },

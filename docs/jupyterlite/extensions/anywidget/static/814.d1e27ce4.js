@@ -20,7 +20,7 @@ __webpack_require__.r(__webpack_exports__);
         registry.registerWidget({
             name: "anywidget",
             // @ts-expect-error Added by bundler
-            version: "0.9.3",
+            version: "0.9.6",
             exports
         });
     },
@@ -33,7 +33,9 @@ __webpack_require__.r(__webpack_exports__);
 __webpack_require__.d(__webpack_exports__, {
   "default": function() { return /* export default binding */ __WEBPACK_DEFAULT_EXPORT__; }
 });
-/* harmony import */var solid_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! solid-js */"635");
+/* harmony import */var _lukeed_uuid__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @lukeed/uuid */"800");
+/* harmony import */var solid_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! solid-js */"336");
+
 
 /**
  * @typedef AnyWidget
@@ -238,37 +240,79 @@ To learn more, please see: https://github.com/manzt/anywidget/pull/395
     console.error(source);
     throw source;
 }
+/**
+ * @template T
+ * @param {import("@anywidget/types").AnyModel} model
+ * @param {string} name
+ * @param {any} [msg]
+ * @param {DataView[]} [buffers]
+ * @param {{ timeout?: number }} [options]
+ * @return {Promise<[T, DataView[]]>}
+ */ function invoke(model, name, msg, buffers = [], { timeout = 3000 } = {}) {
+    // crypto.randomUUID() is not available in non-secure contexts (i.e., http://)
+    // so we use simple (non-secure) polyfill.
+    let id = _lukeed_uuid__WEBPACK_IMPORTED_MODULE_0__.v4();
+    return new Promise((resolve, reject)=>{
+        let timer = setTimeout(()=>{
+            reject(new Error(`Promise timed out after ${timeout} ms`));
+            model.off("msg:custom", handler);
+        }, timeout);
+        /**
+		 * @param {{ id: string, kind: "anywidget-command-response", response: T }} msg
+		 * @param {DataView[]} buffers
+		 */ function handler(msg, buffers) {
+            if (!(msg.id === id)) return;
+            clearTimeout(timer);
+            resolve([
+                msg.response,
+                buffers
+            ]);
+            model.off("msg:custom", handler);
+        }
+        model.on("msg:custom", handler);
+        model.send({
+            id,
+            kind: "anywidget-command",
+            name,
+            msg
+        }, undefined, buffers);
+    });
+}
 class Runtime {
     /** @type {() => void} */ #disposer = ()=>{};
     /** @type {Set<() => void>} */ #view_disposers = new Set();
     /** @type {import('solid-js').Resource<Result<AnyWidget & { url: string }>>} */ // @ts-expect-error - Set synchronously in constructor.
     #widget_result;
     /** @param {import("@jupyter-widgets/base").DOMWidgetModel} model */ constructor(model){
-        this.#disposer = (0, solid_js__WEBPACK_IMPORTED_MODULE_0__.createRoot)((dispose)=>{
-            let [css, set_css] = (0, solid_js__WEBPACK_IMPORTED_MODULE_0__.createSignal)(model.get("_css"));
+        this.#disposer = solid_js__WEBPACK_IMPORTED_MODULE_1__.createRoot((dispose)=>{
+            let [css, set_css] = solid_js__WEBPACK_IMPORTED_MODULE_1__.createSignal(model.get("_css"));
             model.on("change:_css", ()=>{
                 let id = model.get("_anywidget_id");
                 console.debug(`[anywidget] css hot updated: ${id}`);
                 set_css(model.get("_css"));
             });
-            (0, solid_js__WEBPACK_IMPORTED_MODULE_0__.createEffect)(()=>{
+            solid_js__WEBPACK_IMPORTED_MODULE_1__.createEffect(()=>{
                 let id = model.get("_anywidget_id");
                 load_css(css(), id);
             });
-            /** @type {import("solid-js").Signal<string>} */ let [esm, setEsm] = (0, solid_js__WEBPACK_IMPORTED_MODULE_0__.createSignal)(model.get("_esm"));
+            /** @type {import("solid-js").Signal<string>} */ let [esm, setEsm] = solid_js__WEBPACK_IMPORTED_MODULE_1__.createSignal(model.get("_esm"));
             model.on("change:_esm", async ()=>{
                 let id = model.get("_anywidget_id");
                 console.debug(`[anywidget] esm hot updated: ${id}`);
                 setEsm(model.get("_esm"));
             });
             /** @type {void | (() => import("vitest").Awaitable<void>)} */ let cleanup;
-            this.#widget_result = (0, solid_js__WEBPACK_IMPORTED_MODULE_0__.createResource)(esm, async (update)=>{
+            this.#widget_result = solid_js__WEBPACK_IMPORTED_MODULE_1__.createResource(esm, async (update)=>{
                 await safe_cleanup(cleanup, "initialize");
                 try {
                     model.off(null, null, INITIALIZE_MARKER);
                     let widget = await load_widget(update);
                     cleanup = await widget.initialize?.({
-                        model: model_proxy(model, INITIALIZE_MARKER)
+                        model: model_proxy(model, INITIALIZE_MARKER),
+                        experimental: {
+                            // @ts-expect-error - bind isn't working
+                            invoke: invoke.bind(null, model)
+                        }
                     });
                     return ok(widget);
                 } catch (e) {
@@ -288,9 +332,9 @@ class Runtime {
 	 * @returns {Promise<() => void>}
 	 */ async create_view(view) {
         let model = view.model;
-        let disposer = (0, solid_js__WEBPACK_IMPORTED_MODULE_0__.createRoot)((dispose)=>{
+        let disposer = solid_js__WEBPACK_IMPORTED_MODULE_1__.createRoot((dispose)=>{
             /** @type {void | (() => import("vitest").Awaitable<void>)} */ let cleanup;
-            let resource = (0, solid_js__WEBPACK_IMPORTED_MODULE_0__.createResource)(this.#widget_result, async (widget_result)=>{
+            let resource = solid_js__WEBPACK_IMPORTED_MODULE_1__.createResource(this.#widget_result, async (widget_result)=>{
                 cleanup?.();
                 // Clear all previous event listeners from this hook.
                 model.off(null, null, view);
@@ -300,13 +344,17 @@ class Runtime {
                 try {
                     cleanup = await widget.render?.({
                         model: model_proxy(model, view),
-                        el: view.el
+                        el: view.el,
+                        experimental: {
+                            // @ts-expect-error - bind isn't working
+                            invoke: invoke.bind(null, model)
+                        }
                     });
                 } catch (e) {
                     throw_anywidget_error(e);
                 }
             })[0];
-            (0, solid_js__WEBPACK_IMPORTED_MODULE_0__.createEffect)(()=>{
+            solid_js__WEBPACK_IMPORTED_MODULE_1__.createEffect(()=>{
                 resource.error;
             });
             return ()=>{
@@ -328,7 +376,7 @@ class Runtime {
     }
 }
 // @ts-expect-error - injected by bundler
-let version = "0.9.3";
+let version = "0.9.6";
 /** @param {typeof import("@jupyter-widgets/base")} base */ /* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__({ DOMWidgetModel, DOMWidgetView }) {
     /** @type {WeakMap<AnyModel, Runtime>} */ let RUNTIMES = new WeakMap();
     class AnyModel extends DOMWidgetModel {
@@ -394,4 +442,4 @@ let version = "0.9.3";
 }),
 
 }]);
-//# sourceMappingURL=814.d7d0f8bc.js.map
+//# sourceMappingURL=814.d1e27ce4.js.map

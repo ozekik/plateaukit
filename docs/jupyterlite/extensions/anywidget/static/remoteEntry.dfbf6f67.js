@@ -1,7 +1,7 @@
 var _JUPYTERLAB;
 (function() {
 var __webpack_modules__ = {
-"258": (function (__unused_webpack_module, exports, __webpack_require__) {
+"95": (function (__unused_webpack_module, exports, __webpack_require__) {
 "use strict";
 
 __webpack_require__.d(exports, {
@@ -32,49 +32,6 @@ function __webpack_require__(moduleId) {
  __webpack_require__.m = __webpack_modules__;
 // expose the module cache
  __webpack_require__.c = __webpack_module_cache__;
-// webpack/runtime/ensure_chunk
-!function() {
-__webpack_require__.f = {};
-// This file contains only the entry chunk.
-// The chunk loading function for additional chunks
-__webpack_require__.e = function (chunkId) {
-	return Promise.all(
-		Object.keys(__webpack_require__.f).reduce(function (promises, key) {
-			__webpack_require__.f[key](chunkId, promises);
-			return promises;
-		}, [])
-	);
-};
-
-}();
-// webpack/runtime/has_own_property
-!function() {
-__webpack_require__.o = function (obj, prop) {
-	return Object.prototype.hasOwnProperty.call(obj, prop);
-};
-
-}();
-// webpack/runtime/define_property_getters
-!function() {
-__webpack_require__.d = function(exports, definition) {
-	for(var key in definition) {
-        if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
-            Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
-        }
-    }
-};
-}();
-// webpack/runtime/make_namespace_object
-!function() {
-// define __esModule on exports
-__webpack_require__.r = function(exports) {
-	if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
-		Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
-	}
-	Object.defineProperty(exports, '__esModule', { value: true });
-};
-
-}();
 // webpack/runtime/create_fake_namespace_object
 !function() {
 var getProto = Object.getPrototypeOf ? function(obj) { return Object.getPrototypeOf(obj); } : function(obj) { return obj.__proto__ };
@@ -103,6 +60,145 @@ __webpack_require__.t = function(value, mode) {
 	__webpack_require__.d(ns, def);
 	return ns;
 };
+}();
+// webpack/runtime/define_property_getters
+!function() {
+__webpack_require__.d = function(exports, definition) {
+	for(var key in definition) {
+        if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
+            Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+        }
+    }
+};
+}();
+// webpack/runtime/ensure_chunk
+!function() {
+__webpack_require__.f = {};
+// This file contains only the entry chunk.
+// The chunk loading function for additional chunks
+__webpack_require__.e = function (chunkId) {
+	return Promise.all(
+		Object.keys(__webpack_require__.f).reduce(function (promises, key) {
+			__webpack_require__.f[key](chunkId, promises);
+			return promises;
+		}, [])
+	);
+};
+
+}();
+// webpack/runtime/get css chunk filename
+!function() {
+// This function allow to reference chunks
+        __webpack_require__.k = function (chunkId) {
+          // return url for filenames not based on template
+          
+          // return url for filenames based on template
+          return "" + chunkId + ".css";
+        };
+      
+}();
+// webpack/runtime/get javascript chunk filename
+!function() {
+// This function allow to reference chunks
+        __webpack_require__.u = function (chunkId) {
+          // return url for filenames not based on template
+          
+          // return url for filenames based on template
+          return "" + chunkId + "." + {"52": "c76ca21a","814": "d1e27ce4",}[chunkId] + ".js";
+        };
+      
+}();
+// webpack/runtime/global
+!function() {
+__webpack_require__.g = (function () {
+	if (typeof globalThis === 'object') return globalThis;
+	try {
+		return this || new Function('return this')();
+	} catch (e) {
+		if (typeof window === 'object') return window;
+	}
+})();
+
+}();
+// webpack/runtime/has_own_property
+!function() {
+__webpack_require__.o = function (obj, prop) {
+	return Object.prototype.hasOwnProperty.call(obj, prop);
+};
+
+}();
+// webpack/runtime/load_script
+!function() {
+var inProgress = {};
+
+var dataWebpackPrefix = "@anywidget/monorepo:";
+// loadScript function to load a script via script tag
+__webpack_require__.l = function (url, done, key, chunkId) {
+	if (inProgress[url]) {
+		inProgress[url].push(done);
+		return;
+	}
+	var script, needAttach;
+	if (key !== undefined) {
+		var scripts = document.getElementsByTagName("script");
+		for (var i = 0; i < scripts.length; i++) {
+			var s = scripts[i];
+			if (s.getAttribute("src") == url || s.getAttribute("data-webpack") == dataWebpackPrefix + key) {
+				script = s;
+				break;
+			}
+		}
+	}
+	if (!script) {
+		needAttach = true;
+		script = document.createElement('script');
+		
+		script.charset = 'utf-8';
+		script.timeout = 120;
+		if (__webpack_require__.nc) {
+			script.setAttribute("nonce", __webpack_require__.nc);
+		}
+		script.setAttribute("data-webpack", dataWebpackPrefix + key);
+		script.src = url;
+
+		
+	}
+	inProgress[url] = [done];
+	var onScriptComplete = function (prev, event) {
+		script.onerror = script.onload = null;
+		clearTimeout(timeout);
+		var doneFns = inProgress[url];
+		delete inProgress[url];
+		script.parentNode && script.parentNode.removeChild(script);
+		doneFns &&
+			doneFns.forEach(function (fn) {
+				return fn(event);
+			});
+		if (prev) return prev(event);
+	};
+	var timeout = setTimeout(
+		onScriptComplete.bind(null, undefined, {
+			type: 'timeout',
+			target: script
+		}),
+		120000
+	);
+	script.onerror = onScriptComplete.bind(null, script.onerror);
+	script.onload = onScriptComplete.bind(null, script.onload);
+	needAttach && document.head.appendChild(script);
+};
+
+}();
+// webpack/runtime/make_namespace_object
+!function() {
+// define __esModule on exports
+__webpack_require__.r = function(exports) {
+	if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+		Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+	}
+	Object.defineProperty(exports, '__esModule', { value: true });
+};
+
 }();
 // webpack/runtime/sharing
 !function() {
@@ -179,106 +275,34 @@ __webpack_require__.I = function(name, initScope) {
 
 
 }();
-// webpack/runtime/get javascript chunk filename
+// webpack/runtime/auto_public_path
 !function() {
-// This function allow to reference chunks
-        __webpack_require__.u = function (chunkId) {
-          // return url for filenames not based on template
-          
-          // return url for filenames based on template
-          return "" + chunkId + "." + {"19": "6ea6c02d","814": "d7d0f8bc",}[chunkId] + ".js";
-        };
-      
-}();
-// webpack/runtime/get css chunk filename
-!function() {
-// This function allow to reference chunks
-        __webpack_require__.k = function (chunkId) {
-          // return url for filenames not based on template
-          
-          // return url for filenames based on template
-          return "" + chunkId + ".css";
-        };
-      
-}();
-// webpack/runtime/load_script
-!function() {
-var inProgress = {};
 
-var dataWebpackPrefix = "@anywidget/monorepo:";
-// loadScript function to load a script via script tag
-__webpack_require__.l = function (url, done, key, chunkId) {
-	if (inProgress[url]) {
-		inProgress[url].push(done);
-		return;
-	}
-	var script, needAttach;
-	if (key !== undefined) {
-		var scripts = document.getElementsByTagName("script");
-		for (var i = 0; i < scripts.length; i++) {
-			var s = scripts[i];
-			if (s.getAttribute("src") == url || s.getAttribute("data-webpack") == dataWebpackPrefix + key) {
-				script = s;
-				break;
-			}
-		}
-	}
-	if (!script) {
-		needAttach = true;
-		script = document.createElement('script');
-		
-		script.charset = 'utf-8';
-		script.timeout = 120;
-		if (__webpack_require__.nc) {
-			script.setAttribute("nonce", __webpack_require__.nc);
-		}
-		script.setAttribute("data-webpack", dataWebpackPrefix + key);
-		script.src = url;
-
-		
-	}
-	inProgress[url] = [done];
-	var onScriptComplete = function (prev, event) {
-		script.onerror = script.onload = null;
-		clearTimeout(timeout);
-		var doneFns = inProgress[url];
-		delete inProgress[url];
-		script.parentNode && script.parentNode.removeChild(script);
-		doneFns &&
-			doneFns.forEach(function (fn) {
-				return fn(event);
-			});
-		if (prev) return prev(event);
-	};
-	var timeout = setTimeout(
-		onScriptComplete.bind(null, undefined, {
-			type: 'timeout',
-			target: script
-		}),
-		120000
-	);
-	script.onerror = onScriptComplete.bind(null, script.onerror);
-	script.onload = onScriptComplete.bind(null, script.onload);
-	needAttach && document.head.appendChild(script);
-};
-
-}();
-// webpack/runtime/global
-!function() {
-__webpack_require__.g = (function () {
-	if (typeof globalThis === 'object') return globalThis;
-	try {
-		return this || new Function('return this')();
-	} catch (e) {
-		if (typeof window === 'object') return window;
-	}
-})();
-
+    var scriptUrl;
+    if (__webpack_require__.g.importScripts) scriptUrl = __webpack_require__.g.location + "";
+    var document = __webpack_require__.g.document;
+    if (!scriptUrl && document) {
+      if (document.currentScript) scriptUrl = document.currentScript.src;
+        if (!scriptUrl) {
+          var scripts = document.getElementsByTagName("script");
+              if (scripts.length) {
+                var i = scripts.length - 1;
+                while (i > -1 && !scriptUrl) scriptUrl = scripts[i--].src;
+              }
+        }
+      }
+    
+    // When supporting browsers where an automatic publicPath is not supported you must specify an output.publicPath manually via configuration",
+    // or pass an empty string ("") and set the __webpack_public_path__ variable from your code to use your own logic.',
+    if (!scriptUrl) throw new Error("Automatic publicPath is not supported in this browser");
+    scriptUrl = scriptUrl.replace(/#.*$/, "").replace(/\?.*$/, "").replace(/\/[^\/]+$/, "/");
+    __webpack_require__.p = scriptUrl
+    
 }();
 // webpack/runtime/consumes_loading
 !function() {
 
-__webpack_require__.consumesLoadingData = { chunkMapping: {"814":["384"],"19":[]}, moduleIdToConsumeDataMapping: { "384": { shareScope: "default", shareKey: "@jupyter-widgets/base", import: null, requiredVersion: "^2 || ^3 || ^4 || ^5 || ^6", strictVersion: false, singleton: true, eager: false, fallback: undefined } }, initialConsumes: [] };
+__webpack_require__.consumesLoadingData = { chunkMapping: {"52":[],"814":["384"]}, moduleIdToConsumeDataMapping: { "384": { shareScope: "default", shareKey: "@jupyter-widgets/base", import: null, requiredVersion: "^2 || ^3 || ^4 || ^5 || ^6", strictVersion: false, singleton: true, eager: false, fallback: undefined } }, initialConsumes: [] };
 var splitAndConvert = function(str) {
   return str.split(".").map(function(item) {
     return +item == item ? +item : item;
@@ -825,6 +849,40 @@ __webpack_require__.f.consumes = function(chunkId, promises) {
 }
 
 }();
+// webpack/runtime/initialize_exposes
+!function() {
+
+__webpack_require__.initializeExposesData = {
+  moduleMap: {
+"./extension": function() {
+return Promise.all([__webpack_require__.e("52"), __webpack_require__.e("814")]).then(function() { return function() { return __webpack_require__(/*! /Users/runner/work/anywidget/anywidget/packages/anywidget/src/plugin.js */"148"); }; });
+},
+  },
+  shareScope: "default",
+};
+
+__webpack_require__.getContainer = function(module, getScope) {
+  var moduleMap = __webpack_require__.initializeExposesData.moduleMap;
+  __webpack_require__.R = getScope;
+  getScope = (
+    __webpack_require__.o(moduleMap, module)
+      ? moduleMap[module]()
+      : Promise.resolve().then(() => {
+        throw new Error('Module "' + module + '" does not exist in container.');
+      })
+  );
+  __webpack_require__.R = undefined;
+  return getScope;
+}
+__webpack_require__.initContainer = function(shareScope, initScope) {
+  if (!__webpack_require__.S) return;
+  var name = __webpack_require__.initializeExposesData.shareScope;
+  var oldScope = __webpack_require__.S[name];
+  if(oldScope && oldScope !== shareScope) throw new Error("Container initialization failed as it has already been initialized with a different share scope");
+  __webpack_require__.S[name] = shareScope;
+  return __webpack_require__.I(name, initScope);
+}
+}();
 // webpack/runtime/jsonp_chunk_loading
 !function() {
 
@@ -925,64 +983,6 @@ chunkLoadingGlobal.push = webpackJsonpCallback.bind(
 );
 
 }();
-// webpack/runtime/initialize_exposes
-!function() {
-
-__webpack_require__.initializeExposesData = {
-  moduleMap: {
-"./extension": function() {
-return Promise.all([__webpack_require__.e("19"), __webpack_require__.e("814")]).then(function() { return function() { return __webpack_require__(/*! /home/runner/work/anywidget/anywidget/packages/anywidget/src/plugin.js */"148"); }; });
-},
-  },
-  shareScope: "default",
-};
-
-__webpack_require__.getContainer = function(module, getScope) {
-  var moduleMap = __webpack_require__.initializeExposesData.moduleMap;
-  __webpack_require__.R = getScope;
-  getScope = (
-    __webpack_require__.o(moduleMap, module)
-      ? moduleMap[module]()
-      : Promise.resolve().then(() => {
-        throw new Error('Module "' + module + '" does not exist in container.');
-      })
-  );
-  __webpack_require__.R = undefined;
-  return getScope;
-}
-__webpack_require__.initContainer = function(shareScope, initScope) {
-  if (!__webpack_require__.S) return;
-  var name = __webpack_require__.initializeExposesData.shareScope;
-  var oldScope = __webpack_require__.S[name];
-  if(oldScope && oldScope !== shareScope) throw new Error("Container initialization failed as it has already been initialized with a different share scope");
-  __webpack_require__.S[name] = shareScope;
-  return __webpack_require__.I(name, initScope);
-}
-}();
-// webpack/runtime/auto_public_path
-!function() {
-
-    var scriptUrl;
-    if (__webpack_require__.g.importScripts) scriptUrl = __webpack_require__.g.location + "";
-    var document = __webpack_require__.g.document;
-    if (!scriptUrl && document) {
-      if (document.currentScript) scriptUrl = document.currentScript.src;
-        if (!scriptUrl) {
-          var scripts = document.getElementsByTagName("script");
-              if (scripts.length) {
-                var i = scripts.length - 1;
-                while (i > -1 && !scriptUrl) scriptUrl = scripts[i--].src;
-              }
-        }
-      }
-    
-    // When supporting browsers where an automatic publicPath is not supported you must specify an output.publicPath manually via configuration",
-    // or pass an empty string ("") and set the __webpack_public_path__ variable from your code to use your own logic.',
-    if (!scriptUrl) throw new Error("Automatic publicPath is not supported in this browser");
-    scriptUrl = scriptUrl.replace(/#.*$/, "").replace(/\?.*$/, "").replace(/\/[^\/]+$/, "/");
-    __webpack_require__.p = scriptUrl
-    
-}();
-var __webpack_exports__ = __webpack_require__("258");(_JUPYTERLAB = typeof _JUPYTERLAB === 'undefined' ? {} : _JUPYTERLAB).anywidget = __webpack_exports__;
+var __webpack_exports__ = __webpack_require__("95");(_JUPYTERLAB = typeof _JUPYTERLAB === 'undefined' ? {} : _JUPYTERLAB).anywidget = __webpack_exports__;
 
 })()
