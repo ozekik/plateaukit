@@ -73,7 +73,7 @@ mkdocstrings-python = "^1.2.1"
 mkdocs-exclude = "^1.0.2"
 markdown-exec = { extras = ["ansi"], version = "^1.6.0" }
 mkdocs-redirects = "^1.2.1"
-mkdocs-jupyter = "^0.24.6"
+mkdocs-jupyter = "^0.24.7"
 mkdocs-click = "^0.8.1"
 pymdown-extensions = "^10.7"
 
