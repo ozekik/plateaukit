@@ -261,6 +261,9 @@ class Dataset:
                     targets = list(filter(lambda x: pat.match(x), namelist))
                     # print(targets)
 
+                    if not targets:
+                        raise RuntimeError(f"Data type '{type}' not found in '{self.dataset_id}'")
+
                     # NOTE: zipfs requires POSIX path
                     infiles += [str(PurePosixPath("/", target)) for target in targets]
 
@@ -354,6 +357,10 @@ class Dataset:
                 with zipfile.ZipFile(file_path) as f:
                     namelist = f.namelist()
                     targets = list(filter(lambda x: pat.match(x), namelist))
+
+                    if not targets:
+                        raise RuntimeError(f"Data type '{type}' not found in '{self.dataset_id}'")
+
                     # NOTE: zipfs requires POSIX path
                     infiles += [str(PurePosixPath("/", target)) for target in targets]
             else:
