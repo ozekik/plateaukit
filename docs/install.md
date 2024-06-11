@@ -6,8 +6,16 @@
 PlateauKit をインストールするには、ターミナルで以下のコマンドを実行します。
 
 ```bash
-pip install plateaukit
+pip install 'plateaukit[all]'
 ```
+
+!!! info "&nbsp;"
+    インストールに問題が生じた場合は、代わりに以下のコマンドを試してみてください。 (一部の機能に制限があります)
+
+    ```bash
+    pip install plateaukit
+    ```
+
 
 アップデートする場合は `-U` オプションを追加して実行します。
 

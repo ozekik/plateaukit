@@ -49,7 +49,7 @@ plateaukit list
     |     plateau-12217-kashiwa-shi-2020     |             千葉県柏市             |   2020  |  v3  |     https://www.geospatial.jp/ckan/dataset/plateau-12217-kashiwa-shi-2020     |
     |     plateau-12210-mobara-shi-2022      |            千葉県茂原市            |   2022  |  v3  |      https://www.geospatial.jp/ckan/dataset/plateau-12210-mobara-shi-2022     |
     |     plateau-12221-yachiyo-shi-2022     |           千葉県八千代市           |   2022  |  v3  |     https://www.geospatial.jp/ckan/dataset/plateau-12221-yachiyo-shi-2022     |
-    |         plateau-13-tokyo-2023          |               東京都               |   2023  |  v3  |          https://www.geospatial.jp/ckan/dataset/plateau-13-tokyo-2023         |
+    |         plateau-13-tokyo-2023          | 東京都（建築モデル等を除く）          |   2023  |  v3  |          https://www.geospatial.jp/ckan/dataset/plateau-13-tokyo-2023         |
     |      plateau-tokyo-takeshiba-2023      | 東京都サンプルデータ（竹芝モデル） |   2023  |  v3  |      https://www.geospatial.jp/ckan/dataset/plateau-tokyo-takeshiba-2023      |
     |      plateau-13121-adachi-ku-2023      |            東京都足立区            |   2023  |  v3  |      https://www.geospatial.jp/ckan/dataset/plateau-13121-adachi-ku-2023      |
     |     plateau-13118-arakawa-ku-2023      |            東京都荒川区            |   2023  |  v3  |      https://www.geospatial.jp/ckan/dataset/plateau-13118-arakawa-ku-2023     |
