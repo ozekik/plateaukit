@@ -641,7 +641,7 @@ base_city_list = [
     },
     {
         "dataset_id": "plateau-13-tokyo-2023",
-        "city_name": "東京都",
+        "city_name": "東京都（建築モデル等を除く）",
         "homepage": "https://www.geospatial.jp/ckan/dataset/plateau-13-tokyo-2023",
         "citygml": "df69f99a-316c-4002-8df4-cadeabc845cf",
         "spec": "3",
