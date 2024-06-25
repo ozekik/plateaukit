@@ -20,7 +20,7 @@ __webpack_require__.r(__webpack_exports__);
         registry.registerWidget({
             name: "anywidget",
             // @ts-expect-error Added by bundler
-            version: "0.9.6",
+            version: "0.9.10",
             exports
         });
     },
@@ -241,28 +241,32 @@ To learn more, please see: https://github.com/manzt/anywidget/pull/395
     throw source;
 }
 /**
+ * @typedef InvokeOptions
+ * @prop {DataView[]} [buffers]
+ * @prop {AbortSignal} [signal]
+ */ /**
  * @template T
  * @param {import("@anywidget/types").AnyModel} model
  * @param {string} name
  * @param {any} [msg]
- * @param {DataView[]} [buffers]
- * @param {{ timeout?: number }} [options]
+ * @param {InvokeOptions} [options]
  * @return {Promise<[T, DataView[]]>}
- */ function invoke(model, name, msg, buffers = [], { timeout = 3000 } = {}) {
+ */ function invoke(model, name, msg, options = {}) {
     // crypto.randomUUID() is not available in non-secure contexts (i.e., http://)
     // so we use simple (non-secure) polyfill.
     let id = _lukeed_uuid__WEBPACK_IMPORTED_MODULE_0__.v4();
+    let signal = options.signal ?? AbortSignal.timeout(3000);
     return new Promise((resolve, reject)=>{
-        let timer = setTimeout(()=>{
-            reject(new Error(`Promise timed out after ${timeout} ms`));
+        if (signal.aborted) reject(signal.reason);
+        signal.addEventListener("abort", ()=>{
             model.off("msg:custom", handler);
-        }, timeout);
+            reject(signal.reason);
+        });
         /**
 		 * @param {{ id: string, kind: "anywidget-command-response", response: T }} msg
 		 * @param {DataView[]} buffers
 		 */ function handler(msg, buffers) {
             if (!(msg.id === id)) return;
-            clearTimeout(timer);
             resolve([
                 msg.response,
                 buffers
@@ -275,7 +279,7 @@ To learn more, please see: https://github.com/manzt/anywidget/pull/395
             kind: "anywidget-command",
             name,
             msg
-        }, undefined, buffers);
+        }, undefined, options.buffers ?? []);
     });
 }
 class Runtime {
@@ -376,7 +380,7 @@ class Runtime {
     }
 }
 // @ts-expect-error - injected by bundler
-let version = "0.9.6";
+let version = "0.9.10";
 /** @param {typeof import("@jupyter-widgets/base")} base */ /* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__({ DOMWidgetModel, DOMWidgetView }) {
     /** @type {WeakMap<AnyModel, Runtime>} */ let RUNTIMES = new WeakMap();
     class AnyModel extends DOMWidgetModel {
@@ -442,4 +446,4 @@ let version = "0.9.6";
 }),
 
 }]);
-//# sourceMappingURL=814.d1e27ce4.js.map
+//# sourceMappingURL=814.dc010d08.js.map
