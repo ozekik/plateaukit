@@ -55,8 +55,9 @@ extra_javascript:
   - https://polyfill.io/v3/polyfill.min.js?features=es6
 
 nav:
-  - PlateauKit:
-      - PlateauKit について: index.md
+  - PlateauKit + PlateauLab:
+      - PlateauKit: index.md
+      - PlateauLab: lab/index.md
       - インストール: install.md
       - チュートリアル:
           - JupyterLabで試す: tutorial/jupyter.ipynb
@@ -79,9 +80,8 @@ nav:
       - FAQ:
           - Windows: faq.md
       - ライセンス: license.md
-  - PlateauLab:
-      - PlateauLab について: lab/index.md
   - ブラウザで試す: /plateaukit/jupyterlite/notebooks/?path=demo.ipynb
+  - "Awesome PLATEAU": https://japan-opendata.github.io/awesome-plateau/
 
 not_in_nav: |
   ./jupyterlite/
