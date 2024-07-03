@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from plateaukit.cli.base import cli
 from plateaukit.cli.commands.config import config_cmd
-from plateaukit.cli.commands.generate import (
+from plateaukit.cli.commands.export import (
     export_cityjson_cmd,
     export_geojson_cmd,
     export_qmesh_cmd,
