@@ -5,7 +5,7 @@ from plateaukit.logger import logger
 from .converter import CityJSONConverter
 
 
-def cityson_from_gml_serial_with_quit(
+def cityjson_from_gml_serial_with_quit(
     infiles,
     outfile,
     *,
@@ -24,7 +24,7 @@ def cityson_from_gml_serial_with_quit(
     **opts,
 ):
     # TODO: logger does not work in multiprocessing; must use QueueHandler
-    logger.debug("[*] cityson_from_gml_serial_with_quit")
+    logger.debug("[*] cityjson_from_gml_serial_with_quit")
 
     if not target_epsg:
         target_epsg = 3857  # Web Mercator

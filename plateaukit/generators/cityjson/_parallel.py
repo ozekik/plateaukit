@@ -8,7 +8,7 @@ from rich.progress import Progress
 from plateaukit import parallel, utils
 from plateaukit.logger import logger
 
-from ._serial import cityson_from_gml_serial_with_quit
+from ._serial import cityjson_from_gml_serial_with_quit
 
 
 def cityjson_from_citygml(
@@ -63,7 +63,7 @@ def cityjson_from_citygml(
                     logger.debug(f"group_outfile: {group_outfile}")
 
                     future = pool.submit(
-                        cityson_from_gml_serial_with_quit,
+                        cityjson_from_gml_serial_with_quit,
                         infile_group,
                         group_outfile,
                         object_types=object_types,
