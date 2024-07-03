@@ -28,7 +28,14 @@ from plateaukit.logger import set_log_level
 @click.option(
     "--ground", is_flag=True, default=False, help="Shift objects to the ground level"
 )
-@click.option("--seq", is_flag=True, default=False, help="Generate CityJSONSeq")
+@click.option(
+    "--lod-mode",
+    "lod_mode",
+    type=click.Choice(["highest", "all"], case_sensitive=True),
+    default="highest",
+    help="LOD filtering mode: 'highest' (default), 'all'",
+)
+@click.option("--seq", is_flag=True, default=False, help="Export CityJSONSeq")
 @click.option(
     "--target-epsg", default=None, help="EPSG code for the output CityJSON file"
 )
@@ -37,7 +44,7 @@ from plateaukit.logger import set_log_level
 # #     help="Number of decimal places to keep for geometry vertices (default: 16).",
 # )
 def generate_cityjson_cmd(
-    infiles, outfile, dataset_id, types, split, ground, seq, target_epsg
+    lod_mode,
 ):
     """Generate CityJSON from PLATEAU datasets.
 
@@ -51,6 +58,13 @@ def generate_cityjson_cmd(
         raise click.UsageError("Too many argument")
 
     params = {}
+
+    if lod_mode == "highest":
+        use_highest_lod = True
+    elif lod_mode == "all":
+        use_highest_lod = False
+    else:
+        use_highest_lod = False
 
     # if precision:
     #     params["precision"] = precision
@@ -77,13 +91,23 @@ def generate_cityjson_cmd(
             types=types,
             split=split,
             seq=seq,
+            use_highest_lod=use_highest_lod,
             ground=ground,
             target_epsg=target_epsg,
             **params,
         )
 
     else:
-        generators.cityjson.cityjson_from_citygml(infiles, outfile, **params)
+        generators.cityjson.cityjson_from_citygml(
+            infiles,
+            outfile,
+            split=split,
+            seq=seq,
+            use_highest_lod=use_highest_lod,
+            ground=ground,
+            target_epsg=target_epsg,
+            **params,
+        )
 
 
 def _generate_geojson(

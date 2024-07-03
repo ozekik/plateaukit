@@ -377,6 +377,7 @@ class Dataset:
         types: list[str] = ["bldg"],
         object_types=None,  # TODO: Handle this
         lod=[1, 2],
+        use_highest_lod=True,
         ground: bool = False,
         seq: bool = False,
         split: int = 1,
@@ -464,6 +465,7 @@ class Dataset:
             split=split,
             zipfile=file_path,
             lod=lod,
+            use_highest_lod=use_highest_lod,
             ground=ground,
             seq=seq,
             codelist_infiles=codelist_infiles,

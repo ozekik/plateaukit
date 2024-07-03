@@ -224,6 +224,7 @@ class CityJSONConverter:
         *,
         object_types: list[str] | None,
         lod: list[int],
+        use_highest_lod: bool = True,
         ground: bool = False,
         codelist_infiles: list[str] | None = None,
         zipfile: str | PathLike | None = None,
@@ -236,6 +237,7 @@ class CityJSONConverter:
             infiles,
             object_types=object_types,
             lod=lod,
+            use_highest_lod=use_highest_lod,
             ground=ground,
             codelist_infiles=codelist_infiles,
             zipfile=zipfile,
@@ -269,6 +271,7 @@ class CityJSONConverter:
         *,
         object_types: list[str] | None,
         lod: list[int],
+        use_highest_lod: bool = False,
         ground: bool = False,
         codelist_infiles: list[str] | None = None,
         zipfile: str | PathLike | None = None,
@@ -282,6 +285,7 @@ class CityJSONConverter:
                 infiles,
                 object_types=object_types,
                 lod=lod,
+                use_highest_lod=use_highest_lod,
                 ground=ground,
                 codelist_infiles=codelist_infiles,
                 zipfile=zipfile,
@@ -320,6 +324,7 @@ class CityJSONConverter:
         *,
         object_types: list[str] | None,
         lod: list[int],
+        use_highest_lod: bool = False,
         ground: bool = False,
         codelist_infiles: list[str] | None = None,
         zipfile: str | PathLike | None = None,
@@ -378,22 +383,29 @@ class CityJSONConverter:
                     indexed_geoms = []
 
                     if city_obj.geometry is not None:
+                        geoms = [
+                            geom for geom in city_obj.geometry if geom["lod"] in lod
+                        ]
+
+                        # TODO: Fix this; this is not an accurate way to do this
+                        if use_highest_lod:
+                            lod_highest = max([geom["lod"] for geom in geoms])
+                            geoms = [
+                                geom for geom in geoms if geom["lod"] == lod_highest
+                            ]
+
+                        # raise ValueError(f"No geometry for LoD {lod} in {geoms}")
+
                         min_z = None
 
                         if ground:
                             min_z = 0xFFFF
-                            for geom in city_obj.geometry:
-                                if geom["lod"] not in lod:
-                                    continue
-
+                            for geom in geoms:
                                 # print("geom", geom)
                                 min_z = min(min_z, _get_min_z(geom["boundaries"]))
                             # print("min_z", min_z)
 
-                        for geom in city_obj.geometry:
-                            if geom["lod"] not in lod:
-                                continue
-
+                        for geom in geoms:
                             # print("geom", geom)
                             boundaries, vertices_map = get_indexed_boundaries(
                                 geom,
@@ -415,36 +427,41 @@ class CityJSONConverter:
                     # obj_id = city_obj.attributes.get("building_id", city_obj.id)
                     obj_id = city_obj.id
 
-                    yield obj_id, {
-                        "type": city_obj.type,  # TODO: There is no Track type etc. in CityJSON
-                        "attributes": dict_key_to_camel_case(city_obj.attributes or {}),
-                        # "attributes": {"建物ID": "13104-bldg-52530", "measuredHeight": 61.9},
-                        # "children": [
-                        #     "ID_22730c8f-9fbc-4d58-88dd-5569d7480fad",
-                        #     "ID_598f2fab-030f-429c-b938-a222e04d8e4b",
-                        #     "ID_db473977-e95e-4075-b0be-55eb65974610",
-                        #     "ID_ac26b2cb-553e-428a-9f10-2659419e824d",
-                        # ],
-                        "geometry": indexed_geoms,
-                        # [
-                        # {
-                        #     "type": "MultiSurface",
-                        #     "lod": "0",
-                        #     "boundaries": [],
-                        # },
-                        # {
-                        #     "type": "Solid",
-                        #     "lod": "1",
-                        #     "boundaries": boundaries,
-                        #     # "semantics": {
-                        #     #     "surfaces": [],
-                        #     #     "values": [],
-                        #     # },
-                        #     # "texture": {"rgbTexture": {"values": []}},
-                        # },
-                        # ],
-                        # "address": [{"Country": "日本", "Locality": "東京都新宿区西新宿一丁目"}],
-                    }
+                    yield (
+                        obj_id,
+                        {
+                            "type": city_obj.type,  # TODO: There is no Track type etc. in CityJSON
+                            "attributes": dict_key_to_camel_case(
+                                city_obj.attributes or {}
+                            ),
+                            # "attributes": {"建物ID": "13104-bldg-52530", "measuredHeight": 61.9},
+                            # "children": [
+                            #     "ID_22730c8f-9fbc-4d58-88dd-5569d7480fad",
+                            #     "ID_598f2fab-030f-429c-b938-a222e04d8e4b",
+                            #     "ID_db473977-e95e-4075-b0be-55eb65974610",
+                            #     "ID_ac26b2cb-553e-428a-9f10-2659419e824d",
+                            # ],
+                            "geometry": indexed_geoms,
+                            # [
+                            # {
+                            #     "type": "MultiSurface",
+                            #     "lod": "0",
+                            #     "boundaries": [],
+                            # },
+                            # {
+                            #     "type": "Solid",
+                            #     "lod": "1",
+                            #     "boundaries": boundaries,
+                            #     # "semantics": {
+                            #     #     "surfaces": [],
+                            #     #     "values": [],
+                            #     # },
+                            #     # "texture": {"rgbTexture": {"values": []}},
+                            # },
+                            # ],
+                            # "address": [{"Country": "日本", "Locality": "東京都新宿区西新宿一丁目"}],
+                        },
+                    )
 
         if zip_fs:
             zip_fs.close()
