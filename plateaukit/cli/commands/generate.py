@@ -4,6 +4,7 @@ import click
 
 from plateaukit import generators
 from plateaukit.core.dataset import load_dataset
+from plateaukit.logger import set_log_level
 
 
 @click.command("generate-cityjson")
@@ -122,13 +123,23 @@ def _generate_geojson(
 )
 @click.option("--seq", is_flag=True, default=False, help="Generate GeoJSONSeq")
 @click.option("--split", default=1)
+@click.option("-v", "verbose", count=True, default=0, help="Verbose")
 def generate_geojson_cmd(
-    infiles, outfile, dataset_id: str, types: list[str], seq: bool, split: int
+    infiles,
+    outfile,
+    dataset_id: str,
+    types: list[str],
+    seq: bool,
+    split: int,
+    verbose: int,
 ):
     """Generate GeoJSON from PLATEAU datasets.
 
     PLATEAU データセットから GeoJSON を生成します。
     """
+
+    if verbose >= 2:
+        set_log_level("DEBUG")
 
     _generate_geojson(infiles, outfile, dataset_id, types=types, seq=seq, split=split)
 
