@@ -18,6 +18,17 @@ from plateaukit.logger import set_log_level
     help="Internal output format.",
 )
 @click.option(
+    "--type",
+    "-t",
+    "types",
+    type=click.Choice(
+        ["bldg", "brid", "tran"],
+        case_sensitive=True,
+    ),
+    default=["bldg"],
+    multiple=True,
+)
+@click.option(
     "--split", default=10, help="Split the output into specified number of files."
 )
 @click.option("-v", "verbose", count=True, default=0, help="Verbose")
@@ -33,6 +44,7 @@ def prebuild_cmd(dataset_id: str, format, types: list[str], split: int, verbose:
     prebuild(
         dataset_id,
         format=format,
+        types=types,
         split=split,
         simple_output=False if verbose else True,
     )

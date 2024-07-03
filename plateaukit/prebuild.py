@@ -12,12 +12,17 @@ from plateaukit.core.dataset import load_dataset
 from plateaukit.logger import logger
 
 
+_supported_types = ["bldg", "brid", "tran"]
+# _supported_types = ["bldg", "tran"]
+
+
 def prebuild(
     dataset_id: str,
     *,
     split: int = 10,
     simple_output=False,
     format: Literal["gpkg", "parquet"] = "parquet",
+    types=["bldg"],
 ) -> None:
     """Prebuild a PLATEAU dataset for PlateauKit."""
 
@@ -37,8 +42,9 @@ def prebuild(
     # record = config.datasets.get(dataset_id)
     # print(dataset_id, record)
 
-    # TODO: All types
-    types = ["bldg"]
+    # Check if all types are supported
+    if not set(types).issubset(set(_supported_types)):
+        raise ValueError(f"Unsupported types: {set(types) - set(_supported_types)}")
 
     with tempfile.TemporaryDirectory() as tdir:
         logger.debug(f"Temporary directory: {tdir}")
@@ -46,35 +52,38 @@ def prebuild(
         for type in types:
             outfile = Path(tdir, f"{dataset_id}.{type}.geojsonl")
 
-            if dataset_id:
-                dataset = load_dataset(dataset_id)
-                dataset.to_geojson(
-                    outfile,
-                    types=types,
-                    altitude=False,  # TODO: Check this
-                    include_type=True,
-                    seq=True,
-                    split=split,
-                    progress={"description": "Generating GeoJSONSeq files..."},
-                    simple_output=simple_output,
-                )
-            else:
-                raise NotImplementedError()
+            dataset = load_dataset(dataset_id)
+            dataset.to_geojson(
+                outfile,
+                types=[type],
+                altitude=False,  # TODO: Check this
+                include_type=True,
+                seq=True,
+                split=split,
+                progress={"description": f"Generating GeoJSONSeq files: {type}"},
+                simple_output=simple_output,
+            )
 
         if format == "parquet":
             display_name = "Parquet files"
         elif format == "gpkg":
             display_name = "GeoPackage files"
         else:
-            raise NotImplementedError()
+            raise ValueError(f"Invalid format: {format}")
 
         with console.status(f"Writing {display_name}...") as status:
             if format == "gpkg":
+                if types != ["bldg"]:
+                    raise NotImplementedError(
+                        "GeoPackage mode supports `bldg` type only."
+                    )
+
                 df = gpd.GeoDataFrame()
 
                 for filename in glob.glob(str(Path(tdir, "*.geojsonl"))):
+                    # Filter by type
                     subdf = read_dataframe(filename)
-                    # NOTE: set ignore_index True for re-indexing
+                    # NOTE: Setting ignore_index True for re-indexing
                     df = pd.concat([df, subdf], ignore_index=True)
 
                 # TODO: Use more accurate CRS
@@ -90,46 +99,67 @@ def prebuild(
 
                 config.datasets[dataset_id]["gpkg"] = dest_path
                 config.save()
+
             elif format == "parquet":
-                tmp_file_paths = []
+                dest_path_map = {}
 
-                for filename in glob.glob(str(Path(tdir, "*.geojsonl"))):
-                    df = gpd.read_file(filename)
+                for type in types:
+                    tmp_file_paths = []
 
-                    # TODO: Use more accurate CRS
-                    mercator = df.to_crs(3857)
-                    centroid_mercator = mercator.centroid
-                    centroid = centroid_mercator.to_crs(4326)
+                    for filename in glob.glob(str(Path(tdir, "*.geojsonl"))):
+                        # Filter by type
+                        if f".{type}." not in filename:
+                            continue
 
-                    df["longitude"] = centroid.x
-                    df["latitude"] = centroid.y
+                        try:
+                            df = gpd.read_file(filename)
+                        except Exception:
+                            raise RuntimeError(f"Failed to read {filename}")
+                            # import shutil
 
-                    tmp_dest_path = str(Path(tdir, f"{filename}.parquet"))
-                    df.to_parquet(tmp_dest_path, index=False)
+                            # # copy dir to /tmp for debugging:
+                            # shutil.copytree(tdir, "/tmp/failed")
+                            # raise
 
-                    tmp_file_paths.append(tmp_dest_path)
+                        # TODO: Use more accurate CRS
+                        mercator = df.to_crs(3857)
+                        centroid_mercator = mercator.centroid
+                        centroid = centroid_mercator.to_crs(4326)
 
-                df = None
-                for filename in tmp_file_paths:
-                    subdf = gpd.read_parquet(filename)
-                    # NOTE: set ignore_index True for re-indexing
-                    df = (
-                        pd.concat([df, subdf], ignore_index=True)
-                        if df is not None
-                        else subdf
-                    )
+                        df["longitude"] = centroid.x
+                        df["latitude"] = centroid.y
 
-                if df is None:
-                    raise RuntimeError
+                        tmp_dest_path = str(Path(tdir, f"{filename}.parquet"))
+                        df.to_parquet(tmp_dest_path, index=False)
 
-                dest_path = Path(config.data_dir, f"{dataset_id}.parquet")
-                df.to_parquet(dest_path, compression="zstd")
+                        tmp_file_paths.append(tmp_dest_path)
 
-                config.datasets[dataset_id]["parquet"] = dest_path
+                    df = None
+                    for filename in tmp_file_paths:
+                        subdf = gpd.read_parquet(filename)
+                        # NOTE: set ignore_index True for re-indexing
+                        df = (
+                            pd.concat([df, subdf], ignore_index=True)
+                            if df is not None
+                            else subdf
+                        )
+
+                    if df is None:
+                        raise RuntimeError("Data is empty")
+
+                    # NOTE: For backward compatibility
+                    if type == "bldg":
+                        dest_filename = f"{dataset_id}.parquet"
+                    else:
+                        dest_filename = f"{dataset_id}.{type}.parquet"
+
+                    dest_path = Path(config.data_dir, dest_filename)
+                    df.to_parquet(dest_path, compression="zstd")
+
+                    dest_path_map[type] = dest_path
+
+                config.datasets[dataset_id]["parquet"] = dest_path_map
                 config.save()
-
-            else:
-                raise NotImplementedError()
 
         console.print(f"Writing {display_name}... [green]Done")
 

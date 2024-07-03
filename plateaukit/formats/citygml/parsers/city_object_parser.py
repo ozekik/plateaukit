@@ -58,6 +58,7 @@ class CityObjectParser:
                 "type": "lod1MultiSurface",
                 "tag": f"{{{default_nsmap['tran']}}}lod1MultiSurface",
             },
+            {"type": "lod1Solid", "tag": f"{{{default_nsmap['brid']}}}lod1Solid"},
             {
                 "type": "lod2MultiSurface",
                 "tag": f"{{{default_nsmap['brid']}}}lod2MultiSurface",
@@ -157,41 +158,62 @@ class PLATEAUCityObjectParser(CityObjectParser):
 
                 geoms.append(geom)
 
-        # Look through boundedBy
-        bound_els = list(root.iterfind("./bldg:boundedBy", self.nsmap))
-        for bound_el in bound_els:
-            # TODO: Check semantics
-            for type_tag in self.geometry_type_tags:
-                type = type_tag["type"]
-                tag = type_tag["tag"]
+        # NOTE: Process boundedBy for Building and Bridge
 
-                el = bound_el.find(f".//{tag}", self.nsmap)
+        if root.tag in [
+            self.object_type_tags["Building"],
+            self.object_type_tags["Bridge"],
+        ]:
+            # Look through boundedBy
+            # TODO: Fix these conditions
+            if root.tag == self.object_type_tags["Building"] and "bldg" in self.nsmap:
+                bound_els = list(root.iterfind("./bldg:boundedBy", self.nsmap))
+            elif root.tag == self.object_type_tags["Bridge"] and "brid" in self.nsmap:
+                bound_els = list(root.iterfind("./brid:boundedBy", self.nsmap))
+            else:
+                # TODO: Fix this
+                raise NotImplementedError()
+                # print("self.nsmap", self.nsmap)
+                # exit()
+                # bound_els = []
 
-                if el is None:
-                    continue
+            for bound_el in bound_els:
+                # TODO: Check semantics
+                for type_tag in self.geometry_type_tags:
+                    type = type_tag["type"]
+                    tag = type_tag["tag"]
 
-                if type in ["lod2MultiSurface"]:
-                    chunked_poslists = parser.extract_chunked_poslists(el)
+                    el = bound_el.find(f".//{tag}", self.nsmap)
 
-                    geom = {
-                        "type": "MultiSurface",
-                        "lod": 2,
-                        "boundaries": chunked_poslists,
-                        "semantics": {
-                            "surfaces": [
-                                {
-                                    "type": f"+{type}",
-                                }
-                            ],
-                            "values": [0 for _ in range(len(chunked_poslists))],
-                        },
-                    }
+                    if el is None:
+                        continue
 
-                    geoms.append(geom)
+                    if type in ["lod2MultiSurface"]:
+                        chunked_poslists = parser.extract_chunked_poslists(el)
 
-                else:
-                    pass
-                    # raise NotImplementedError()
+                        geom = {
+                            "type": "MultiSurface",
+                            "lod": 2,
+                            "boundaries": chunked_poslists,
+                            "semantics": {
+                                "surfaces": [
+                                    {
+                                        "type": f"+{type}",
+                                    }
+                                ],
+                                "values": [0 for _ in range(len(chunked_poslists))],
+                            },
+                        }
+
+                        geoms.append(geom)
+
+                    else:
+                        pass
+                        # raise NotImplementedError()
+        # elif root.tag == self.object_type_tags["Road"]:
+        #     pass
+        # else:
+        #     raise NotImplementedError(f"Failed to parse geometry for {root.tag}")
 
         return geoms
 
