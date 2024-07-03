@@ -287,7 +287,7 @@ class Dataset:
         split: int = 1,
         **kwargs,
     ):
-        """Generate GeoJSON from PLATEAU datasets.
+        """Export GeoJSON from PLATEAU datasets.
 
         Args:
             outfile: Output file path.
@@ -385,13 +385,13 @@ class Dataset:
         target_epsg: int | None = None,
         **kwargs,
     ):
-        """Generate CityJSON from PLATEAU datasets.
+        """Export CityJSON from PLATEAU datasets.
 
         Args:
             outfile: Output file path.
             types: CityGML feature types.
             split: Split the output into specified number of files.
-            seq: Generate CityJSONSeq.
+            seq: Export CityJSONSeq.
             **kwargs: Keyword arguments for the generator.
         """
         # NOTE: generators requires multiprocessing at the moment, unavailable in pyodide

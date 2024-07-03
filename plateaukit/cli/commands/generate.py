@@ -3,11 +3,12 @@ from __future__ import annotations
 import click
 
 from plateaukit import generators
+from plateaukit.cli.base import cli
 from plateaukit.core.dataset import load_dataset
 from plateaukit.logger import set_log_level
 
 
-@click.command("generate-cityjson")
+@cli.command(name="export-cityjson", aliases=["generate-cityjson"])
 @click.argument("infiles", nargs=-1)
 @click.argument("outfile", nargs=1, required=True)
 @click.option("--dataset", "dataset_id", help='Dataset ID (e.g. "plateau-tokyo23ku")')
@@ -43,12 +44,20 @@ from plateaukit.logger import set_log_level
 # #     "--precision",
 # #     help="Number of decimal places to keep for geometry vertices (default: 16).",
 # )
-def generate_cityjson_cmd(
+def export_cityjson_cmd(
+    infiles,
+    outfile,
+    dataset_id,
+    types,
+    split,
+    ground,
     lod_mode,
+    seq,
+    target_epsg,
 ):
-    """Generate CityJSON from PLATEAU datasets.
+    """Export CityJSON from PLATEAU datasets.
 
-    PLATEAU データセットから CityJSON を生成します。
+    PLATEAU データセットから CityJSON を出力します。
     """
 
     if not infiles and not dataset_id:
@@ -110,10 +119,10 @@ def generate_cityjson_cmd(
         )
 
 
-def _generate_geojson(
+def _export_geojson(
     infiles, outfile, dataset_id: str, types: list[str], seq: bool, split: int, **kwargs
 ):
-    """Generate GeoJSON from PLATEAU datasets."""
+    """Export GeoJSON from PLATEAU datasets."""
 
     if not infiles and not dataset_id:
         raise click.UsageError("Missing argument: infiles or dataset")
@@ -130,7 +139,8 @@ def _generate_geojson(
         )
 
 
-@click.command("generate-geojson")
+# @click.command("generate-geojson")
+@cli.command(name="export-geojson", aliases=["generate-geojson"])
 @click.argument("infiles", nargs=-1)
 @click.argument("outfile", nargs=1, required=True)
 @click.option("--dataset", "dataset_id", help='Dataset ID (e.g. "plateau-tokyo23ku")')
@@ -145,10 +155,10 @@ def _generate_geojson(
     default=["bldg"],
     multiple=True,
 )
-@click.option("--seq", is_flag=True, default=False, help="Generate GeoJSONSeq")
+@click.option("--seq", is_flag=True, default=False, help="Export GeoJSONSeq")
 @click.option("--split", default=1)
 @click.option("-v", "verbose", count=True, default=0, help="Verbose")
-def generate_geojson_cmd(
+def export_geojson_cmd(
     infiles,
     outfile,
     dataset_id: str,
@@ -157,24 +167,24 @@ def generate_geojson_cmd(
     split: int,
     verbose: int,
 ):
-    """Generate GeoJSON from PLATEAU datasets.
+    """Export GeoJSON from PLATEAU datasets.
 
-    PLATEAU データセットから GeoJSON を生成します。
+    PLATEAU データセットから GeoJSON を出力します。
     """
 
     if verbose >= 2:
         set_log_level("DEBUG")
 
-    _generate_geojson(infiles, outfile, dataset_id, types=types, seq=seq, split=split)
+    _export_geojson(infiles, outfile, dataset_id, types=types, seq=seq, split=split)
 
 
-@click.command("generate-qmesh")
+@click.command("export-qmesh")
 @click.argument("infiles", nargs=-1)
 @click.argument("outfile", nargs=1, required=True)
-def generate_qmesh_cmd(infiles, outfile):
-    """Generate Quantized Mesh from PLATEAU datasets. (Requires `pip install 'plateaukit[quantized_mesh]'`)
+def export_qmesh_cmd(infiles, outfile):
+    """Export Quantized Mesh from PLATEAU datasets. (Requires `pip install 'plateaukit[quantized_mesh]'`)
 
-    PLATEAU データセットから Quantized Mesh を生成します。(要 `pip install 'plateaukit[quantized_mesh]'`)
+    PLATEAU データセットから Quantized Mesh を出力します。(要 `pip install 'plateaukit[quantized_mesh]'`)
     """
 
     generators.triangles_from_gml(infiles)
