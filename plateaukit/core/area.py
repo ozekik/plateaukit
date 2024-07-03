@@ -3,8 +3,8 @@ from typing import Literal
 
 import ipydeck
 import pydeck
-from geopandas import GeoDataFrame
 
+from plateaukit.core.layer import BaseLayer, GeoDataFrameLayer
 from plateaukit.core.widgets.interactive_deck import InteraciveDeck
 from plateaukit.logger import logger
 
@@ -18,17 +18,55 @@ def _is_colab():
 class Area:
     """This class represents an area of interest."""
 
-    def __init__(self, gdf: GeoDataFrame) -> None:
-        """Initialize an area from a GeoDataFrame.
+    layers: dict[str, BaseLayer]
+
+    def __init__(
+        self,
+        layer_or_layers: BaseLayer | dict[str, BaseLayer],
+        *,
+        base_layer_name: str = "bldg",
+    ) -> None:
+        """Initialize an area of interest.
 
         Args:
-            gdf: GeoDataFrame of the area of interest.
+            layer_or_layers: Layer or a dictionary of layers.
+            base_layer_name: Name of the base layer. Default is "bldg".
         """
-        self.gdf = gdf
+        if isinstance(layer_or_layers, BaseLayer):
+            base_layer = layer_or_layers
+            layers = {base_layer_name: base_layer}
+        elif isinstance(layer_or_layers, dict):
+            if base_layer_name is None:
+                raise ValueError(
+                    "base_layer_name is required when layer_or_layers is a dictionary"
+                )
+            layers = layer_or_layers
+            base_layer = layers[base_layer_name]
+
+        self.layers = layers
+        self.base_layer = base_layer
+        self.base_layer_name = base_layer_name
+
         self._datasets: list[str] | None = None
 
     def __repr__(self) -> str:
-        return f"Area()"
+        return "Area()"
+
+    @property
+    def gdf(self):
+        # NOTE: For backward compatibility
+        if "bldg" in self.layers and isinstance(self.layers["bldg"], GeoDataFrameLayer):
+            return self.layers["bldg"].gdf
+        else:
+            raise RuntimeError()
+
+    @gdf.setter
+    def gdf(self, value):
+        # NOTE: For backward compatibility
+        if "bldg" in self.layers and isinstance(self.layers["bldg"], GeoDataFrameLayer):
+            self.layers["bldg"].gdf = value
+        else:
+            raise RuntimeError()
 
     def get_area(self, bbox: list[float] | None = None):
         """Get the specified area from the dataset.
@@ -38,13 +76,9 @@ class Area:
                    If not specified, the area of the entire dataset will be returned.
         """
 
-        area_gdf = (
-            self.gdf.cx[bbox[0] : bbox[2], bbox[1] : bbox[3]] if bbox else self.gdf
-        )
+        layers = {name: layer.get_area(bbox) for name, layer in self.layers.items()}
 
-        # TODO: Error handling when area_gdf is empty
-
-        return Area(area_gdf)
+        return Area(layers, base_layer_name=self.base_layer_name)
 
     def get_centroid(self) -> list[float]:
         """Get the centroid of the area of interest."""
@@ -172,7 +206,7 @@ class Area:
         try:
             if __IPYTHON__:  # type: ignore
                 return deck.to_html()
-        except:
+        except Exception:
             pass
 
         with tempfile.NamedTemporaryFile(suffix=".html", delete=False) as fp:

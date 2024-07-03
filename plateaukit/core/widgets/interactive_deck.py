@@ -18,7 +18,12 @@ class InteraciveDeck:
 
         # Set selection area
         empty_gdf = gpd.GeoDataFrame()
-        self.selection = core.area.Area(empty_gdf)
+
+        # TODO: Fix this; related to circular import
+        layer = core.area.GeoDataFrameLayer(empty_gdf)
+
+        # TODO: Fix this; related to circular import
+        self.selection = core.area.Area(layer, base_layer_name="bldg")
 
         self._widget_df = self.gdf.copy()
 

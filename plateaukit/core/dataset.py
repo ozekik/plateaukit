@@ -3,7 +3,7 @@ import sys
 import zipfile
 from os import PathLike
 from pathlib import Path, PurePosixPath
-from typing import Literal, Sequence
+from typing import Literal, Sequence, cast
 
 import flatgeobuf as fgb
 import geopandas as gpd
@@ -15,7 +15,7 @@ except ImportError:
 
 from plateaukit import defaults, geocoding
 from plateaukit.config import Config
-from plateaukit.core.area import Area
+from plateaukit.core.area import Area, GeoDataFrameLayer
 from plateaukit.logger import logger
 
 
@@ -25,20 +25,27 @@ class Dataset:
     Attributes:
         dataset_id: Dataset ID.
         gdf: The GeoDataFrame of the dataset.
+        object_types: CityGML object types to include in the dataset.
     """
 
     dataset_id: str
     gdf: gpd.GeoDataFrame | None
+    object_types: list[str] | None
+    _gdf_cache: dict[str, gpd.GeoDataFrame] | None
 
-    def __init__(self, dataset_id: str):
+    def __init__(self, dataset_id: str, *, object_types: list[str] | None = None):
         """Initialize a dataset.
 
         Args:
             dataset_id: Dataset ID
+            object_types: CityGML object types to include in the dataset.
         """
 
         self.dataset_id = dataset_id
         self.gdf = None
+        self.object_types = object_types
+
+        self._gdf_cache = None
 
         # config = Config()
         # gpkg_path = config.data[dataset_id].get("gpkg")
@@ -50,34 +57,61 @@ class Dataset:
     def load_gdf(self, format: Literal["parquet", "gpkg"] = "parquet"):
         """Load the GeoDataFrame from the prebuilt dataset."""
 
+        if self._gdf_cache is not None:
+            return self._gdf_cache
+
+        self._gdf_cache = {}
+
         # NOTE: Fallback to GeoPackage
         def load_gdf_gpkg():
+            if self._gdf_cache is None:
+                self._gdf_cache = {}
+
             gpkg_path = config.datasets[self.dataset_id].get("gpkg")
 
             if gpkg_path:
                 if not read_dataframe:
                     raise ImportError(
-                        "Package pyogrio is required. Please install it using `pip install pyogrio`."
+                        "Package `pyogrio` is required. Please install it using `pip install pyogrio`."
                     ) from None
-                self.gdf = read_dataframe(gpkg_path)
+                self._gdf_cache["bldg"] = read_dataframe(gpkg_path)  # TODO: Fix typing
             else:
                 raise RuntimeError(
-                    "Missing GeoPackage; Please prebuild the dataset first"
+                    "Missing a prebuilt dataset; Please run `plateaukit prebuild <dataset_id>` first"
                 )
+
+            return self._gdf_cache
 
         config = Config()
 
         if format == "parquet":
             logger.debug("Loading Parquet file...")
-            parquet_path = config.datasets[self.dataset_id].get("parquet")
+            parquet_path_or_pathmap = config.datasets[self.dataset_id].get("parquet")
 
-            if parquet_path:
-                self.gdf = gpd.read_parquet(parquet_path)
+            if isinstance(
+                parquet_path_or_pathmap, str
+            ):  # NOTE For backward compatibility
+                parquet_pathmap = {
+                    "bldg": parquet_path_or_pathmap,
+                }
             else:
-                load_gdf_gpkg()
+                parquet_pathmap = parquet_path_or_pathmap
+
+            if parquet_pathmap is not None:
+                # parquet_path = parquet_paths[0]  # TODO: Fix this
+                for k, parquet_path in parquet_pathmap.items():
+                    if self.object_types and k not in self.object_types:
+                        continue
+
+                    self._gdf_cache[k] = gpd.read_parquet(parquet_path)
+
+                # print(self._gdf_cache)
+                return self._gdf_cache
+            else:
+                return load_gdf_gpkg()
 
         elif format == "gpkg":
-            load_gdf_gpkg()
+            return load_gdf_gpkg()
 
         else:
             raise ValueError("Invalid format")
@@ -88,12 +122,18 @@ class Dataset:
         if self.dataset_id.endswith(".cloud"):
             raise Exception("Not supported for cloud datasets")
 
-        if self.gdf is None:
-            self.load_gdf()
+        dataframes = self.load_gdf()
 
-        area_gdf = self.gdf
+        layers = {}
 
-        area = Area(area_gdf)
+        for k, gdf in dataframes.items():
+            if self.object_types is None or k in self.object_types:
+                layers[k] = GeoDataFrameLayer(gdf)
+
+        if "bldg" not in layers:
+            raise RuntimeError("Missing building data")
+
+        area = Area(layers, base_layer_name="bldg")
         area._datasets = [self.dataset_id]
 
         return area
@@ -122,25 +162,38 @@ class Dataset:
             if read_dataframe:
                 area_gdf = read_dataframe(
                     remote_fgb,
-                    bbox=tuple(bbox),
+                    bbox=tuple(bbox) if bbox else None,
                 )
+                area_gdf = cast(gpd.GeoDataFrame, area_gdf)
             else:
                 feature_collection = fgb.load_http(
                     remote_fgb,
-                    bbox=tuple(bbox),
+                    bbox=tuple(bbox) if bbox else None,
                 )
                 area_gdf = gpd.GeoDataFrame.from_features(feature_collection)
+
+            layers = {}
+            layers["bldg"] = GeoDataFrameLayer(area_gdf)
+            area = Area(layers, base_layer_name="bldg")
+
         else:
-            if self.gdf is None:
-                self.load_gdf()
+            dataframes = self.load_gdf()
 
-            area_gdf = (
-                self.gdf.cx[bbox[0] : bbox[2], bbox[1] : bbox[3]] if bbox else self.gdf
-            )
+            layers = {}
 
-        # TODO: Error handling when area_gdf is empty
+            for k, gdf in dataframes.items():
+                if self.object_types is None or k in self.object_types:
+                    # TODO: Error handling when area_gdf is empty
+                    area_gdf = (
+                        gdf.cx[bbox[0] : bbox[2], bbox[1] : bbox[3]] if bbox else gdf
+                    )
+                    layers[k] = GeoDataFrameLayer(area_gdf)
 
-        area = Area(area_gdf)
+            if "bldg" not in layers:
+                raise RuntimeError("`bldg` layer is required")
+
+            area = Area(layers, base_layer_name="bldg")
+
         area._datasets = [self.dataset_id]
 
         return area
@@ -155,12 +208,22 @@ class Dataset:
         if self.dataset_id.endswith(".cloud"):
             raise Exception("Not supported for cloud datasets")
 
-        if self.gdf is None:
-            self.load_gdf()
+        dataframes = self.load_gdf()
 
-        area_gdf = self.gdf[self.gdf.geometry.intersects(polygons)]
+        layers = {}
 
-        return Area(area_gdf)
+        for k, gdf in dataframes.items():
+            if self.object_types is None or k in self.object_types:
+                # TODO: Error handling when area_gdf is empty
+                area_gdf = gdf[gdf.geometry.intersects(polygons)]
+                layers[k] = GeoDataFrameLayer(area_gdf)
+
+        if "bldg" not in layers:
+            raise RuntimeError("`bldg` layer is required")
+
+        area = Area(layers, base_layer_name="bldg")
+
+        return area
 
     def area_from_points(
         self, points: list[Sequence[float]], size: list[float] = [1000, 1000]
@@ -262,7 +325,9 @@ class Dataset:
                     # print(targets)
 
                     if not targets:
-                        raise RuntimeError(f"Data type '{type}' not found in '{self.dataset_id}'")
+                        raise RuntimeError(
+                            f"Data type '{type}' not found in '{self.dataset_id}'"
+                        )
 
                     # NOTE: zipfs requires POSIX path
                     infiles += [str(PurePosixPath("/", target)) for target in targets]
@@ -359,7 +424,9 @@ class Dataset:
                     targets = list(filter(lambda x: pat.match(x), namelist))
 
                     if not targets:
-                        raise RuntimeError(f"Data type '{type}' not found in '{self.dataset_id}'")
+                        raise RuntimeError(
+                            f"Data type '{type}' not found in '{self.dataset_id}'"
+                        )
 
                     # NOTE: zipfs requires POSIX path
                     infiles += [str(PurePosixPath("/", target)) for target in targets]
@@ -406,13 +473,16 @@ class Dataset:
         )
 
 
-def load_dataset(dataset_id: str) -> Dataset:
+def load_dataset(dataset_id: str, object_types: list[str] | None = None) -> Dataset:
     """Load a dataset.
 
     Args:
         dataset_id: Dataset ID.
+        object_types: CityGML object types to include in the dataset. If not specified, all object types will be included.
 
     Returns:
         Dataset: Dataset object.
     """
-    return Dataset(dataset_id)
+    # TODO: Raise error if dataset_id is not in local datasets and not a cloud dataset
+
+    return Dataset(dataset_id, object_types=object_types)
