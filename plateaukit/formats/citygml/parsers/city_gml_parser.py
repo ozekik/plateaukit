@@ -1,4 +1,5 @@
 from io import IOBase
+from itertools import chain
 import re
 from typing import BinaryIO
 
@@ -100,7 +101,7 @@ class PLATEAUCityGMLParser(CityGMLParser):
         itertree = etree.iterparse(infile, events=("end",), tag=tag)
         _, root = next(itertree)
 
-        for _ev, el in itertree:
+        for _ev, el in chain([(_, root)], itertree):
             it = el.iterchildren()
             co_element = next(it)
             obj = co_parser.parse(co_element)
