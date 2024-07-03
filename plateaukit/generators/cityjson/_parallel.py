@@ -33,7 +33,7 @@ def cityjson_from_citygml(
     # city_objects = {}
 
     group_size = math.ceil(len(infiles) / split)
-    logger.debug(f"GMLs per GeoJSON: {group_size}")
+    logger.debug(f"GMLs per CityJSON: {group_size}")
     infile_groups = utils.chunker(infiles, group_size)
 
     with Progress() as rprogress:
