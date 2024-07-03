@@ -19,13 +19,13 @@ def prebuild(
     simple_output=False,
     format: Literal["gpkg", "parquet"] = "parquet",
 ) -> None:
-    """Prebuild PLATEAU datasets."""
+    """Prebuild a PLATEAU dataset for PlateauKit."""
 
     try:
         from pyogrio import read_dataframe, write_dataframe
     except ImportError:
         raise ImportError(
-            "Package pyogrio is required. Please install it using `pip install pyogrio`."
+            "Package `pyogrio` is required for prebuild. Please install it using `pip install pyogrio`."
         ) from None
 
     console = get_console()
@@ -34,7 +34,7 @@ def prebuild(
         raise Exception("Missing argument: dataset_id")
 
     config = Config()
-    record = config.datasets.get(dataset_id)
+    # record = config.datasets.get(dataset_id)
     # print(dataset_id, record)
 
     # TODO: All types

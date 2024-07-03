@@ -20,7 +20,7 @@ from plateaukit.logger import logger
 
 
 class Dataset:
-    """This class represents a dataset.
+    """The Dataset class.
 
     Attributes:
         dataset_id: Dataset ID.
