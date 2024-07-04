@@ -1,6 +1,7 @@
+import re
+import warnings
 from io import IOBase
 from itertools import chain
-import re
 from typing import BinaryIO
 
 import pyproj
@@ -104,7 +105,11 @@ class PLATEAUCityGMLParser(CityGMLParser):
         for _ev, el in chain([(_, root)], itertree):
             it = el.iterchildren()
             co_element = next(it)
-            obj = co_parser.parse(co_element)
+            try:
+                obj = co_parser.parse(co_element)
+            except Exception as e:
+                warnings.warn(str(e))
+                continue
 
             # TODO: Improve performance
             building_id = (
@@ -156,7 +161,12 @@ class PLATEAUCityGMLParser(CityGMLParser):
         for _ev, el in itertree:
             it = el.iterchildren()
             co_element = next(it)
-            obj = co_parser.parse(co_element)
+
+            try:
+                obj = co_parser.parse(co_element)
+            except Exception as e:
+                warnings.warn(str(e))
+                continue
 
             # TODO: Improve performance
             building_id = (

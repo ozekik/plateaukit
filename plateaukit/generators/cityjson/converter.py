@@ -388,7 +388,7 @@ class CityJSONConverter:
                         ]
 
                         # TODO: Fix this; this is not an accurate way to do this
-                        if use_highest_lod:
+                        if geoms and use_highest_lod:
                             lod_highest = max([geom["lod"] for geom in geoms])
                             geoms = [
                                 geom for geom in geoms if geom["lod"] == lod_highest
