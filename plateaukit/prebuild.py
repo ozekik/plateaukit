@@ -11,7 +11,6 @@ from plateaukit.config import Config
 from plateaukit.core.dataset import load_dataset
 from plateaukit.logger import logger
 
-
 _supported_types = ["bldg", "brid", "tran"]
 # _supported_types = ["bldg", "tran"]
 
@@ -50,11 +49,11 @@ def prebuild(
         logger.debug(f"Temporary directory: {tdir}")
 
         for type in types:
-            outfile = Path(tdir, f"{dataset_id}.{type}.geojsonl")
+            outfile_geojsonl = Path(tdir, f"{dataset_id}.{type}.geojsonl")
 
             dataset = load_dataset(dataset_id)
             dataset.to_geojson(
-                outfile,
+                outfile_geojsonl,
                 types=[type],
                 altitude=False,  # TODO: Check this
                 include_type=True,
