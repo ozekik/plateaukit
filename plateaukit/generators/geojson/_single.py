@@ -3,7 +3,6 @@ from typing import Any, BinaryIO
 from geojson import Feature, FeatureCollection, GeometryCollection, Polygon
 
 from plateaukit.formats.citygml import PLATEAUCityGMLParser
-from plateaukit.logger import logger
 from plateaukit.utils import dict_key_to_camel_case
 
 
@@ -83,6 +82,9 @@ def features_from_gml_single(
         polygons = [Polygon([base_polygon]) for base_polygon in base_polygons]
 
         properties = dict(obj.attributes) if obj.attributes else {}
+
+        # TODO: Make this optional
+        properties["_gml_id"] = obj.id
 
         if include_type:
             properties["type"] = obj.type
