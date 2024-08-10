@@ -1,9 +1,12 @@
 import tempfile
+from pathlib import Path
 from typing import Literal
 
 import ipydeck
+import pandas as pd
 import pydeck
 
+from plateaukit.config import Config
 from plateaukit.core.layer import BaseLayer, GeoDataFrameLayer
 from plateaukit.core.widgets.interactive_deck import InteraciveDeck
 from plateaukit.logger import logger
@@ -248,8 +251,10 @@ class Area:
     def to_cityjson(
         self,
         file: str,
-        type: list[str] = ["bldg"],
+        *,
+        types: list[str] | None = None,
         ground: bool = False,
+        seq: bool = False,
         target_epsg: int | None = None,
     ):
         """Convert the area to CityJSON."""
@@ -261,15 +266,45 @@ class Area:
         if self._datasets is None:
             raise RuntimeError("Missing dataset information")
 
-        selection = self.gdf["buildingId"].tolist()
-
+        # TODO: Support non-building types
+        # selection = self.gdf["buildingId"].tolist()
+        selection = sum(
+            [layer.gdf["gmlId"].tolist() for layer in self.layers.values()], []
+        )
         logger.debug(selection)
 
+        config = Config()
+
         for dataset_id in self._datasets:
-            dataset = Dataset(dataset_id)
-            dataset.to_cityjson(
-                file, ground=ground, selection=selection, target_epsg=target_epsg
-            )
+            # TODO: The path must be in config
+            co_parquet_path = Path(config.data_dir, f"{dataset_id}.cityobjects.parquet")
+
+            if seq and co_parquet_path.exists():
+                selection = sum(
+                    [layer.gdf["gmlId"].tolist() for layer in self.layers.values()], []
+                )
+                df = pd.read_parquet(co_parquet_path)
+                # Get rows where df._id in selection:
+                df = df[df._id.isin(selection)]
+                # Write value of `cityjson` row of each row to a line in the file.
+                cjseq_header = (
+                    '{"type":"CityJSON","version":"2.0","transform":{"scale":[1.0,1.0,1.0],"translate":[0.0,0.0,0.0]},'
+                    + '"metadata":{"referenceSystem":"https://www.opengis.net/def/crs/EPSG/0/3857"},"vertices":[]}'
+                )
+                with open(file, "w") as f:
+                    f.write(cjseq_header + "\n")
+                    for row in df.itertuples():
+                        f.write(str(row.cityjson) + "\n")
+            else:
+                dataset = Dataset(dataset_id)
+                types = list(self.layers.keys()) if types is None else types
+                dataset.to_cityjson(
+                    file,
+                    types=types,
+                    ground=ground,
+                    selection=selection,
+                    target_epsg=target_epsg,
+                )
 
     @property
     def buildings(self):
