@@ -8,6 +8,10 @@ from typing import Literal, Sequence, cast
 import flatgeobuf as fgb
 import geopandas as gpd
 
+from plateaukit.exporters.cityjson.parallel_writer import ParallelWriter
+from plateaukit.exporters.cityjson.writer import CityJSONWriter
+from plateaukit.readers.citygml.reader import CityGMLReader
+
 try:
     from pyogrio import read_dataframe
 except ImportError:
@@ -395,9 +399,7 @@ class Dataset:
             **kwargs: Keyword arguments for the generator.
         """
         # NOTE: generators requires multiprocessing at the moment, unavailable in pyodide
-        from plateaukit import generators
-
-        params = {}
+        # params = {}
 
         # if precision:
         #     params["precision"] = precision
@@ -459,20 +461,46 @@ class Dataset:
             # TODO: Test support for non-zip codelists
             codelist_infiles += [str(Path(file_path, "codelists", "*.xml"))]
 
-        generators.cityjson.cityjson_from_citygml(
+        reader = CityGMLReader()
+
+        document = reader.scan_files(
             infiles,
-            outfile,
-            split=split,
-            zipfile=file_path,
-            lod=lod,
-            use_highest_lod=use_highest_lod,
-            ground=ground,
-            seq=seq,
             codelist_infiles=codelist_infiles,
+            zipfile=file_path,
             selection=selection,
-            target_epsg=target_epsg,
-            **kwargs,
+            # use_highest_lod=use_highest_lod,
         )
+
+        writer = ParallelWriter(CityJSONWriter)
+        writer.transform(document, str(outfile), seq=False, split=split)
+
+        # writer = CityJSONWriter()
+        # result = writer.transform(document, seq=seq)
+
+        # import json
+
+        # if seq:
+        #     with open(outfile, "w") as f:
+        #         for line in result:
+        #             f.write(json.dumps(line, separators=(",", ":")) + "\n")
+        # else:
+        #     with open(outfile, "w") as f:
+        #         f.write(json.dumps(result, separators=(",", ":")))
+
+        # generators.cityjson.cityjson_from_citygml(
+        #     infiles,
+        #     outfile,
+        #     split=split,
+        #     zipfile=file_path,
+        #     lod=lod,
+        #     use_highest_lod=use_highest_lod,
+        #     ground=ground,
+        #     seq=seq,
+        #     codelist_infiles=codelist_infiles,
+        #     selection=selection,
+        #     target_epsg=target_epsg,
+        #     **kwargs,
+        # )
 
 
 def load_dataset(dataset_id: str, object_types: list[str] | None = None) -> Dataset:
