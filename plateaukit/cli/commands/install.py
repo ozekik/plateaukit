@@ -145,17 +145,29 @@ def uninstall_cmd(dataset_id, formats: list[str], keep_files):
     if not dataset_id:
         raise Exception("Missing argument")
 
+    available_formats = ["citygml", "3dtiles", "gpkg", "parquet"]
+
     config = Config()
-    formats = formats or list(config.datasets[dataset_id].keys())
+    if not formats:
+        formats = []
+        keys = config.datasets[dataset_id].keys()
+        for format in available_formats:
+            if format in keys:
+                formats.append(format)
 
     # TODO: Fix duplicated code in uninstall_dataset
     if not keep_files:
         paths = []
         for format in formats:
-            path = config.datasets[dataset_id].get(format)
-            if not path:
-                raise RuntimeError(f"Missing files in record for '{format}'")
-            paths.append(path)
+            if format == "parquet":
+                for path in config.datasets[dataset_id]["parquet"].values():
+                    paths.append(path)
+            else:
+                path = config.datasets[dataset_id].get(format)
+                if not path:
+                    raise RuntimeError(f"Missing files in record for '{format}'")
+                paths.append(path)
+
         click.echo("Would remove:")
         for path in paths:
             click.echo(f"  {path}")
