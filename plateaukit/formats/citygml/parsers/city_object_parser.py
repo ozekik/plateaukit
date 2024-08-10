@@ -239,6 +239,8 @@ class PLATEAUCityObjectParser(CityObjectParser):
                 k: v for k, v in optional_attributes.items() if v is not None
             }
             attributes.update(optional_attributes)
+        elif el.tree.tag == self.object_type_tags["Bridge"]:
+            attributes["_gml_id"] = el.get_gml_id()
 
         return attributes
 
@@ -282,5 +284,6 @@ class PLATEAUCityObjectParser(CityObjectParser):
             )
         else:
             raise NotImplementedError(f"Unknown object type: {el.tree.tag}")
+            # warnings.warn(f"Unknown object type: {el.tree.tag}")
 
         return obj

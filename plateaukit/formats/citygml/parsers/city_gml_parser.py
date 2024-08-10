@@ -95,8 +95,6 @@ class PLATEAUCityGMLParser(CityGMLParser):
             transformer=transformer, nsmap=nsmap, codelist_map=codelist_map
         )
 
-        objects = []
-
         tag = f"{{{nsmap['core']}}}cityObjectMember"
 
         itertree = etree.iterparse(infile, events=("end",), tag=tag)
@@ -112,12 +110,10 @@ class PLATEAUCityGMLParser(CityGMLParser):
                 continue
 
             # TODO: Improve performance
-            building_id = (
-                obj.attributes.get("building_id", None) if obj.attributes else None
-            )
-            if selection and (
-                obj.id not in selection and (building_id not in selection)
-            ):
+            # building_id = (
+            #     obj.attributes.get("building_id", None) if obj.attributes else None
+            # )
+            if selection and (obj.id not in selection and (obj.id not in selection)):
                 continue
 
             yield obj
