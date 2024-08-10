@@ -1,11 +1,18 @@
 from __future__ import annotations
 
-from time import sleep
 import traceback
 from concurrent.futures import Future, ProcessPoolExecutor
 from threading import Event
+from time import sleep
 
-from plateaukit.logger import logger
+
+def quittable(func):
+    def _wrapper(*args, **kwargs):
+        v = func(*args, **kwargs)
+
+        return v
+
+    return _wrapper
 
 
 def wait_futures(
@@ -27,14 +34,16 @@ def wait_futures(
         except Exception as e:
             # logger.error(e)
             traceback.print_exc()
-            futures_status[future]["failed"] = True
+            # futures_status[future]["failed"] = True
 
     for future in futures:
         future.add_done_callback(catch_exception)
 
     try:
         n_futures = len(futures)
-        while (n_finished := sum([future.done() for future in futures])) < len(futures):
+        while (_n_finished := sum([future.done() for future in futures])) < len(
+            futures
+        ):
             for task_id, status in shared_progress_status.items():
                 latest = status["progress"]
                 total = status["total"]
@@ -61,12 +70,12 @@ def wait_futures(
 
             sleep(0.5)
 
-        for f in futures_status.values():
-            if f["task_id"] and f["failed"] is True:
-                rich_progress.update(
-                    f["task_id"],
-                    description=f"[cyan]Progress #{f['counter']} [red]Failed",
-                )
+        # for f in futures_status.values():
+        #     if f["task_id"] and f["failed"] is True:
+        #         rich_progress.update(
+        #             f["task_id"],
+        #             description=f"[cyan]Progress #{f['counter']} [red]Failed",
+        #         )
 
         # Finish up the overall progress bar
         rich_progress.update(
