@@ -299,8 +299,8 @@ class Dataset:
             split: Split the output into specified number of files.
             **kwargs: Keyword arguments for the generator.
         """
-        # NOTE: generators requires multiprocessing at the moment, unavailable in pyodide
-        from plateaukit import generators
+        # NOTE: exporters requires multiprocessing at the moment, unavailable in pyodide
+        from plateaukit import exporters
 
         if not self.dataset_id:
             raise Exception("Missing dataset_id")
@@ -361,7 +361,7 @@ class Dataset:
             # TODO: Test support for non-zip codelists
             codelist_infiles += [str(Path(file_path, "codelists", "*.xml"))]
 
-        generators.geojson.geojson_from_citygml(
+        exporters.geojson.geojson_from_citygml(
             infiles,
             outfile,
             types=types,
@@ -398,7 +398,7 @@ class Dataset:
             seq: Export CityJSONSeq.
             **kwargs: Keyword arguments for the generator.
         """
-        # NOTE: generators requires multiprocessing at the moment, unavailable in pyodide
+        # NOTE: (check) generators requires multiprocessing at the moment, unavailable in pyodide
         # params = {}
 
         # if precision:

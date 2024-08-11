@@ -2,7 +2,7 @@ from typing import Any, BinaryIO
 
 from geojson import Feature, FeatureCollection, GeometryCollection, Polygon
 
-from plateaukit.formats.citygml import PLATEAUCityGMLParser
+from plateaukit.readers.citygml import PLATEAUCityGMLParser
 from plateaukit.utils import dict_key_to_camel_case
 
 

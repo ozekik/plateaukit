@@ -41,9 +41,7 @@ def wait_futures(
 
     try:
         n_futures = len(futures)
-        while (_n_finished := sum([future.done() for future in futures])) < len(
-            futures
-        ):
+        while (_n_finished := sum([future.done() for future in futures])) < n_futures:
             for task_id, status in shared_progress_status.items():
                 latest = status["progress"]
                 total = status["total"]

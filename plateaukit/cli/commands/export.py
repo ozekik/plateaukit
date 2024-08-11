@@ -2,10 +2,13 @@ from __future__ import annotations
 
 import click
 
-from plateaukit import generators
+from plateaukit import exporters
 from plateaukit.cli.base import cli
 from plateaukit.core.dataset import load_dataset
+from plateaukit.exporters.cityjson.parallel_writer import ParallelWriter
+from plateaukit.exporters.cityjson.writer import CityJSONWriter
 from plateaukit.logger import set_log_level
+from plateaukit.readers.citygml.reader import CityGMLReader
 
 
 @cli.command(name="export-cityjson", aliases=["generate-cityjson"])
@@ -91,7 +94,6 @@ def export_cityjson_cmd(
     # }
 
     # obj_types = sum([obj_types_map[type] for type in types], [])
-    # logger.debug(obj_types)
 
     if dataset_id:
         dataset = load_dataset(dataset_id)
@@ -107,16 +109,29 @@ def export_cityjson_cmd(
         )
 
     else:
-        generators.cityjson.cityjson_from_citygml(
+        reader = CityGMLReader()
+        document = reader.scan_files(
             infiles,
-            outfile,
-            split=split,
-            seq=seq,
-            use_highest_lod=use_highest_lod,
-            ground=ground,
-            target_epsg=target_epsg,
-            **params,
+            codelist_infiles=None,
+            # codelist_infiles=codelist_infiles, # TODO: Fix this
+            # zipfile=file_path,  # TODO: Fix this
+            # use_highest_lod=use_highest_lod,  # TODO: Fix this
         )
+
+        writer = ParallelWriter(CityJSONWriter)
+        writer.transform(document, str(outfile), seq=seq, split=split)
+
+        # NOTE: Old implementation
+        # exporters.cityjson.cityjson_from_citygml(
+        #     infiles,
+        #     outfile,
+        #     split=split,
+        #     seq=seq,
+        #     use_highest_lod=use_highest_lod,
+        #     ground=ground,
+        #     target_epsg=target_epsg,
+        #     **params,
+        # )
 
 
 def _export_geojson(
@@ -134,7 +149,7 @@ def _export_geojson(
         dataset = load_dataset(dataset_id)
         dataset.to_geojson(outfile, types=types, seq=seq, split=split, **kwargs)
     else:
-        generators.geojson.geojson_from_citygml(
+        exporters.geojson.geojson_from_citygml(
             infiles, outfile, types=types, seq=seq, split=split, **kwargs
         )
 
@@ -186,8 +201,9 @@ def export_qmesh_cmd(infiles, outfile):
 
     PLATEAU データセットから Quantized Mesh を出力します。(要 `pip install 'plateaukit[quantized_mesh]'`)
     """
+    raise NotImplementedError()
 
-    generators.triangles_from_gml(infiles)
+    # exporters.triangles_from_gml(infiles)
 
 
 # @cli.command("generate-gpkg")
@@ -198,7 +214,7 @@ def export_qmesh_cmd(infiles, outfile):
 #     expanded_infiles = []
 #     for infile in infiles:
 #         expanded_infiles.extend(glob.glob(infile))
-#     generators.utils.geojson_to_gpkg(expanded_infiles, outfile)
+#     exporters.utils.geojson_to_gpkg(expanded_infiles, outfile)
 
 
 # @cli.command("generate-heightmap")
@@ -209,7 +225,7 @@ def export_qmesh_cmd(infiles, outfile):
 #     expanded_infiles = []
 #     for infile in infiles:
 #         expanded_infiles.extend(glob.glob(infile))
-#     generators.triangles_from_gml(expanded_infiles)
+#     exporters.triangles_from_gml(expanded_infiles)
 
 
 # @cli.command("extract-properties")
