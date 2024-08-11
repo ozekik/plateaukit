@@ -100,6 +100,8 @@ class PLATEAUCityGMLParser(CityGMLParser):
         itertree = etree.iterparse(infile, events=("end",), tag=tag)
         _, root = next(itertree)
 
+        dirty = False
+
         for _ev, el in chain([(_, root)], itertree):
             it = el.iterchildren()
             co_element = next(it)
@@ -107,6 +109,7 @@ class PLATEAUCityGMLParser(CityGMLParser):
                 obj = co_parser.parse(co_element)
             except Exception as e:
                 warnings.warn(str(e))
+                dirty = True
                 continue
 
             # TODO: Improve performance
@@ -118,8 +121,10 @@ class PLATEAUCityGMLParser(CityGMLParser):
 
             yield obj
 
-            el.clear()
-            root.clear()
+            # NOTE: `if not dirty` is somehow required to avoid stucking in the loop
+            if not dirty:
+                el.clear()
+                root.clear()
 
         infile.seek(0)
 
