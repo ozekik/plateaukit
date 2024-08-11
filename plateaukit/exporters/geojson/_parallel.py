@@ -1,8 +1,10 @@
 import concurrent.futures
 import math
+import re
 from multiprocessing import Manager
 from os import PathLike
 from pathlib import Path
+from zipfile import ZipFile, is_zipfile
 
 from rich.progress import Progress
 
@@ -103,6 +105,24 @@ def geojson_from_citygml(
     """Generate GeoJSON file(s) from CityGML files."""
 
     import glob
+
+    if not codelist_infiles:
+        # Codelists
+        codelist_infiles = []
+        pat = re.compile(r".*codelists\/.*\.xml$")
+
+        if zipfile and is_zipfile(zipfile):
+            with ZipFile(zipfile) as f:
+                namelist = f.namelist()
+                codelist_infiles = list(filter(lambda x: pat.match(x), namelist))
+                # NOTE: zipfs requires POSIX path
+                codelist_infiles = [
+                    str(Path("/", target)) for target in codelist_infiles
+                ]
+        else:
+            # TODO: Test support for non-zip codelists
+            raise NotImplementedError()
+            # codelist_infiles += [str(Path(file_path, "codelists", "*.xml"))]
 
     if zipfile is None:
         expanded_infiles = []
