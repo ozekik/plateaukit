@@ -346,20 +346,10 @@ class Dataset:
         logger.debug([types, infiles, outfile])
 
         # Codelists
-        codelist_infiles = []
-        pat = re.compile(r".*codelists\/.*\.xml$")
-
-        if zipfile.is_zipfile(file_path):
-            with zipfile.ZipFile(file_path) as f:
-                namelist = f.namelist()
-                codelist_infiles = list(filter(lambda x: pat.match(x), namelist))
-                # NOTE: zipfs requires POSIX path
-                codelist_infiles = [
-                    str(PurePosixPath("/", target)) for target in codelist_infiles
-                ]
-        else:
+        codelist_infiles = None
+        if not zipfile.is_zipfile(file_path):
             # TODO: Test support for non-zip codelists
-            codelist_infiles += [str(Path(file_path, "codelists", "*.xml"))]
+            codelist_infiles = [str(Path(file_path, "codelists", "*.xml"))]
 
         exporters.geojson.geojson_from_citygml(
             infiles,
@@ -446,20 +436,10 @@ class Dataset:
         infiles = sorted(infiles)
 
         # Codelists
-        codelist_infiles = []
-        pat = re.compile(r".*codelists\/.*\.xml$")
-
-        if zipfile.is_zipfile(file_path):
-            with zipfile.ZipFile(file_path) as f:
-                namelist = f.namelist()
-                codelist_infiles = list(filter(lambda x: pat.match(x), namelist))
-                # NOTE: zipfs requires POSIX path
-                codelist_infiles = [
-                    str(Path("/", target)) for target in codelist_infiles
-                ]
-        else:
+        codelist_infiles = None
+        if not zipfile.is_zipfile(file_path):
             # TODO: Test support for non-zip codelists
-            codelist_infiles += [str(Path(file_path, "codelists", "*.xml"))]
+            codelist_infiles = [str(Path(file_path, "codelists", "*.xml"))]
 
         reader = CityGMLReader()
 

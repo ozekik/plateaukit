@@ -1,8 +1,10 @@
 import io
 import math
 import os.path
+import re
 from dataclasses import dataclass
 from pathlib import Path
+from zipfile import is_zipfile, ZipFile
 
 from fs import open_fs
 
@@ -69,12 +71,30 @@ class CityGMLReader:
         *,
         # object_types,
         # lod,
-        codelist_infiles,
+        codelist_infiles=None,
         zipfile=None,
         selection: list[str] | None = None,
         # use_highest_lod=False,
     ):
         """Return a Readable object for the given files."""
+
+        if not codelist_infiles:
+            # Codelists
+            codelist_infiles = []
+            pat = re.compile(r".*codelists\/.*\.xml$")
+
+            if zipfile and is_zipfile(zipfile):
+                with ZipFile(zipfile) as f:
+                    namelist = f.namelist()
+                    codelist_infiles = list(filter(lambda x: pat.match(x), namelist))
+                    # NOTE: zipfs requires POSIX path
+                    codelist_infiles = [
+                        str(Path("/", target)) for target in codelist_infiles
+                    ]
+            else:
+                # TODO: Test support for non-zip codelists
+                raise NotImplementedError()
+                # codelist_infiles += [str(Path(file_path, "codelists", "*.xml"))]
 
         return Readable(
             infiles,
@@ -101,6 +121,24 @@ class CityGMLReader:
             zip_fs = open_fs(f"zip://{zipfile}")
         else:
             zip_fs = None
+
+        if not codelist_infiles:
+            # Codelists
+            codelist_infiles = []
+            pat = re.compile(r".*codelists\/.*\.xml$")
+
+            if zipfile and is_zipfile(zipfile):
+                with ZipFile(zipfile) as f:
+                    namelist = f.namelist()
+                    codelist_infiles = list(filter(lambda x: pat.match(x), namelist))
+                    # NOTE: zipfs requires POSIX path
+                    codelist_infiles = [
+                        str(Path("/", target)) for target in codelist_infiles
+                    ]
+            else:
+                # TODO: Test support for non-zip codelists
+                raise NotImplementedError()
+                # codelist_infiles += [str(Path(file_path, "codelists", "*.xml"))]
 
         # Load codelists
         codelist_file_map = {}
