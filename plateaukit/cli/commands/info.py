@@ -14,7 +14,7 @@ def info_cmd(dataset_id):
     PLATEAU データセットの情報を表示します。
     """
     from plateaukit.download import city_list
-    from plateaukit.formats.citygml import CityGMLDataset, constants
+    from plateaukit.readers.citygml import CityGMLDataset, constants
 
     config = Config()
 
