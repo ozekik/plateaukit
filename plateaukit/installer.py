@@ -95,6 +95,22 @@ def install_dataset(
         return
 
 
+def get_dataset_filepaths(dataset_id: str, formats: list[str]):
+    config = Config()
+    paths = []
+    for format in formats:
+        if format == "parquet":
+            for path in config.datasets[dataset_id]["parquet"].values():
+                paths.append(path)
+        else:
+            path = config.datasets[dataset_id].get(format)
+            if not path:
+                raise RuntimeError(f"Missing files in record for '{format}'")
+            paths.append(path)
+
+    return paths
+
+
 def uninstall_dataset(
     dataset_id: str, formats: Optional[list[str]] = None, keep_files: bool = False
 ):
@@ -104,12 +120,8 @@ def uninstall_dataset(
     formats = formats or list(_get_data_items(config.datasets[dataset_id]).keys())
 
     if not keep_files:
-        paths = []
-        for format in formats:
-            path = config.datasets[dataset_id].get(format)
-            if not path:
-                raise RuntimeError(f"Missing files in record for '{format}'")
-            paths.append(path)
+        paths = get_dataset_filepaths(dataset_id, formats)
+        for path in paths:
             try:
                 os.remove(path)
             except Exception as e:

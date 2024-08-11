@@ -4,7 +4,7 @@ import click
 from prettytable import PrettyTable
 
 from plateaukit.config import Config
-from plateaukit.installer import install_dataset, uninstall_dataset
+from plateaukit.installer import get_dataset_filepaths, install_dataset, uninstall_dataset
 from plateaukit.prebuild import prebuild
 
 
@@ -157,16 +157,7 @@ def uninstall_cmd(dataset_id, formats: list[str], keep_files):
 
     # TODO: Fix duplicated code in uninstall_dataset
     if not keep_files:
-        paths = []
-        for format in formats:
-            if format == "parquet":
-                for path in config.datasets[dataset_id]["parquet"].values():
-                    paths.append(path)
-            else:
-                path = config.datasets[dataset_id].get(format)
-                if not path:
-                    raise RuntimeError(f"Missing files in record for '{format}'")
-                paths.append(path)
+        paths = get_dataset_filepaths(dataset_id, formats)
 
         click.echo("Would remove:")
         for path in paths:
