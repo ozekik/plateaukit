@@ -1062,13 +1062,13 @@ files = [
 
 [[package]]
 name = "ipydeck"
-version = "0.4.2"
+version = "0.4.3"
 description = "Yet another Jupyter widget for deck.gl"
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "ipydeck-0.4.2-py3-none-any.whl", hash = "sha256:d78ce318a406e26dbc059f7733db2986dbd442f2ac97ca0b7076ea79b7f1e9cc"},
-    {file = "ipydeck-0.4.2.tar.gz", hash = "sha256:370d23dc2fa4a6708d5ec0d9d328bea9e775997c3662f1108e6d57933501afb4"},
+    {file = "ipydeck-0.4.3-py3-none-any.whl", hash = "sha256:93ec2dae5357c01334fcf1538ec0f07ef694571052486b3ef9de5b6842cb5912"},
+    {file = "ipydeck-0.4.3.tar.gz", hash = "sha256:07f498e0b7508750f2b228fc30fe0addcdb8efc2c6c77bcc5e6bab1f8294a55c"},
 ]
 
 [package.dependencies]
@@ -4173,4 +4173,4 @@ quantized-mesh = ["quantized-mesh-encoder"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "3dd9e925487e2ac837cd579ce23045363e4b1c49d00f719b609742bb9f105192"
+content-hash = "6f19221905abd62627f76b96a5d3f553a42349ec09ba959d8fd6164553a85ffc"
