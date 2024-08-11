@@ -11,7 +11,7 @@ from IPython.display import display
 import plateaukit.core as core
 
 
-class InteraciveDeck:
+class InteractiveDeck:
     def __init__(self, gdf: gpd.GeoDataFrame, opacity=1) -> None:
         self.gdf = gdf
         self.deck = self._init_deck(opacity=opacity)

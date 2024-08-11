@@ -8,7 +8,7 @@ import pydeck
 
 from plateaukit.config import Config
 from plateaukit.core.layer import BaseLayer, GeoDataFrameLayer
-from plateaukit.core.widgets.interactive_deck import InteraciveDeck
+from plateaukit.core.widgets.interactive_deck import InteractiveDeck
 from plateaukit.logger import logger
 
 
@@ -216,7 +216,7 @@ class Area:
             deck.to_html(fp.name, open_browser=True)
 
     def _show_ipydeck(self):
-        deck = InteraciveDeck(self.gdf)
+        deck = InteractiveDeck(self.gdf)
 
         self.selection = deck.selection
 
