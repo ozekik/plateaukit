@@ -26,8 +26,13 @@ class CityObjectXML:
         self.nsmap = nsmap
         self.codelist_map = codelist_map
 
-    def _get_codespace_attribute(self, xpath) -> str | None:
-        el = self.tree.find(xpath, self.nsmap)
+    def _get_codespace_attribute(
+        self, xpath, parent: etree._Element | None = None
+    ) -> str | None:
+        if parent:
+            el = parent.find(xpath, self.nsmap)
+        else:
+            el = self.tree.find(xpath, self.nsmap)
 
         if el is None:
             return None
@@ -65,3 +70,6 @@ class CityObjectXML:
 
     def find(self, *args, **kwargs):
         return self.tree.find(*args, **kwargs)
+
+    def iterfind(self, *args, **kwargs):
+        return self.tree.iterfind(*args, **kwargs)

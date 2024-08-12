@@ -100,8 +100,14 @@ def get_dataset_filepaths(dataset_id: str, formats: list[str]):
     paths = []
     for format in formats:
         if format == "parquet":
-            for path in config.datasets[dataset_id]["parquet"].values():
-                paths.append(path)
+            record = config.datasets[dataset_id]["parquet"]
+            if isinstance(record, dict):
+                for path in config.datasets[dataset_id]["parquet"].values():
+                    paths.append(path)
+            elif isinstance(record, str):
+                paths.append(record)
+            else:
+                raise RuntimeError("Invalid record for 'parquet'")
         else:
             path = config.datasets[dataset_id].get(format)
             if not path:

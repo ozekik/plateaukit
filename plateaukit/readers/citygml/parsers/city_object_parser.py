@@ -235,6 +235,18 @@ class PLATEAUCityObjectParser(CityObjectParser):
                 "name": extractors.get_name(el),
                 "usage": extractors.get_usage(el),
             }
+
+            # river_flooding_risks = extractors.get_river_flooding_risks(el)
+            # river_flooding_risk_attributes = {}
+            # for name, dic in river_flooding_risks.items():
+            #     for item_key, value in dic.items():
+            #         key = f"river_flooding_risk.{name}.{item_key}"
+            #         river_flooding_risk_attributes[key] = value
+            # optional_attributes.update(river_flooding_risk_attributes)
+
+            river_flooding_risks = extractors.get_river_flooding_risks(el)
+            optional_attributes.update({"river_flooding_risk": river_flooding_risks})
+
             optional_attributes = {
                 k: v for k, v in optional_attributes.items() if v is not None
             }
