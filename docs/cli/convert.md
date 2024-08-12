@@ -1,14 +1,14 @@
 # PLATEAUデータの変換 (CLI)
 
-## CityGMLからGeoJSONを生成
+## GeoJSON形式でエクスポート
 
-`plateaukit generate-geojson` コマンドを使用して、PLATEAU の CityGML ファイルを <a href="https://gis-oer.github.io/gitbook/book/materials/web_gis/GeoJSON/GeoJSON.html" target="_blank">GeoJSON</a> ファイルに変換することができます。
+`plateaukit export-geojson` コマンドを使用して、PLATEAU の CityGML ファイルを <a href="https://gis-oer.github.io/gitbook/book/materials/web_gis/GeoJSON/GeoJSON.html" target="_blank">GeoJSON</a> ファイルに変換することができます。
 
 !!! note ""
     生成したGeoJSONファイルは [geojson.io](https://geojson.io/) などでプレビューできます。
 
 ```bash title="例: 建造物 (bldg) データからLOD0/1相当のGeoJSONを生成"
-plateaukit generate-geojson --dataset plateau-tokyo23ku-2022 -t bldg /tmp/tokyo23ku-bldg.json
+plateaukit export-geojson --dataset plateau-tokyo23ku-2022 -t bldg /tmp/tokyo23ku-bldg.json
 ```
 
 <div class="result" markdown>
@@ -53,15 +53,15 @@ plateaukit generate-geojson --dataset plateau-tokyo23ku-2022 -t bldg /tmp/tokyo2
 
 </div>
 
-## CityGMLからCityJSONを生成
+## CityJSON形式でエクスポート
 
-`plateaukit generate-cityjson` コマンドを使用して、PLATEAU の CityGML ファイルを <a href="https://www.cityjson.org/" target="_blank">CityJSON</a> ファイルに変換することができます。(現在 LOD1, LOD2 をサポート)
+`plateaukit export-cityjson` コマンドを使用して、PLATEAU の CityGML ファイルを <a href="https://www.cityjson.org/" target="_blank">CityJSON</a> ファイルに変換することができます。(現在 LOD1, LOD2 をサポート)
 
 !!! note ""
     生成したCityJSONファイルは [CityJSON Ninja](https://ninja.cityjson.org/) などでプレビューできます。
 
 ```bash title="例: 建造物 (bldg) データからLOD1とLOD2相当のCityJSONを生成"
-plateaukit generate-cityjson --dataset plateau-tokyo23ku-2022 /tmp/tokyo23ku-bldg.city.json -t bldg
+plateaukit export-cityjson --dataset plateau-tokyo23ku-2022 /tmp/tokyo23ku-bldg.city.json -t bldg
 ```
 
 <div class="result" markdown>
@@ -109,5 +109,5 @@ plateaukit generate-cityjson --dataset plateau-tokyo23ku-2022 /tmp/tokyo23ku-bld
 データセットの代わりに、ファイルを直接指定して変換することも可能です。
 
 ```bash title="例: ファイルを指定"
-plateaukit generate-cityjson ./udx/bldg/53395548_bldg_6697_2_op.gml /tmp/53395548_bldg_6697_2_op.city.json
+plateaukit export-cityjson ./udx/bldg/53395548_bldg_6697_2_op.gml /tmp/53395548_bldg_6697_2_op.city.json
 ```
