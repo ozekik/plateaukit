@@ -244,6 +244,8 @@ class PLATEAUCityObjectParser(CityObjectParser):
             #         river_flooding_risk_attributes[key] = value
             # optional_attributes.update(river_flooding_risk_attributes)
 
+            # TODO: Delete column if all values are empty (elsewhere)
+
             river_flooding_risks = extractors.get_river_flooding_risks(el)
             optional_attributes.update({"river_flooding_risk": river_flooding_risks})
 

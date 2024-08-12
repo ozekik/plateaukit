@@ -65,6 +65,60 @@ def get_storeys_below_ground(xml: CityObjectXML) -> int | None:
     return value
 
 
+def get_river_flooding_risks(xml: CityObjectXML):
+    results = xml.iterfind(
+        "./uro:buildingDisasterRiskAttribute/uro:BuildingRiverFloodingRiskAttribute",
+        xml.nsmap,
+    )
+    value = {}
+    for result in results:
+        description = xml._get_codespace_attribute("./uro:description", parent=result)
+
+        # rank = xml._get_codespace_attribute("./uro:rank", parent=result)
+        # rank_org = xml._get_codespace_attribute("./uro:rankOrg", parent=result)
+
+        depth = result.find("./uro:depth", xml.nsmap)
+        depth = float(depth.text) if depth is not None else None
+
+        duration = result.find("./uro:duration", xml.nsmap)
+        duration = float(duration.text) if duration is not None else None
+
+        admin_type = xml._get_codespace_attribute("./uro:adminType", parent=result)
+
+        scale = xml._get_codespace_attribute("./uro:scale", parent=result)
+
+        value[description] = {
+            # "rank": rank,
+            # "rankOrg": rank_org,
+            "depth": depth,
+            "duration": duration,
+            "adminType": admin_type,
+            "scale": scale,
+        }
+
+    return value
+
+
+def get_river_flooding_depth(xml: CityObjectXML) -> float | None:
+    result = xml.find(
+        "./uro:buildingDisasterRiskAttribute/uro:BuildingRiverFloodingRiskAttribute/uro:depth",
+        xml.nsmap,
+    )
+    value = result.text if result is not None else None
+    value = float(value) if value is not None else None
+    return value
+
+
+def get_river_flooding_duration(xml: CityObjectXML) -> float | None:
+    result = xml.find(
+        "./uro:buildingDisasterRiskAttribute/uro:BuildingRiverFloodingRiskAttribute/uro:duration",
+        xml.nsmap,
+    )
+    value = result.text if result is not None else None
+    value = float(value) if value is not None else None
+    return value
+
+
 def get_address(xml: CityObjectXML) -> dict | None:
     el = xml.find("./bldg:address", xml.nsmap)
 
