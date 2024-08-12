@@ -4,7 +4,7 @@ import os.path
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from zipfile import is_zipfile, ZipFile
+from zipfile import ZipFile, is_zipfile
 
 from fs import open_fs
 
@@ -16,15 +16,22 @@ from .ir_models import IRDocument, IRMetadata
 
 
 class Readable:
-    def __init__(self, files, *args, reader_cls, **kwargs):
+    def __init__(self, files, *args, reader_cls, transformers=[], **kwargs):
         self.reader_cls = reader_cls
         self.reader = reader_cls()
         self.files = files
+        self.transformers = transformers
         self.args = args
         self.kwargs = kwargs
 
     def read(self):
-        return self.reader.read_files(self.files, *self.args, **self.kwargs)
+        # TODO: Refactoring
+        document = self.reader.read_files(self.files, *self.args, **self.kwargs)
+
+        for transformer in self.transformers:
+            document = transformer.transform_document(document)
+
+        return document
 
     def split(self, split_n):
         group_size = math.ceil(len(self.files) / split_n)
@@ -74,7 +81,6 @@ class CityGMLReader:
         codelist_infiles=None,
         zipfile=None,
         selection: list[str] | None = None,
-        # use_highest_lod=False,
     ):
         """Return a Readable object for the given files."""
 
@@ -102,7 +108,6 @@ class CityGMLReader:
             codelist_infiles=codelist_infiles,
             zipfile=zipfile,
             selection=selection,
-            # use_highest_lod=use_highest_lod,
         )
 
     def read_files(
@@ -115,7 +120,6 @@ class CityGMLReader:
         zipfile=None,
         target_epsg=3857,  # TODO: Fix this
         selection: list[str] | None = None,
-        # use_highest_lod=False,
     ):
         if zipfile is not None:
             zip_fs = open_fs(f"zip://{zipfile}")

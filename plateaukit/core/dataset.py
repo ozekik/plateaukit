@@ -11,6 +11,7 @@ import geopandas as gpd
 from plateaukit.exporters.cityjson.parallel_writer import ParallelWriter
 from plateaukit.exporters.cityjson.writer import CityJSONWriter
 from plateaukit.readers.citygml.reader import CityGMLReader
+from plateaukit.transformers.filter_lod import LODFilteringTransformer
 
 try:
     from pyogrio import read_dataframe
@@ -370,8 +371,8 @@ class Dataset:
         *,
         types: list[str] = ["bldg"],
         object_types=None,  # TODO: Handle this
-        lod=[1, 2],
-        use_highest_lod=True,
+        lod_mode: Literal["highest", "all", "values"] = "highest",
+        lod_values: list[str] | None = None,
         ground: bool = False,
         seq: bool = False,
         split: int = 1,
@@ -443,16 +444,20 @@ class Dataset:
 
         reader = CityGMLReader()
 
-        document = reader.scan_files(
+        readable = reader.scan_files(
             infiles,
             codelist_infiles=codelist_infiles,
             zipfile=file_path,
             selection=selection,
-            # use_highest_lod=use_highest_lod,
         )
 
-        writer = ParallelWriter(CityJSONWriter)
-        writer.transform(document, str(outfile), seq=False, split=split)
+        transformers = [LODFilteringTransformer(mode=lod_mode, values=lod_values)]
+
+        for transformer in transformers:
+            readable = transformer.transform(readable)
+
+        parallel_writer = ParallelWriter(CityJSONWriter)
+        parallel_writer.transform(readable, str(outfile), seq=False, split=split)
 
         # writer = CityJSONWriter()
         # result = writer.transform(document, seq=seq)

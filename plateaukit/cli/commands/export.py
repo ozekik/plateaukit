@@ -9,6 +9,7 @@ from plateaukit.exporters.cityjson.parallel_writer import ParallelWriter
 from plateaukit.exporters.cityjson.writer import CityJSONWriter
 from plateaukit.logger import set_log_level
 from plateaukit.readers.citygml.reader import CityGMLReader
+from plateaukit.transformers.filter_lod import LODFilteringTransformer
 
 
 @cli.command(name="export-cityjson", aliases=["generate-cityjson"])
@@ -71,13 +72,6 @@ def export_cityjson_cmd(
 
     params = {}
 
-    if lod_mode == "highest":
-        use_highest_lod = True
-    elif lod_mode == "all":
-        use_highest_lod = False
-    else:
-        use_highest_lod = False
-
     # if precision:
     #     params["precision"] = precision
 
@@ -102,7 +96,7 @@ def export_cityjson_cmd(
             types=types,
             split=split,
             seq=seq,
-            use_highest_lod=use_highest_lod,
+            lod_mode=lod_mode,
             ground=ground,
             target_epsg=target_epsg,
             **params,
@@ -110,16 +104,20 @@ def export_cityjson_cmd(
 
     else:
         reader = CityGMLReader()
-        document = reader.scan_files(
+        readable = reader.scan_files(
             infiles,
             codelist_infiles=None,
             # codelist_infiles=codelist_infiles, # TODO: Fix this
             # zipfile=file_path,  # TODO: Fix this
-            # use_highest_lod=use_highest_lod,  # TODO: Fix this
         )
 
-        writer = ParallelWriter(CityJSONWriter)
-        writer.transform(document, str(outfile), seq=seq, split=split)
+        transformers = [LODFilteringTransformer(mode=lod_mode)]
+
+        for transformer in transformers:
+            readable = transformer.transform(readable)
+
+        parallel_writer = ParallelWriter(CityJSONWriter)
+        parallel_writer.transform(readable, str(outfile), seq=seq, split=split)
 
         # NOTE: Old implementation
         # exporters.cityjson.cityjson_from_citygml(
