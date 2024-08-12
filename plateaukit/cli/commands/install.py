@@ -4,7 +4,11 @@ import click
 from prettytable import PrettyTable
 
 from plateaukit.config import Config
-from plateaukit.installer import get_dataset_filepaths, install_dataset, uninstall_dataset
+from plateaukit.installer import (
+    get_dataset_filepaths,
+    install_dataset,
+    uninstall_dataset,
+)
 from plateaukit.prebuild import prebuild
 
 
@@ -148,6 +152,14 @@ def uninstall_cmd(dataset_id, formats: list[str], keep_files):
     available_formats = ["citygml", "3dtiles", "gpkg", "parquet"]
 
     config = Config()
+
+    if dataset_id not in config.datasets:
+        click.echo(
+            click.style("ERROR: ", fg="red") + f"Dataset '{dataset_id}' not found",
+            err=True,
+        )
+        return
+
     if not formats:
         formats = []
         keys = config.datasets[dataset_id].keys()

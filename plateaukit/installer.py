@@ -123,6 +123,10 @@ def uninstall_dataset(
     """Uninstall PLATEAU datasets."""
 
     config = Config()
+
+    if dataset_id not in config.datasets:
+        raise RuntimeError(f"Dataset '{dataset_id}' not found")
+
     formats = formats or list(_get_data_items(config.datasets[dataset_id]).keys())
 
     if not keep_files:
