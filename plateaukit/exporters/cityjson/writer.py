@@ -241,6 +241,9 @@ class CityJSONWriter:
         with open(outfile, "w") as f:
             if seq:
                 for line in result:
-                    f.write(json.dumps(line, separators=(",", ":")) + "\n")
+                    f.write(
+                        json.dumps(line, separators=(",", ":"), ensure_ascii=False)
+                        + "\n"
+                    )
             else:
-                f.write(json.dumps(result, separators=(",", ":")))
+                f.write(json.dumps(result, separators=(",", ":"), ensure_ascii=False))
