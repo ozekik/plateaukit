@@ -241,12 +241,18 @@ class Area:
     def dict(self):
         return self.gdf.to_dict()
 
-    def to_geojson(self):
-        """Convert the area to GeoJSON."""
+    def to_geojson(self, file: str | None = None):
+        """Export the area in GeoJSON format."""
 
-        data = self.gdf.to_json()
+        # TODO: Support GeoJSONSeq
 
-        return data
+        data = self.gdf.to_json(ensure_ascii=False)
+
+        if file is not None:
+            with open(file, "w") as f:
+                f.write(data)
+        else:
+            return data
 
     def to_cityjson(
         self,
@@ -257,7 +263,7 @@ class Area:
         seq: bool = False,
         target_epsg: int | None = None,
     ):
-        """Convert the area to CityJSON."""
+        """Export the area in CityJSON format."""
 
         # TODO: Support IOBase as file
 
