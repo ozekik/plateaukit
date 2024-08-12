@@ -25,7 +25,7 @@ bidict = "^0.22.1"
 pyogrio = { version = "^0.7.2", markers = "sys_platform != 'emscripten'" }
 quantized-mesh-encoder = { version = "^0.4.3", optional = true }
 numpy = "^1.26.0"
-platformdirs = "^3.10.0"
+platformdirs = "^4.0.0"
 # pydeck = {extras = ["jupyter"], version = "^0.8.0"}
 rich = { extras = ["jupyter"], version = "^13.7.0" }
 pydeck = "^0.8.0"
@@ -36,7 +36,7 @@ ipydeck = "^0.4.3"
 ipywidgets = "^8.1.2"
 ipython = ">=7.34.0,<9"
 pyodide-http = { version = "^0.2.1", markers = "sys_platform == 'emscripten'" }
-pyarrow = { version = "^15.0.2", markers = "sys_platform != 'emscripten'" }
+pyarrow = { version = ">=15.0.5", markers = "sys_platform != 'emscripten'" }
 
 [tool.poetry.extras]
 all = ["pyogrio"]
