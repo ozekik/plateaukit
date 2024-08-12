@@ -88,7 +88,7 @@ class PLATEAUCityObjectParser(CityObjectParser):
 
                 geom = {
                     "type": "MultiSurface",
-                    "lod": 0,
+                    "lod": "0",
                     "boundaries": chunked_poslists,
                     "semantics": {
                         "surfaces": [
@@ -106,7 +106,7 @@ class PLATEAUCityObjectParser(CityObjectParser):
 
                 geom = {
                     "type": "MultiSurface",
-                    "lod": 1,
+                    "lod": "1",
                     "boundaries": chunked_poslists,
                     "semantics": {
                         "surfaces": [
@@ -126,7 +126,7 @@ class PLATEAUCityObjectParser(CityObjectParser):
 
                 geom = {
                     "type": "Solid",
-                    "lod": 1,
+                    "lod": "1",
                     "boundaries": solid_boundaries,
                     "semantics": {
                         "surfaces": [
@@ -144,7 +144,7 @@ class PLATEAUCityObjectParser(CityObjectParser):
 
                 geom = {
                     "type": "MultiSurface",
-                    "lod": 2,
+                    "lod": "2",
                     "boundaries": chunked_poslists,
                     "semantics": {
                         "surfaces": [
@@ -193,7 +193,7 @@ class PLATEAUCityObjectParser(CityObjectParser):
 
                         geom = {
                             "type": "MultiSurface",
-                            "lod": 2,
+                            "lod": "2",
                             "boundaries": chunked_poslists,
                             "semantics": {
                                 "surfaces": [
