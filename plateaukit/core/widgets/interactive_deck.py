@@ -1,4 +1,5 @@
 import json
+import re
 from io import StringIO
 
 import geopandas as gpd
@@ -101,6 +102,14 @@ class InteractiveDeck:
 
         if "fill_color" in feature["properties"]:
             del feature["properties"]["fill_color"]
+
+        pyogrio_invalid_chars_regex = re.compile(r"[;]")
+
+        for key, value in feature["properties"].items():
+            if isinstance(value, str) and pyogrio_invalid_chars_regex.search(value):
+                feature["properties"][key] = feature["properties"][key].replace(
+                    ";", ","
+                )
 
         # NOTE: https://github.com/heremaps/xyz-spaces-python/pull/115
         buf = json.dumps(feature)
