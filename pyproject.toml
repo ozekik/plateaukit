@@ -37,11 +37,14 @@ ipywidgets = "^8.1.2"
 ipython = ">=7.34.0,<9"
 pyodide-http = { version = "^0.2.1", markers = "sys_platform == 'emscripten'" }
 pyarrow = { version = ">=15.0.5", markers = "sys_platform != 'emscripten'" }
+langchain = { version = "~0.2.12", optional = true }
+langchain_experimental = { version = "~0.0.64", optional = true }
 
 [tool.poetry.extras]
 all = ["pyogrio"]
 quantized_mesh = ["quantized-mesh-encoder"]
 citygml = ["pyogrio"]
+llm = ["langchain", "langchain_experimental"]
 
 [tool.poetry.scripts]
 plateaukit = "plateaukit.cli:cli"
