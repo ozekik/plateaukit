@@ -10,6 +10,7 @@ from plateaukit.exporters.cityjson.writer import CityJSONWriter
 from plateaukit.logger import set_log_level
 from plateaukit.readers.citygml.reader import CityGMLReader
 from plateaukit.transformers.filter_lod import LODFilteringTransformer
+from plateaukit.transformers.reprojection import ReprojectionTransformer
 
 
 @cli.command(name="export-cityjson", aliases=["generate-cityjson"])
@@ -111,7 +112,15 @@ def export_cityjson_cmd(
             # zipfile=file_path,  # TODO: Fix this
         )
 
-        transformers = [LODFilteringTransformer(mode=lod_mode)]
+        # transformers = [LODFilteringTransformer(mode=lod_mode)]
+
+        # TODO: Fix typing
+        transformers: list = [
+            LODFilteringTransformer(mode=lod_mode),
+        ]
+
+        if target_epsg:
+            transformers.append(ReprojectionTransformer(target_epsg=target_epsg))
 
         for transformer in transformers:
             readable = transformer.transform(readable)
