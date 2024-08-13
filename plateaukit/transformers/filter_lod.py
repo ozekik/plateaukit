@@ -1,3 +1,4 @@
+import warnings
 from typing import Literal
 
 from plateaukit.readers.citygml.ir_models import IRDocument
@@ -30,6 +31,11 @@ class LODFilteringTransformer(GeometryTransformer):
             return document
 
         for city_object in document.city_objects:
+            # TODO: Refactor this
+            if not city_object.geometry:
+                warnings.warn(f"CityObject {city_object.id} has no geometry.")
+                continue
+
             if self.mode == "highest":
                 max_lod_value = max(map(lambda x: x.lod, city_object.geometry))
                 city_object.geometry = [
