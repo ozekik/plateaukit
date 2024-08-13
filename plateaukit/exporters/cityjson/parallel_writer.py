@@ -15,9 +15,8 @@ class ParallelWriter:
         self,
         readable,
         outfile: str,
-        *,
-        seq=False,
         split=2,
+        **kwargs,
     ):
         batches = readable.split(split)
 
@@ -54,8 +53,7 @@ class ParallelWriter:
                             writer.write_to,
                             batch,
                             batch_outfile,
-                            seq=seq,
-                            # **kwargs,
+                            **kwargs,
                         )
 
                         futures.append(future)

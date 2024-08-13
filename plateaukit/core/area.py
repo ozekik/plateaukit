@@ -311,6 +311,7 @@ class Area:
                     ground=ground,
                     selection=selection,
                     target_epsg=target_epsg,
+                    seq=seq,
                 )
 
     def set_llm(self, llm):
