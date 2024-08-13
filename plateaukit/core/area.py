@@ -262,7 +262,7 @@ class Area:
         types: list[str] | None = None,
         ground: bool = False,
         seq: bool = False,
-        target_epsg: int | None = None,
+        target_epsg: int = 4326,
     ):
         """Export the area in CityJSON format."""
 
