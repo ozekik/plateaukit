@@ -3,13 +3,13 @@ from bidict import bidict
 
 class VerticesMap:
     counter: int
-    index_by_vertex: bidict
+    index_by_vertex: bidict[tuple[float, float, float], int]
 
     def __init__(self):
         self.counter = 0
         self.index_by_vertex = bidict()
 
-    def to_index(self, vertex):
+    def to_index(self, vertex: tuple[float, float, float]):
         if vertex not in self.index_by_vertex:
             self.index_by_vertex[vertex] = self.counter
             self.counter += 1

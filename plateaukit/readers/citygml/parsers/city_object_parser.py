@@ -3,15 +3,15 @@ from dataclasses import dataclass
 import pyproj
 from lxml import etree
 
-from plateaukit.readers.citygml import CityObject
 from plateaukit.readers.citygml.constants import default_nsmap
 from plateaukit.readers.citygml.extractors import city_object_extractors as extractors
+from plateaukit.readers.citygml.ir_models import IRCityObject, IRGeometry
 from plateaukit.readers.citygml.parsers.geometry_parser import GeometryParser
 from plateaukit.readers.citygml.parsers.xml_models.city_object import CityObjectXML
 
 
 @dataclass
-class Building(CityObject):
+class Building(IRCityObject):
     address: dict | None = None
 
 
@@ -86,11 +86,11 @@ class PLATEAUCityObjectParser(CityObjectParser):
             if type in ["lod0RoofEdge", "lod0FootPrint"]:
                 chunked_poslists = parser.extract_chunked_poslists(el)
 
-                geom = {
-                    "type": "MultiSurface",
-                    "lod": "0",
-                    "boundaries": chunked_poslists,
-                    "semantics": {
+                geom = IRGeometry(
+                    type="MultiSurface",
+                    lod="0",
+                    boundaries=chunked_poslists,
+                    semantics={
                         "surfaces": [
                             {
                                 "type": f"+{type}",
@@ -98,17 +98,17 @@ class PLATEAUCityObjectParser(CityObjectParser):
                         ],
                         "values": [0 for _ in range(len(chunked_poslists))],
                     },
-                }
+                )
 
                 geoms.append(geom)
             elif type in ["lod1MultiSurface"]:
                 chunked_poslists = parser.extract_chunked_poslists(el)
 
-                geom = {
-                    "type": "MultiSurface",
-                    "lod": "1",
-                    "boundaries": chunked_poslists,
-                    "semantics": {
+                geom = IRGeometry(
+                    type="MultiSurface",
+                    lod="1",
+                    boundaries=chunked_poslists,
+                    semantics={
                         "surfaces": [
                             {
                                 "type": f"+{type}",
@@ -116,7 +116,7 @@ class PLATEAUCityObjectParser(CityObjectParser):
                         ],
                         "values": [0 for _ in range(len(chunked_poslists))],
                     },
-                }
+                )
 
                 geoms.append(geom)
             elif type in ["lod1Solid"]:
@@ -124,11 +124,11 @@ class PLATEAUCityObjectParser(CityObjectParser):
                 chunked_poslists = parser.extract_chunked_poslists(el)
                 solid_boundaries = [chunked_poslists]
 
-                geom = {
-                    "type": "Solid",
-                    "lod": "1",
-                    "boundaries": solid_boundaries,
-                    "semantics": {
+                geom = IRGeometry(
+                    type="Solid",
+                    lod="1",
+                    boundaries=solid_boundaries,
+                    semantics={
                         "surfaces": [
                             {
                                 "type": f"+{type}",
@@ -136,17 +136,17 @@ class PLATEAUCityObjectParser(CityObjectParser):
                         ],
                         "values": [0 for _ in range(len(solid_boundaries))],
                     },
-                }
+                )
 
                 geoms.append(geom)
             elif type in ["lod2MultiSurface"]:
                 chunked_poslists = parser.extract_chunked_poslists(el)
 
-                geom = {
-                    "type": "MultiSurface",
-                    "lod": "2",
-                    "boundaries": chunked_poslists,
-                    "semantics": {
+                geom = IRGeometry(
+                    type="MultiSurface",
+                    lod="2",
+                    boundaries=chunked_poslists,
+                    semantics={
                         "surfaces": [
                             {
                                 "type": f"+{type}",
@@ -154,7 +154,7 @@ class PLATEAUCityObjectParser(CityObjectParser):
                         ],
                         "values": [0 for _ in range(len(chunked_poslists))],
                     },
-                }
+                )
 
                 geoms.append(geom)
 
@@ -191,11 +191,11 @@ class PLATEAUCityObjectParser(CityObjectParser):
                     if type in ["lod2MultiSurface"]:
                         chunked_poslists = parser.extract_chunked_poslists(el)
 
-                        geom = {
-                            "type": "MultiSurface",
-                            "lod": "2",
-                            "boundaries": chunked_poslists,
-                            "semantics": {
+                        geom = IRGeometry(
+                            type="MultiSurface",
+                            lod="2",
+                            boundaries=chunked_poslists,
+                            semantics={
                                 "surfaces": [
                                     {
                                         "type": f"+{type}",
@@ -203,7 +203,7 @@ class PLATEAUCityObjectParser(CityObjectParser):
                                 ],
                                 "values": [0 for _ in range(len(chunked_poslists))],
                             },
-                        }
+                        )
 
                         geoms.append(geom)
 
@@ -258,7 +258,7 @@ class PLATEAUCityObjectParser(CityObjectParser):
 
         return attributes
 
-    def parse(self, element: etree._Element) -> CityObject:
+    def parse(self, element: etree._Element) -> IRCityObject:
         el = CityObjectXML(element, nsmap=self.nsmap, codelist_map=self.codelist_map)
 
         citygml_id = el.get_gml_id()
@@ -281,7 +281,7 @@ class PLATEAUCityObjectParser(CityObjectParser):
         elif el.tree.tag == self.object_type_tags["Road"]:
             geometry = self._get_geometry(el.tree)
 
-            obj = CityObject(
+            obj = IRCityObject(
                 type="Road",
                 id=citygml_id,
                 attributes=attributes,
@@ -290,7 +290,7 @@ class PLATEAUCityObjectParser(CityObjectParser):
         elif el.tree.tag == self.object_type_tags["Bridge"]:
             geometry = self._get_geometry(el.tree)
 
-            obj = CityObject(
+            obj = IRCityObject(
                 type="Bridge",
                 id=citygml_id,
                 attributes=attributes,

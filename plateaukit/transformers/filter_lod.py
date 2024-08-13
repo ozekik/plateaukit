@@ -14,6 +14,10 @@ class LODFilteringTransformer(GeometryTransformer):
         values: list[str] | None = None,
     ):
         self.mode = mode
+
+        if mode == "values" and values is None:
+            raise ValueError("Values must be provided in 'values' mode.")
+
         self.values = values
 
     def transform(self, readable: Readable):
@@ -27,15 +31,16 @@ class LODFilteringTransformer(GeometryTransformer):
 
         for city_object in document.city_objects:
             if self.mode == "highest":
-                max_lod_value = max(map(lambda x: x["lod"], city_object.geometry))
+                max_lod_value = max(map(lambda x: x.lod, city_object.geometry))
                 city_object.geometry = [
-                    geom
-                    for geom in city_object.geometry
-                    if geom["lod"] == max_lod_value
+                    geom for geom in city_object.geometry if geom.lod == max_lod_value
                 ]
             elif self.mode == "values":
+                if self.values is None:
+                    raise ValueError("Values must be provided in 'values' mode.")
+
                 city_object.geometry = [
-                    geom for geom in city_object.geometry if geom["lod"] in self.values
+                    geom for geom in city_object.geometry if geom.lod in self.values
                 ]
             else:
                 raise ValueError(f"Invalid mode: {self.mode}")
