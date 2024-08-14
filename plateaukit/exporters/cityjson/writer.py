@@ -2,6 +2,7 @@ from typing import Any
 
 from plateaukit.exporters.cityjson.vertices_map import VerticesMap
 from plateaukit.readers.citygml.ir_models import IRDocument, IRGeometry, IRMetadata
+from plateaukit.utils import dict_key_to_camel_case
 
 # @dataclass
 # class IndexedGeometry:
@@ -153,12 +154,17 @@ class CityJSONWriter:
                         )
                         indexed_geometries.append(indexed_geometry)
 
+                if obj.attributes is not None:
+                    attributes = dict_key_to_camel_case(obj.attributes)
+                else:
+                    attributes = {}
+
                 result = {
                     "type": "CityJSONFeature",
                     "CityObjects": {
                         obj.id: {
                             "type": obj.type,
-                            "attributes": obj.attributes,
+                            "attributes": attributes,
                             "geometry": [
                                 {
                                     "type": indexed_geometry.type,
