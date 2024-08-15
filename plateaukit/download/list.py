@@ -1175,7 +1175,7 @@ base_city_list = [
     },
     {
         "dataset_id": "plateau-tokyo23ku",
-        "city_name": "東京都東京都23区",
+        "city_name": "東京都23区",
         "homepage": "https://www.geospatial.jp/ckan/dataset/plateau-tokyo23ku",
         "citygml": "e9d2373d-0fd4-4efe-866a-52036b38eaa9",
         "spec": "2",
@@ -1183,7 +1183,7 @@ base_city_list = [
     },
     {
         "dataset_id": "plateau-tokyo23ku",
-        "city_name": "東京都東京都23区",
+        "city_name": "東京都23区",
         "homepage": "https://www.geospatial.jp/ckan/dataset/plateau-tokyo23ku",
         "citygml": "0bab2b7f-6962-41c8-872f-66ad9b40dcb1",
         "spec": "1",
@@ -1191,7 +1191,7 @@ base_city_list = [
     },
     {
         "dataset_id": "plateau-tokyo23ku-2022",
-        "city_name": "東京都東京都23区",
+        "city_name": "東京都23区",
         "homepage": "https://www.geospatial.jp/ckan/dataset/plateau-tokyo23ku-2022",
         "citygml": "55c72dd0-32eb-4107-9526-71fc0af8d50f",
         "spec": "2",
