@@ -7,6 +7,7 @@ import pydeck
 from plateaukit.core.area._export import to_cityjson, to_geojson
 from plateaukit.core.area._llm import chat, set_llm
 from plateaukit.core.layer import BaseLayer, GeoDataFrameLayer
+from plateaukit.core.widgets.cityview_widget import CityViewWidget
 from plateaukit.core.widgets.interactive_deck import InteractiveDeck
 
 
@@ -223,16 +224,26 @@ class Area:
         else:
             return deck.widget
 
+    def _show_cityview(self, *, mode: Literal["virtual", "map"] = "virtual", **kwargs):
+        widget = CityViewWidget(self, mode=mode, **kwargs)
+
+        # self.selection = deck.selection
+
+        return widget.widget
+
     def show(
         self,
-        renderer: Literal["pydeck", "ipydeck"] = "ipydeck",
+        renderer: Literal["pydeck", "ipydeck", "cityview"] = "ipydeck",
         # interactive: bool = True,
         embed: bool = True,
+        **kwargs,
     ):
         if renderer == "pydeck":
             return self._show_pydeck()
         elif renderer == "ipydeck":
             return self._show_ipydeck()
+        elif renderer == "cityview":
+            return self._show_cityview(**kwargs)
         else:
             raise ValueError(f"Unknown renderer: {renderer}")
 
