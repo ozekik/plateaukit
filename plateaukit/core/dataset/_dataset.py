@@ -232,6 +232,7 @@ class Dataset:
         split: int = 1,
         selection: list[str] | None = None,
         target_epsg: int | None = None,
+        progress_messages: dict | None = None,
         **kwargs,
     ):
         """Export CityJSON from PLATEAU datasets.
@@ -256,6 +257,7 @@ class Dataset:
             split=split,
             selection=selection,
             target_epsg=target_epsg,
+            progress_messages=progress_messages,
             **kwargs,
         )
 

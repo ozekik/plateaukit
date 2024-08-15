@@ -26,6 +26,7 @@ def to_cityjson(
     split: int = 1,
     selection: list[str] | None = None,
     target_epsg: int | None = None,
+    progress_messages: dict | None = None,
     **kwargs,
 ):
     """Export CityJSON from PLATEAU datasets.
@@ -111,7 +112,13 @@ def to_cityjson(
         readable = transformer.transform(readable)
 
     parallel_writer = ParallelWriter(CityJSONWriter)
-    parallel_writer.transform(readable, str(outfile), seq=seq, split=split)
+    parallel_writer.transform(
+        readable,
+        str(outfile),
+        seq=seq,
+        split=split,
+        progress_messages=progress_messages,
+    )
 
     # generators.cityjson.cityjson_from_citygml(
     #     infiles,

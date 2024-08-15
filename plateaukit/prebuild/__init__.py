@@ -11,8 +11,9 @@ from plateaukit.config import Config
 from plateaukit.core.dataset import load_dataset
 from plateaukit.logger import logger
 
+from ._cityobjectsdb import _prebuild_cityobjects_db
+
 _supported_types = ["bldg", "brid", "tran"]
-# _supported_types = ["bldg", "tran"]
 
 
 def prebuild(
@@ -22,6 +23,7 @@ def prebuild(
     simple_output=False,
     format: Literal["gpkg", "parquet"] = "parquet",
     types=["bldg"],
+    prebuild_cityobjects: bool = True,
 ) -> None:
     """Prebuild a PLATEAU dataset for PlateauKit."""
 
@@ -69,6 +71,19 @@ def prebuild(
             display_name = "GeoPackage files"
         else:
             raise ValueError(f"Invalid format: {format}")
+
+        if prebuild_cityobjects:
+            dest_path = str(Path(config.data_dir, f"{dataset_id}.cityobjects.parquet"))
+
+            _prebuild_cityobjects_db(
+                dataset_id,
+                dest_path,
+                types=types,
+                tmpdir=tdir,
+                split=split,
+            )
+
+            config.datasets[dataset_id]["cityobjects"] = dest_path
 
         with console.status(f"Writing {display_name}...") as status:
             if format == "gpkg":

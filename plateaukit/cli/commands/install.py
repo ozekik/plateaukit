@@ -149,7 +149,7 @@ def uninstall_cmd(dataset_id, formats: list[str], keep_files):
     if not dataset_id:
         raise Exception("Missing argument")
 
-    available_formats = ["citygml", "3dtiles", "gpkg", "parquet"]
+    available_formats = ["citygml", "3dtiles", "gpkg", "parquet", "cityobjects"]
 
     config = Config()
 

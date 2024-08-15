@@ -15,16 +15,19 @@ class ParallelWriter:
         self,
         readable,
         outfile: str,
+        *,
         split=2,
+        progress_messages: dict | None = None,
         **kwargs,
     ):
+        progress_messages = progress_messages or {}
+
         batches = readable.split(split)
 
-        progress_state = {}
         writer = self.writer
 
         with Progress() as rprogress:
-            overall_progress_description = progress_state.get(
+            overall_progress_description = progress_messages.get(
                 "description", "Processing..."
             )
             overall_task_id = rprogress.add_task(overall_progress_description)
