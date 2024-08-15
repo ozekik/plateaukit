@@ -21,7 +21,7 @@
     - Java製の外部ライブラリ (citygml4j, citygml-tools) 非依存
     - 並列処理に対応 (変換速度の向上)
     - 圧縮ファイルのまま変換可能 (省容量)
-- [x] JupyterLab / Jupyer Notebookでの3D都市モデル表示 (LOD1)
+- [x] JupyterLab / Jupyer Notebookでの3D都市モデル表示 (LOD1/2)
 
 <div><video controls src="https://github.com/ozekik/plateaukit/assets/32771324/ea02df34-82f9-462a-b2e7-3f71dd3201ea" muted="false"></video></div>
 
@@ -37,11 +37,11 @@ pip install plateaukit
 - [x] 最小限のテストの整備
 - [x] [ipydeck](https://github.com/ozekik/ipydeck)対応
 - [x] JupyterLiteサポート
-- [ ] LOD2サポート (WIP)
+- [x] LOD2サポート
+- [ ] 標高データのサポート・可視化
 - [ ] 軽量版データセットの提供
-- [ ] 標高データの可視化
 - [ ] テストの拡充
-- [ ] CityJSON変換の高速化
+- [ ] 変換の高速化
 
 ## その他のツール・ライブラリ Alternatives
 
