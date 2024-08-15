@@ -25,4 +25,4 @@ pip install -U plateaukit
 
 **次のステップ:**
 
-- PLATEAUデータを追加する: [PLATEAUデータの追加と削除](cli/setup.md)
+- PLATEAUの都市モデルを追加する: [都市モデルを追加する・削除する](cli/setup.md)

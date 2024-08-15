@@ -1,14 +1,14 @@
-# PLATEAUデータの変換 (CLI)
+# PLATEAU都市モデルの変換 (CLI)
 
 ## GeoJSON形式でエクスポート
 
 `plateaukit export-geojson` コマンドを使用して、PLATEAU の CityGML ファイルを <a href="https://gis-oer.github.io/gitbook/book/materials/web_gis/GeoJSON/GeoJSON.html" target="_blank">GeoJSON</a> ファイルに変換することができます。
 
 !!! note ""
-    生成したGeoJSONファイルは [geojson.io](https://geojson.io/) などでプレビューできます。
+    生成したGeoJSONファイルは [geojson.io](https://geojson.io/) や[地理院地図 (電子国土Web)](https://maps.gsi.go.jp/) などにドラッグ&ドロップしてプレビューできます。
 
 ```bash title="例: 建造物 (bldg) データからLOD0/1相当のGeoJSONを生成"
-plateaukit export-geojson --dataset plateau-tokyo23ku-2022 -t bldg /tmp/tokyo23ku-bldg.json
+plateaukit export-geojson --dataset plateau-13101-chiyoda-ku-2023 -t bldg /tmp/chiyoda-ku_bldg.json
 ```
 
 <div class="result" markdown>
@@ -61,7 +61,7 @@ plateaukit export-geojson --dataset plateau-tokyo23ku-2022 -t bldg /tmp/tokyo23k
     生成したCityJSONファイルは [CityJSON Ninja](https://ninja.cityjson.org/) などでプレビューできます。
 
 ```bash title="例: 建造物 (bldg) データからLOD1とLOD2相当のCityJSONを生成"
-plateaukit export-cityjson --dataset plateau-tokyo23ku-2022 /tmp/tokyo23ku-bldg.city.json -t bldg
+plateaukit export-cityjson --dataset plateau-13101-chiyoda-ku-2023 /tmp/chiyoda-ku_bldg.city.json -t bldg
 ```
 
 <div class="result" markdown>
