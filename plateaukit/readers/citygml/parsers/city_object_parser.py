@@ -234,6 +234,7 @@ class PLATEAUCityObjectParser(CityObjectParser):
                 "storeys_below_ground": extractors.get_storeys_below_ground(el),
                 "name": extractors.get_name(el),
                 "usage": extractors.get_usage(el),
+                "district_plan": extractors.get_district_plan(el),
             }
 
             # river_flooding_risks = extractors.get_river_flooding_risks(el)
@@ -248,6 +249,11 @@ class PLATEAUCityObjectParser(CityObjectParser):
 
             river_flooding_risks = extractors.get_river_flooding_risks(el)
             optional_attributes.update({"river_flooding_risk": river_flooding_risks})
+
+            districts_and_zones_type = extractors.get_districts_and_zones_type(el)
+            optional_attributes.update(
+                {"districts_and_zones_type": districts_and_zones_type}
+            )
 
             optional_attributes = {
                 k: v for k, v in optional_attributes.items() if v is not None
