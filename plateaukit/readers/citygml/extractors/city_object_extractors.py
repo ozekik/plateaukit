@@ -101,7 +101,7 @@ def get_river_flooding_risks(xml: CityObjectXML):
             "scale": scale,
         }
 
-    return value
+    return value if value else None
 
 
 def get_river_flooding_depth(xml: CityObjectXML) -> float | None:
