@@ -32,28 +32,32 @@ class CityViewWidget:
         self.cityview.layers = layers
         self.cityview.update()
 
-        # Set selection area
-        empty_gdf = gpd.GeoDataFrame()
+        self.widget = self.cityview
 
-        # TODO: Fix this; related to circular import
-        layer = core.area.GeoDataFrameLayer(empty_gdf)
+        # TODO: Fix code below; somehow not working in Google Colab
 
-        # TODO: Fix this; related to circular import
-        self.selection = core.area.Area(layer, base_layer_name="bldg")
+        # # Set selection area
+        # empty_gdf = gpd.GeoDataFrame()
 
-        self._widget_df = area.gdf.copy()
+        # # TODO: Fix this; related to circular import
+        # layer = core.area.GeoDataFrameLayer(empty_gdf)
 
-        self.out = widgets.Output()
+        # # TODO: Fix this; related to circular import
+        # self.selection = core.area.Area(layer, base_layer_name="bldg")
 
-        def display_df():
-            with self.out:
-                display(self._widget_df, clear=True)
+        # self._widget_df = area.gdf.copy()
 
-            return self.out
+        # self.out = widgets.Output()
 
-        # self.cityview.observe(self.click_handler, names="click")
+        # def display_df():
+        #     with self.out:
+        #         display(self._widget_df, clear=True)
 
-        self.widget = widgets.VBox([self.cityview, self.out])
+        #     return self.out
+
+        # # self.cityview.observe(self.click_handler, names="click")
+
+        # self.widget = widgets.VBox([self.cityview, self.out])
 
     def click_handler(self, change):
         pass
