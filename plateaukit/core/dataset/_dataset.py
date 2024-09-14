@@ -192,12 +192,21 @@ class Dataset:
         self,
         outfile: str | PathLike,
         *,
-        types: list[str] = ["bldg"],
         altitude: bool = True,
-        include_type: bool = False,
-        seq=False,
+        types: list[str] = ["bldg"],
+        object_types=None,  # TODO: Handle this
+        include_object_type: bool = True,
+        ground: bool = False,
+        seq: bool = False,
         split: int = 1,
-        **kwargs,
+        selection: list[str] | None = None,
+        target_epsg: int | None = None,
+        progress_messages: dict | None = None,
+        # types: list[str] = ["bldg"],
+        # altitude: bool = True,
+        # include_type: bool = False,
+        # seq=False,
+        # split: int = 1,
     ):
         """Export GeoJSON from PLATEAU datasets.
 
@@ -211,12 +220,20 @@ class Dataset:
         return to_geojson(
             self,
             outfile,
-            types=types,
             altitude=altitude,
-            include_type=include_type,
+            types=types,
+            object_types=object_types,
+            include_object_type=include_object_type,
+            ground=ground,
             seq=seq,
             split=split,
-            **kwargs,
+            selection=selection,
+            target_epsg=target_epsg,
+            progress_messages=progress_messages,
+            # altitude=altitude,
+            # include_type=include_type,
+            # seq=seq,
+            # split=split,
         )
 
     def to_cityjson(

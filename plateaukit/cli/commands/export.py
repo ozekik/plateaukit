@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import click
 
-from plateaukit import exporters
 from plateaukit.cli.base import cli
 from plateaukit.core.dataset import load_dataset
-from plateaukit.exporters.cityjson.parallel_writer import ParallelWriter
 from plateaukit.exporters.cityjson.writer import CityJSONWriter
+from plateaukit.exporters.geojson2.writer import GeoJSONWriter
+from plateaukit.exporters.parallel_writer import ParallelWriter
 from plateaukit.logger import set_log_level
 from plateaukit.readers.citygml.reader import CityGMLReader
 from plateaukit.transformers.filter_lod import LODFilteringTransformer
@@ -141,26 +141,6 @@ def export_cityjson_cmd(
         # )
 
 
-def _export_geojson(
-    infiles, outfile, dataset_id: str, types: list[str], seq: bool, split: int, **kwargs
-):
-    """Export GeoJSON from PLATEAU datasets."""
-
-    if not infiles and not dataset_id:
-        raise click.UsageError("Missing argument: infiles or dataset")
-
-    if infiles and dataset_id:
-        raise click.UsageError("Too many arguments")
-
-    if dataset_id:
-        dataset = load_dataset(dataset_id)
-        dataset.to_geojson(outfile, types=types, seq=seq, split=split, **kwargs)
-    else:
-        exporters.geojson.geojson_from_citygml(
-            infiles, outfile, types=types, seq=seq, split=split, **kwargs
-        )
-
-
 # @click.command("generate-geojson")
 @cli.command(name="export-geojson", aliases=["generate-geojson"])
 @click.argument("infiles", nargs=-1)
@@ -179,6 +159,10 @@ def _export_geojson(
 )
 @click.option("--seq", is_flag=True, default=False, help="Export GeoJSONSeq")
 @click.option("--split", default=1)
+@click.option("--altitude", is_flag=True, default=True, help="Include altitude")
+@click.option(
+    "--target-epsg", default=None, help="EPSG code for the output GeoJSON file"
+)
 @click.option("-v", "verbose", count=True, default=0, help="Verbose")
 def export_geojson_cmd(
     infiles,
@@ -187,6 +171,8 @@ def export_geojson_cmd(
     types: list[str],
     seq: bool,
     split: int,
+    altitude: bool,
+    target_epsg: int,
     verbose: int,
 ):
     """Export GeoJSON from PLATEAU datasets.
@@ -197,7 +183,51 @@ def export_geojson_cmd(
     if verbose >= 2:
         set_log_level("DEBUG")
 
-    _export_geojson(infiles, outfile, dataset_id, types=types, seq=seq, split=split)
+    # _export_geojson(infiles, outfile, dataset_id, types=types, seq=seq, split=split)
+
+    if not infiles and not dataset_id:
+        raise click.UsageError("Missing argument: infiles or dataset")
+
+    if infiles and dataset_id:
+        raise click.UsageError("Too many arguments")
+
+    if dataset_id:
+        dataset = load_dataset(dataset_id)
+        dataset.to_geojson(
+            outfile,
+            altitude=altitude,
+            target_epsg=target_epsg,
+            types=types,
+            seq=seq,
+            split=split,
+        )
+    else:
+        reader = CityGMLReader()
+        readable = reader.scan_files(
+            infiles,
+            codelist_infiles=None,
+            # codelist_infiles=codelist_infiles, # TODO: Fix this
+            # zipfile=file_path,  # TODO: Fix this
+        )
+
+        # TODO: Fix typing
+        transformers: list = []
+
+        if target_epsg:
+            transformers.append(ReprojectionTransformer(target_epsg=target_epsg))
+
+        for transformer in transformers:
+            readable = transformer.transform(readable)
+
+        parallel_writer = ParallelWriter(GeoJSONWriter)
+        parallel_writer.transform(
+            readable, str(outfile), seq=seq, split=split, altitude=altitude
+        )
+
+        # NOTE: Old implementation
+        # exporters.geojson.geojson_from_citygml(
+        #     infiles, outfile, types=types, seq=seq, split=split, **kwargs
+        # )
 
 
 @click.command("export-qmesh")

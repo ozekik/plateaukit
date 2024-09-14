@@ -58,11 +58,13 @@ def prebuild(
                 outfile_geojsonl,
                 types=[type],
                 altitude=False,  # TODO: Check this
-                include_type=True,
+                include_object_type=True,
                 seq=True,
                 split=split,
-                progress={"description": f"Generating GeoJSONSeq files: {type}"},
-                simple_output=simple_output,
+                progress_messages={
+                    "description": f"Generating GeoJSONSeq files: {type}"
+                },
+                # simple_output=simple_output,
             )
 
         if format == "parquet":

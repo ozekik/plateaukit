@@ -5,8 +5,8 @@ from pathlib import Path, PurePosixPath
 from typing import Literal
 
 from plateaukit.config import Config
-from plateaukit.exporters.cityjson.parallel_writer import ParallelWriter
 from plateaukit.exporters.cityjson.writer import CityJSONWriter
+from plateaukit.exporters.parallel_writer import ParallelWriter
 from plateaukit.logger import logger
 from plateaukit.readers.citygml.reader import CityGMLReader
 from plateaukit.transformers.filter_lod import LODFilteringTransformer
