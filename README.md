@@ -14,6 +14,16 @@
 - **ドキュメント Documentation:** <https://ozekik.github.io/plateaukit/>
 - **ブラウザで試す (試験版) Try in Your Browser (Experimental):** <https://ozekik.github.io/plateaukit/jupyterlite/notebooks/?path=demo.ipynb>
 
+## 目次 Table of Contents
+
+- [機能 Features](#機能-features)
+- [インストール Installation](#インストール-installation)
+- [活用事例 Use Cases](#活用事例-use-cases)
+- [ロードマップ Roadmap](#ロードマップ-roadmap)
+- [その他のツール・ライブラリ Alternatives](#その他のツールライブラリ-alternatives)
+- [クレジット Credits](#クレジット-credits)
+- [ライセンス License](#ライセンス-license)
+
 ## 機能 Features
 
 - [x] PLATEAUデータセットのインストール・管理
@@ -28,8 +38,18 @@
 ## インストール Installation
 
 ```sh
-pip install plateaukit
+pip install 'plateaukit[all]'
 ```
+
+- 詳細は[PlateauKitのインストール](https://ozekik.github.io/plateaukit/install/)を参照
+
+## 活用事例 Use Cases
+
+PlateauKit + PlateauLab を開発の一部でお使いいただいている事例を紹介しています。
+事例の追加・修正は[Issues](https://github.com/ozekik/plateaukit/issues)または[Pull Requests](https://github.com/ozekik/plateaukit/pulls)からお知らせください。
+
+- **[AIまちづくりファシリテーター](https://protopedia.net/prototype/6072) (チーム シャキシャキ)** 🏆**グランプリ**, PLATEAU Hack Challenge 2024 in Tokyo
+- **[PLATEAUを利用した名古屋市の犯罪マップと類似領域検索](https://www.mlit-data.jp/#/ShowcaseDetail?id=Showcase18) (向 直人氏)** 🏆**国土交通データプラットフォーム特別賞**, アーバンデータチャレンジ2023 with 土木学会インフラデータチャレンジ2023
 
 ## ロードマップ Roadmap
 

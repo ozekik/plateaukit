@@ -26,9 +26,17 @@ PlateauKit は <a href="https://www.mlit.go.jp/plateau/" target="_blank">国土�
 ## インストール Installation
 
 ```bash
-pip install plateaukit
+pip install 'plateaukit[all]'
 ```
 
 - [PlateauKitのインストール](install.md)を参照
+
+## 活用事例 Use Cases
+
+PlateauKit + PlateauLab を開発の一部でお使いいただいている事例を紹介しています。
+事例の追加・修正は[Issues](https://github.com/ozekik/plateaukit/issues)または[Pull Requests](https://github.com/ozekik/plateaukit/pulls)からお知らせください。
+
+- **[AIまちづくりファシリテーター](https://protopedia.net/prototype/6072) (チーム シャキシャキ)** 🏆**グランプリ**, PLATEAU Hack Challenge 2024 in Tokyo
+- **[PLATEAUを利用した名古屋市の犯罪マップと類似領域検索](https://www.mlit-data.jp/#/ShowcaseDetail?id=Showcase18) (向 直人氏)** 🏆**国土交通データプラットフォーム特別賞**, アーバンデータチャレンジ2023 with 土木学会インフラデータチャレンジ2023
 
 <div style="margin-bottom:10rem"></div>
