@@ -6,7 +6,7 @@
 PlateauKit は <a href="https://www.mlit.go.jp/plateau/" target="_blank">国土交通省 Project PLATEAU</a> の3D都市モデルを扱うための変換ツールおよび Python ライブラリです。<br />
 [JupyterLab / Jupyter Notebook](https://jupyter.org/)上で3D都市モデルを扱うための [PlateauLab](lab/index.md) ライブラリも同梱しています。
 
-- [ブラウザで試す (試験版)](/plateaukit/jupyterlite/notebooks/?path=demo.ipynb)
+<!-- - [ブラウザで試す (試験版)](/plateaukit/jupyterlite/notebooks/?path=demo.ipynb) -->
 
 <!-- <figure markdown="span">
   ![landing image](./assets/landing.png){ width="320" }

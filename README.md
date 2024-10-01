@@ -12,7 +12,7 @@
 **PlateauLab** は、<a href="https://jupyter.org" target="_blank">JupyterLab / Jupyter Notebook</a>上でPLATEAU都市モデルを扱うコーディング環境を実現するためのPythonライブラリです。 現在はPlateauKitの一部として提供しています。
 
 - **ドキュメント Documentation:** <https://ozekik.github.io/plateaukit/>
-- **ブラウザで試す (試験版) Try in Your Browser (Experimental):** <https://ozekik.github.io/plateaukit/jupyterlite/notebooks/?path=demo.ipynb>
+<!-- - **ブラウザで試す (試験版) Try in Your Browser (Experimental):** <https://ozekik.github.io/plateaukit/jupyterlite/notebooks/?path=demo.ipynb> -->
 
 ## 目次 Table of Contents
 
