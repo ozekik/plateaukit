@@ -74,6 +74,8 @@ types-lxml = "^2024.4.14"
 # langchain-experimental = "^0.0.62"
 # langchain-openai = "^0.1.13"
 # tabulate = "^0.9.0"
+# quantized-mesh-encoder = "^0.4.3"
+# fast-simplification = "0.1.7"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.5.2"
