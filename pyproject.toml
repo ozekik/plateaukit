@@ -40,6 +40,7 @@ pyarrow = { version = ">=14.0.0,<17", markers = "sys_platform != 'emscripten'" }
 langchain = { version = "~0.2.12", optional = true }
 langchain_experimental = { version = "~0.0.64", optional = true }
 cityview = ">=0.1.0,<1"
+fast-simplification = "0.1.7"
 
 [tool.poetry.extras]
 all = ["pyogrio"]
@@ -74,8 +75,6 @@ types-lxml = "^2024.4.14"
 # langchain-experimental = "^0.0.62"
 # langchain-openai = "^0.1.13"
 # tabulate = "^0.9.0"
-# quantized-mesh-encoder = "^0.4.3"
-fast-simplification = "0.1.7"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.5.2"
