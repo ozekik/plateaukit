@@ -13,7 +13,7 @@ from plateaukit.core.dataset._area import (
     get_area,
 )
 from plateaukit.core.dataset._to_cityjson import to_cityjson
-from plateaukit.core.dataset._to_geojson import to_geojson
+from plateaukit.core.dataset._to_geojson import dem_to_geojson, to_geojson
 
 try:
     from pyogrio import read_dataframe
@@ -234,6 +234,36 @@ class Dataset:
             # include_type=include_type,
             # seq=seq,
             # split=split,
+        )
+
+    def dem_to_geojson(
+        self,
+        outfile: str | PathLike,
+        *,
+        seq: bool = False,
+        split: int = 1,
+        selection: list[str] | None = None,
+        target_epsg: int | None = 4326,
+        target_reduction: float | None = None,
+        progress_messages: dict | None = None,
+    ):
+        """Export GeoJSON from PLATEAU dataset DEMs.
+
+        Args:
+            outfile: Output file path.
+            split: Split the output into specified number of files.
+            **kwargs: Keyword arguments for the generator.
+        """
+
+        return dem_to_geojson(
+            self,
+            outfile,
+            seq=seq,
+            split=split,
+            selection=selection,
+            target_epsg=target_epsg,
+            target_reduction=target_reduction,
+            progress_messages=progress_messages,
         )
 
     def to_cityjson(

@@ -9,6 +9,7 @@ from plateaukit.exporters.parallel_writer import ParallelWriter
 from plateaukit.logger import logger
 from plateaukit.readers.citygml.reader import CityGMLReader
 from plateaukit.transformers.reprojection import ReprojectionTransformer
+from plateaukit.transformers.simplify import SimplifyTransformer
 
 
 def to_geojson(
@@ -237,3 +238,109 @@ def to_geojson(
     #     codelist_infiles=codelist_infiles,
     #     **kwargs,
     # )
+
+
+def dem_to_geojson(
+    self,
+    outfile: str | PathLike,
+    *,
+    seq=False,
+    split: int = 1,
+    selection: list[str] | None = None,
+    target_epsg: int | None = None,
+    target_reduction: float | None = None,
+    progress_messages: dict | None = None,
+    **kwargs,
+):
+    """Export GeoJSON from PLATEAU dataset DEMs.
+
+    Args:
+        outfile: Output file path.
+        types: CityGML object types to include.
+        split: Split the output into specified number of files.
+        seq: Export GeoJSONSeq.
+        **kwargs: Keyword arguments for the generator.
+    """
+    if not self.dataset_id:
+        raise Exception("Missing dataset_id")
+
+    # NOTE: this is intentional but to be refactored in the future
+    config = Config()
+    record = config.datasets[self.dataset_id]
+
+    if "citygml" not in record:
+        raise Exception("Missing CityGML data")
+
+    file_path = Path(record["citygml"])
+
+    infiles = []
+
+    # TODO: Refactor
+    type = "dem"
+
+    # TODO: Fix
+    pat = re.compile(rf".*udx\/{type}\/.*\.gml$")
+
+    if zipfile.is_zipfile(file_path):
+        with zipfile.ZipFile(file_path) as f:
+            namelist = f.namelist()
+            targets = list(filter(lambda x: pat.match(x), namelist))
+
+            if not targets:
+                raise RuntimeError(
+                    f"Data type '{type}' not found in '{self.dataset_id}'"
+                )
+
+            # NOTE: zipfs requires POSIX path
+            infiles += [str(PurePosixPath("/", target)) for target in targets]
+    else:
+        infiles += [str(Path(file_path, "udx", type, "*.gml"))]
+
+    logger.debug([type, infiles, outfile])
+
+    # Sort by a part of filename to group by areas; TODO: Update this
+    # try:
+    #     infiles = sorted(infiles, key=lambda x: Path(x).stem.split("_")[0])
+    # except:
+    #     infiles = sorted(infiles)
+    infiles = sorted(infiles)
+
+    # Codelists
+    codelist_infiles = None
+    if not zipfile.is_zipfile(file_path):
+        # TODO: Test support for non-zip codelists
+        codelist_infiles = [str(Path(file_path, "codelists", "*.xml"))]
+
+    reader = CityGMLReader()
+
+    readable = reader.scan_files(
+        infiles,
+        codelist_infiles=codelist_infiles,
+        zipfile=file_path,
+        selection=selection,
+    )
+
+    # TODO: Fix typing
+    transformers: list = []
+
+    if target_reduction:
+        transformers += [
+            ReprojectionTransformer(target_epsg=3857),
+            SimplifyTransformer(target_reduction=target_reduction),
+        ]
+
+    if target_epsg:
+        transformers.append(ReprojectionTransformer(target_epsg=target_epsg))
+
+    for transformer in transformers:
+        readable = transformer.transform(readable)
+
+    parallel_writer = ParallelWriter(GeoJSONWriter)
+    parallel_writer.transform(
+        readable,
+        str(outfile),
+        seq=seq,
+        split=split,
+        progress_messages=progress_messages,
+        altitude=True,
+    )

@@ -12,8 +12,9 @@ from plateaukit.core.dataset import load_dataset
 from plateaukit.logger import logger
 
 from ._cityobjectsdb import _prebuild_cityobjects_db
+from ._dem import _prebuild_dem
 
-_supported_types = ["bldg", "brid", "tran"]
+_supported_types = ["bldg", "brid", "tran", "dem"]
 
 
 def prebuild(
@@ -51,6 +52,10 @@ def prebuild(
         logger.debug(f"Temporary directory: {tdir}")
 
         for type in types:
+            # NOTE: Skip DEM here
+            if type == "dem":
+                continue
+
             outfile_geojsonl = Path(tdir, f"{dataset_id}.{type}.geojsonl")
 
             dataset = load_dataset(dataset_id)
@@ -80,12 +85,24 @@ def prebuild(
             _prebuild_cityobjects_db(
                 dataset_id,
                 dest_path,
-                types=types,
+                types=[type for type in types if type != "dem"],
                 tmpdir=tdir,
                 split=split,
             )
 
             config.datasets[dataset_id]["cityobjects"] = dest_path
+
+        if "dem" in types:
+            dest_path = str(Path(config.data_dir, f"{dataset_id}.dem.parquet"))
+
+            _prebuild_dem(
+                dataset_id,
+                dest_path,
+                tmpdir=tdir,
+                split=split,
+            )
+
+            config.datasets[dataset_id]["dem"] = dest_path
 
         with console.status(f"Writing {display_name}...") as status:
             if format == "gpkg":
@@ -120,6 +137,9 @@ def prebuild(
                 dest_path_map = {}
 
                 for type in types:
+                    if type == "dem":
+                        continue
+
                     tmp_file_paths = []
 
                     for filename in glob.glob(str(Path(tdir, "*.geojsonl"))):

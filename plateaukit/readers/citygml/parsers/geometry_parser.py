@@ -65,16 +65,28 @@ class GeometryParser:
 
         return transformed
 
-    def extract_chunked_poslists(self, root: etree._Element):
-        path = "/".join(
-            [
-                ".//gml:surfaceMember",  # TODO: Check this
-                "gml:Polygon",
-                "gml:exterior",
-                "gml:LinearRing",
-                "gml:posList",
-            ]
-        )
+    def extract_chunked_poslists(
+        self, root: etree._Element, type="surfaceMember"
+    ) -> list[list[list[Point]]]:
+        if type == "Triangle":
+            path = "/".join(
+                [
+                    ".//gml:Triangle",
+                    "gml:exterior",
+                    "gml:LinearRing",
+                    "gml:posList",
+                ]
+            )
+        else:
+            path = "/".join(
+                [
+                    ".//gml:surfaceMember",  # TODO: Check this
+                    "gml:Polygon",
+                    "gml:exterior",
+                    "gml:LinearRing",
+                    "gml:posList",
+                ]
+            )
         # print(path)
         # results = root.findall(path, nsmap)
 

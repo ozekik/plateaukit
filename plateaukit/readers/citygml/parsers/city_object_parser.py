@@ -40,6 +40,7 @@ class CityObjectParser:
             "Building": f"{{{default_nsmap['bldg']}}}Building",
             "Road": f"{{{default_nsmap['tran']}}}Road",
             "Bridge": f"{{{default_nsmap['brid']}}}Bridge",
+            "Relief": f"{{{default_nsmap['dem']}}}ReliefFeature",
         }
 
         self.geometry_type_tags = [
@@ -62,6 +63,10 @@ class CityObjectParser:
             {
                 "type": "lod2MultiSurface",
                 "tag": f"{{{default_nsmap['brid']}}}lod2MultiSurface",
+            },
+            {
+                "type": "tin",
+                "tag": "dem:reliefComponent/dem:TINRelief/dem:tin",
             },
         ]
 
@@ -145,6 +150,30 @@ class PLATEAUCityObjectParser(CityObjectParser):
                 geom = IRGeometry(
                     type="MultiSurface",
                     lod="2",
+                    boundaries=chunked_poslists,
+                    semantics={
+                        "surfaces": [
+                            {
+                                "type": f"+{type}",
+                            }
+                        ],
+                        "values": [0 for _ in range(len(chunked_poslists))],
+                    },
+                )
+
+                geoms.append(geom)
+
+            elif type in ["tin"]:
+                chunked_poslists = parser.extract_chunked_poslists(el, type="Triangle")
+
+                # NOTE: Boundaries should not be closed
+                chunked_poslists = [
+                    [bound[:3] for bound in surface] for surface in chunked_poslists
+                ]
+
+                geom = IRGeometry(
+                    type="CompositeSurface",
+                    lod="1",
                     boundaries=chunked_poslists,
                     semantics={
                         "surfaces": [
@@ -298,6 +327,16 @@ class PLATEAUCityObjectParser(CityObjectParser):
 
             obj = IRCityObject(
                 type="Bridge",
+                id=citygml_id,
+                attributes=attributes,
+                geometry=geometry,
+            )
+        elif el.tree.tag == self.object_type_tags["Relief"]:
+            geometry = self._get_geometry(el.tree)
+            # print(geometry)
+
+            obj = IRCityObject(
+                type="TINRelief",
                 id=citygml_id,
                 attributes=attributes,
                 geometry=geometry,
