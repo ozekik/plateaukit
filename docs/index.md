@@ -31,12 +31,18 @@ pip install 'plateaukit[all]'
 
 - [PlateauKitのインストール](install.md)を参照
 
-## 活用事例 Use Cases
+## 活用事例・紹介 Use Cases & Mentions
 
-PlateauKit + PlateauLab を開発の一部でお使いいただいている事例を紹介しています。
+PlateauKit + PlateauLab を開発の一部などでお使いいただいている事例やご紹介いただいている事例です。
 事例の追加・修正は[Issues](https://github.com/ozekik/plateaukit/issues)または[Pull Requests](https://github.com/ozekik/plateaukit/pulls)からお知らせください。
 
+- **[PythonでPLATEAUのデータを手軽に扱ってみる](https://www.youtube.com/live/7KTauy4Xr0U?si=ZNb_3MstIJGejJ1K&t=22245) (ぴっかりん ([@raokiey](https://github.com/raokiey)) 氏)** FOSS4G 2024 Japan コアデイ
 - **[AIまちづくりファシリテーター](https://protopedia.net/prototype/6072) (チーム シャキシャキ)** 🏆**グランプリ**, PLATEAU Hack Challenge 2024 in Tokyo
 - **[PLATEAUを利用した名古屋市の犯罪マップと類似領域検索](https://www.mlit-data.jp/#/ShowcaseDetail?id=Showcase18) (向 直人氏)** 🏆**国土交通データプラットフォーム特別賞**, アーバンデータチャレンジ2023 with 土木学会インフラデータチャレンジ2023
+
+## 発表資料 Presentations
+
+- **[PlateauKit + PlateauLabによる都市空間プログラミング](https://www.mlit.go.jp/plateau/file/events/doc/20240528_dxkaigi_Ozeki-shi.pdf)** まちづくりDX全国会議 presented by 国土交通省都市局[↗](https://www.mlit.go.jp/plateau/journal/j061/)
+- **[PlateauKit + PlateauLab](https://speakerdeck.com/toshiseisaku/no-dot-4-plateaukit-plus-plateaulab)** PLATEAU AWARD 2023[↗](https://www.mlit.go.jp/plateau-next/2023/award/)
 
 <div style="margin-bottom:10rem"></div>
