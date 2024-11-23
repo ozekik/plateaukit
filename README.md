@@ -49,7 +49,8 @@ pip install 'plateaukit[all]'
 PlateauKit + PlateauLab を開発の一部などでお使いいただいている事例やご紹介いただいている事例です。
 事例の追加・修正は[Issues](https://github.com/ozekik/plateaukit/issues)または[Pull Requests](https://github.com/ozekik/plateaukit/pulls)からお知らせください。
 
-- **[PythonでPLATEAUのデータを手軽に扱ってみる](https://www.youtube.com/live/7KTauy4Xr0U?si=ZNb_3MstIJGejJ1K&t=22245) (ぴっかりん ([@raokiey](https://github.com/raokiey)) 氏)** FOSS4G 2024 Japan コアデイ
+- **[PythonでPLATEAUのデータを手軽に扱ってみる](https://youtu.be/D1JMQfmGwpg?si=tlSnFmwtkDPJPGd4&t=11949) (ぴっかりん ([@raokiey](https://github.com/raokiey)) 氏)** FOSS4G 2024 Japan コアデイ
+  - <https://github.com/raokiey/foss4g_2024_japan_general_presentation_25>
 - **[AIまちづくりファシリテーター](https://protopedia.net/prototype/6072) (チーム シャキシャキ)** 🏆**グランプリ**, PLATEAU Hack Challenge 2024 in Tokyo
 - **[PLATEAUを利用した名古屋市の犯罪マップと類似領域検索](https://www.mlit-data.jp/#/ShowcaseDetail?id=Showcase18) (向 直人氏)** 🏆**国土交通データプラットフォーム特別賞**, アーバンデータチャレンジ2023 with 土木学会インフラデータチャレンジ2023
 
