@@ -9,7 +9,7 @@ from plateaukit.exporters.parallel_writer import ParallelWriter
 from plateaukit.logger import logger
 from plateaukit.readers.citygml.reader import CityGMLReader
 from plateaukit.transformers.reprojection import ReprojectionTransformer
-from plateaukit.transformers.simplify import SimplifyTransformer
+# from plateaukit.transformers.simplify import SimplifyTransformer
 
 
 def to_geojson(
@@ -323,11 +323,11 @@ def dem_to_geojson(
     # TODO: Fix typing
     transformers: list = []
 
-    if target_reduction:
-        transformers += [
-            ReprojectionTransformer(target_epsg=3857),
-            SimplifyTransformer(target_reduction=target_reduction),
-        ]
+    # if target_reduction:
+    #     transformers += [
+    #         ReprojectionTransformer(target_epsg=3857),
+    #         SimplifyTransformer(target_reduction=target_reduction),
+    #     ]
 
     if target_epsg:
         transformers.append(ReprojectionTransformer(target_epsg=target_epsg))
