@@ -152,7 +152,7 @@ def prebuild(
                         except Exception:
                             # # copy dir to /tmp for debugging:
                             # import shutil
-                            # shutil.copytree(tdir, "/tmp/failed")
+                            # shutil.copytree(tdir, "/tmp/failed", dirs_exist_ok=True)
 
                             # Skip if the file is empty
                             if Path(filename).stat().st_size == 0:
