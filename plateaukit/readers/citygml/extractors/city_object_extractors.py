@@ -2,6 +2,7 @@ from plateaukit.readers.citygml.parsers.xml_models.city_object import CityObject
 
 
 def _get_string_attribute(xml: CityObjectXML, name) -> str | None:
+    # NOTE: XML namespace may lack the "gen" prefix
     path = f"./gen:stringAttribute[@name='{name}']/gen:value"
     result = xml.find(path, xml.nsmap)
     return result.text if result is not None else None
@@ -18,7 +19,10 @@ def get_usage(xml: CityObjectXML) -> str | None:
 
 
 def get_district_plan(xml: CityObjectXML) -> str | None:
-    value = _get_string_attribute(xml, name="地区計画")
+    try:
+        value = _get_string_attribute(xml, name="地区計画")
+    except Exception:
+        value = None
     return value
 
 
