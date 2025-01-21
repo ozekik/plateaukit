@@ -66,7 +66,7 @@ class CityObjectParser:
             },
             {
                 "type": "tin",
-                "tag": "dem:reliefComponent/dem:TINRelief/dem:tin",
+                "tag": f"{{{default_nsmap['dem']}}}:reliefComponent/{{{default_nsmap['dem']}}}:TINRelief/{{{default_nsmap['dem']}}}:tin",
             },
         ]
 
@@ -284,10 +284,10 @@ class PLATEAUCityObjectParser(CityObjectParser):
                 {"districts_and_zones_type": districts_and_zones_type}
             )
 
-            optional_attributes = {
+            clean_optional_attributes = {
                 k: v for k, v in optional_attributes.items() if v is not None
             }
-            attributes.update(optional_attributes)
+            attributes.update(clean_optional_attributes)
         elif el.tree.tag == self.object_type_tags["Bridge"]:
             attributes["_gml_id"] = el.get_gml_id()
 
