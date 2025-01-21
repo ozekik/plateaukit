@@ -150,12 +150,15 @@ def prebuild(
                         try:
                             df = gpd.read_file(filename)
                         except Exception:
-                            raise RuntimeError(f"Failed to read {filename}")
-                            # import shutil
-
                             # # copy dir to /tmp for debugging:
+                            # import shutil
                             # shutil.copytree(tdir, "/tmp/failed")
-                            # raise
+
+                            # Skip if the file is empty
+                            if Path(filename).stat().st_size == 0:
+                                continue
+
+                            raise RuntimeError(f"Failed to read {filename}")
 
                         # TODO: Use more accurate CRS
                         mercator = df.to_crs(3857)
