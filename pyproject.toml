@@ -36,7 +36,7 @@ ipydeck = "^0.4.3"
 ipywidgets = "^8.1.2"
 ipython = ">=7.34.0,<9"
 pyodide-http = { version = "^0.2.1", markers = "sys_platform == 'emscripten'" }
-pyarrow = { version = ">=18.0.0", markers = "sys_platform != 'emscripten'" }
+pyarrow = { version = ">=17.0.0", markers = "sys_platform != 'emscripten'" }
 langchain = { version = "~0.2.12", optional = true }
 langchain_experimental = { version = "~0.0.64", optional = true }
 cityview = ">=0.1.0,<1"
