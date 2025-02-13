@@ -49,10 +49,14 @@ pip install 'plateaukit[all]'
 PlateauKit + PlateauLab を開発の一部などでお使いいただいている事例やご紹介いただいている事例です。
 事例の追加・修正は[Issues](https://github.com/ozekik/plateaukit/issues)または[Pull Requests](https://github.com/ozekik/plateaukit/pulls)からお知らせください。
 
-- **[PythonでPLATEAUのデータを手軽に扱ってみる](https://youtu.be/D1JMQfmGwpg?si=tlSnFmwtkDPJPGd4&t=11949) (ぴっかりん ([@raokiey](https://github.com/raokiey)) 氏)** FOSS4G 2024 Japan コアデイ
-  - <https://github.com/raokiey/foss4g_2024_japan_general_presentation_25>
-- **[AIまちづくりファシリテーター](https://protopedia.net/prototype/6072) (チーム シャキシャキ)** 🏆**グランプリ**, PLATEAU Hack Challenge 2024 in Tokyo
-- **[PLATEAUを利用した名古屋市の犯罪マップと類似領域検索](https://www.mlit-data.jp/#/ShowcaseDetail?id=Showcase18) (向 直人氏)** 🏆**国土交通データプラットフォーム特別賞**, アーバンデータチャレンジ2023 with 土木学会インフラデータチャレンジ2023
+- **PythonでPLATEAUのデータを扱ってみる (ぴっかりん ([@raokiey](https://github.com/raokiey)) 氏)** PyCon mini Shizuoka 2024 continue
+    - [スライド](https://speakerdeck.com/ra0kley/pythondeplateaunodetawoxi-tutemiru) / [GitHub](https://github.com/raokiey/pycon_mini_shizuoka_2024_continue)
+- **PythonでPLATEAUのデータを手軽に扱ってみる (ぴっかりん ([@raokiey](https://github.com/raokiey)) 氏)** FOSS4G 2024 Japan コアデイ
+    - [動画](https://www.youtube.com/watch?v=G2_UC_LH4DY) / [スライド](https://speakerdeck.com/ra0kley/foss4g-2024-japan-koadei-ban-fa-biao-25-pythondeplateaunodetawoshou-qing-nixi-tutemiru) / [GitHub](https://github.com/raokiey/foss4g_2024_japan_general_presentation_25)
+- **AIまちづくりファシリテーター (チーム シャキシャキ)** 🏆**グランプリ**, PLATEAU Hack Challenge 2024 in Tokyo
+    - [紹介ページ](https://protopedia.net/prototype/6072)
+- **PLATEAUを利用した名古屋市の犯罪マップと類似領域検索 (向 直人氏)** 🏆**国土交通データプラットフォーム特別賞**, アーバンデータチャレンジ2023 with 土木学会インフラデータチャレンジ2023
+    - [紹介ページ](https://www.mlit-data.jp/#/ShowcaseDetail?id=Showcase18)
 
 ## ロードマップ Roadmap
 
@@ -73,7 +77,7 @@ PlateauKit + PlateauLab を開発の一部などでお使いいただいてい�
 ### Python
 
 - [plateaupy](https://github.com/AcculusSasao/plateaupy) (Open3D/Blender)
-  - [rhenerose/plateaupy](https://github.com/rhenerose/plateaupy)
+    - [rhenerose/plateaupy](https://github.com/rhenerose/plateaupy)
 - [plateau-geo-tools](https://github.com/raokiey/plateau-geo-tools) (GeoJSON)
 
 ### その他
@@ -84,8 +88,10 @@ PlateauKit + PlateauLab を開発の一部などでお使いいただいてい�
 
 ## 発表資料 Presentations
 
-- **[PlateauKit + PlateauLabによる都市空間プログラミング](https://www.mlit.go.jp/plateau/file/events/doc/20240528_dxkaigi_Ozeki-shi.pdf)** まちづくりDX全国会議 presented by 国土交通省都市局[↗](https://www.mlit.go.jp/plateau/journal/j061/)
-- **[PlateauKit + PlateauLab](https://speakerdeck.com/toshiseisaku/no-dot-4-plateaukit-plus-plateaulab)** PLATEAU AWARD 2023[↗](https://www.mlit.go.jp/plateau-next/2023/award/)
+- **PlateauKit + PlateauLabによる都市空間プログラミング** まちづくりDX全国会議 presented by 国土交通省都市局
+    - [スライド](https://www.mlit.go.jp/plateau/file/events/doc/20240528_dxkaigi_Ozeki-shi.pdf) / [イベントレポート](https://www.mlit.go.jp/plateau/journal/j061/)
+- **PlateauKit + PlateauLab** PLATEAU AWARD 2023
+    - [スライド](https://speakerdeck.com/toshiseisaku/no-dot-4-plateaukit-plus-plateaulab) / [PLATEAU AWARD 2023公式](https://www.mlit.go.jp/plateau-next/2023/award/)
 
 ## クレジット Credits
 
