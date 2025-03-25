@@ -22,7 +22,7 @@ from plateaukit.logger import set_log_level
     "-t",
     "types",
     type=click.Choice(
-        ["bldg", "brid", "tran"],
+        ["bldg", "brid", "tran", "dem"],
         case_sensitive=True,
     ),
     default=["bldg"],

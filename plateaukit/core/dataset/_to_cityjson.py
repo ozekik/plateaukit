@@ -5,11 +5,12 @@ from pathlib import Path, PurePosixPath
 from typing import Literal
 
 from plateaukit.config import Config
-from plateaukit.exporters.cityjson.parallel_writer import ParallelWriter
 from plateaukit.exporters.cityjson.writer import CityJSONWriter
+from plateaukit.exporters.parallel_writer import ParallelWriter
 from plateaukit.logger import logger
 from plateaukit.readers.citygml.reader import CityGMLReader
 from plateaukit.transformers.filter_lod import LODFilteringTransformer
+from plateaukit.transformers.reprojection import ReprojectionTransformer
 
 
 def to_cityjson(
@@ -25,6 +26,7 @@ def to_cityjson(
     split: int = 1,
     selection: list[str] | None = None,
     target_epsg: int | None = None,
+    progress_messages: dict | None = None,
     **kwargs,
 ):
     """Export CityJSON from PLATEAU datasets.
@@ -98,26 +100,25 @@ def to_cityjson(
         selection=selection,
     )
 
-    transformers = [LODFilteringTransformer(mode=lod_mode, values=lod_values)]
+    # TODO: Fix typing
+    transformers: list = [
+        LODFilteringTransformer(mode=lod_mode, values=lod_values),
+    ]
+
+    if target_epsg:
+        transformers.append(ReprojectionTransformer(target_epsg=target_epsg))
 
     for transformer in transformers:
         readable = transformer.transform(readable)
 
     parallel_writer = ParallelWriter(CityJSONWriter)
-    parallel_writer.transform(readable, str(outfile), seq=False, split=split)
-
-    # writer = CityJSONWriter()
-    # result = writer.transform(document, seq=seq)
-
-    # import json
-
-    # if seq:
-    #     with open(outfile, "w") as f:
-    #         for line in result:
-    #             f.write(json.dumps(line, separators=(",", ":")) + "\n")
-    # else:
-    #     with open(outfile, "w") as f:
-    #         f.write(json.dumps(result, separators=(",", ":")))
+    parallel_writer.transform(
+        readable,
+        str(outfile),
+        seq=seq,
+        split=split,
+        progress_messages=progress_messages,
+    )
 
     # generators.cityjson.cityjson_from_citygml(
     #     infiles,

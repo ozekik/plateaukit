@@ -10,6 +10,8 @@ from normalize_japanese_addresses import normalize
 from pyproj import Transformer
 from pyproj.enums import TransformDirection
 
+from plateaukit.utils import get_version
+
 wgs84_to_sm = Transformer.from_crs("epsg:4326", "epsg:3857", always_xy=True)
 
 
@@ -230,13 +232,17 @@ def point_from_landmark(landmark_name: str):
         ?article schema:isPartOf <https://ja.wikipedia.org/>.
         SERVICE wikibase:label {{ bd:serviceParam wikibase:language "ja". }}
     }}
-    """.format(
-        label=landmark_name
-    )
+    """.format(label=landmark_name)
 
     url = "https://query.wikidata.org/sparql"
 
-    r = requests.get(url, params={"format": "json", "query": query})
+    version = get_version()
+
+    r = requests.get(
+        url,
+        params={"format": "json", "query": query},
+        headers={"User-Agent": f"plateaukit/{version}"},
+    )
     data = r.json()
 
     # print(data)

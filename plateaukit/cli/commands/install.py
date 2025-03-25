@@ -141,7 +141,8 @@ def install_cmd(
     multiple=True,
 )
 @click.option("--keep-files", is_flag=True, default=False)
-def uninstall_cmd(dataset_id, formats: list[str], keep_files):
+@click.option("-y", "--yes", "yes_all", is_flag=True, default=False, help="Skip confirmation.")
+def uninstall_cmd(dataset_id, formats: list[str], keep_files, yes_all):
     """Uninstall PLATEAU datasets.
 
     PLATEAU データセットをアンインストールします。
@@ -149,7 +150,7 @@ def uninstall_cmd(dataset_id, formats: list[str], keep_files):
     if not dataset_id:
         raise Exception("Missing argument")
 
-    available_formats = ["citygml", "3dtiles", "gpkg", "parquet"]
+    available_formats = ["citygml", "3dtiles", "gpkg", "parquet", "cityobjects"]
 
     config = Config()
 
@@ -174,7 +175,7 @@ def uninstall_cmd(dataset_id, formats: list[str], keep_files):
         click.echo("Would remove:")
         for path in paths:
             click.echo(f"  {path}")
-        if click.confirm("Proceed?"):
+        if yes_all or click.confirm("Proceed?"):
             uninstall_dataset(dataset_id, formats, keep_files=False)
     else:
         uninstall_dataset(dataset_id, formats, keep_files=True)

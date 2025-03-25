@@ -1,6 +1,13 @@
+import importlib.metadata
 from decimal import Decimal
 from itertools import islice
 from typing import Any, Iterable
+
+
+def get_version():
+    """Get the version of the package."""
+
+    return importlib.metadata.version("plateaukit")
 
 
 def chunker(it: Iterable, size: int):

@@ -1,7 +1,6 @@
 import sys
 from typing import Sequence, cast
 
-import flatgeobuf as fgb
 import geopandas as gpd
 
 try:
@@ -62,6 +61,8 @@ def area_from_bbox(self, bbox: list[float] | None = None):
             )
             area_gdf = cast(gpd.GeoDataFrame, area_gdf)
         else:
+            import flatgeobuf as fgb
+
             feature_collection = fgb.load_http(
                 remote_fgb,
                 bbox=tuple(bbox) if bbox else None,

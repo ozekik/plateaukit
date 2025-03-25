@@ -1,7 +1,8 @@
 from typing import Any
 
 from plateaukit.exporters.cityjson.vertices_map import VerticesMap
-from plateaukit.readers.citygml.ir_models import IRDocument, IRMetadata
+from plateaukit.readers.citygml.ir_models import IRDocument, IRGeometry, IRMetadata
+from plateaukit.utils import dict_key_to_camel_case
 
 # @dataclass
 # class IndexedGeometry:
@@ -11,24 +12,24 @@ from plateaukit.readers.citygml.ir_models import IRDocument, IRMetadata
 
 
 class CityJSONWriter:
-    def _get_indexed_boundaries(self, geometry, vertices_map: VerticesMap):
+    def _get_indexed_boundaries(self, geometry: IRGeometry, vertices_map: VerticesMap):
         """Get indexed boundaries from geometry."""
 
         # TODO: handling composite surface seriously
         # print("get_indexed_boundaries")
-        # print("type", geometry["type"])
+        # print("type", geometry.type)
 
-        boundaries = geometry["boundaries"]
-        indexed_boundaries = []
+        boundaries = geometry.boundaries
+        indexed_boundaries: list[Any] = []  # TODO: typing
 
-        if geometry["type"] == "MultiPoint":
-            for point in geometry["boundaries"]:
+        if geometry.type == "MultiPoint":
+            for point in geometry.boundaries:
                 index = vertices_map.to_index(point)
                 indexed_boundaries.append(index)
             return indexed_boundaries, vertices_map
 
-        elif geometry["type"] == "MultiLineString":
-            for line in geometry["boundaries"]:
+        elif geometry.type == "MultiLineString":
+            for line in geometry.boundaries:
                 indexed_line = []
                 for point in line:
                     index = vertices_map.to_index(point)
@@ -36,7 +37,7 @@ class CityJSONWriter:
                 indexed_boundaries.append(indexed_line)
             return indexed_boundaries, vertices_map
 
-        elif geometry["type"] in ["MultiSurface", "CompositeSurface"]:
+        elif geometry.type in ["MultiSurface", "CompositeSurface"]:
             for surface in boundaries:
                 # print("surface", surface)
                 indexed_surface = []
@@ -59,7 +60,7 @@ class CityJSONWriter:
             # print("indexed_boundaries", indexed_boundaries, "aaa" * 100)
             return indexed_boundaries, vertices_map
 
-        elif geometry["type"] == "Solid":
+        elif geometry.type == "Solid":
             for shell in boundaries:
                 # print("shell", shell)
                 indexed_shell = []
@@ -67,7 +68,7 @@ class CityJSONWriter:
                     indexed_surface = []
                     for region in surface:
                         # print("region", region)
-                        indexed_region = []
+                        indexed_region: list[int] = []
                         unclosed_region = region[:-1]
                         for point in unclosed_region:
                             # print("point", point)
@@ -98,7 +99,7 @@ class CityJSONWriter:
 
         # return indexed_surfaces, vertices_map
 
-    def get_indexed_geometry(self, geometry: Any, vertices_map: VerticesMap):
+    def get_indexed_geometry(self, geometry: IRGeometry, vertices_map: VerticesMap):
         """Convert geometries to an indexed geometry with a vertices map."""
 
         indexed_boundaries, vertices_map = self._get_indexed_boundaries(
@@ -106,10 +107,11 @@ class CityJSONWriter:
             vertices_map,
         )
 
-        indexed_geometry = dict(
-            geometry,  # TODO: base dict or else, fix later
-            lod=geometry["lod"],
+        indexed_geometry = IRGeometry(
+            type=geometry.type,
+            lod=geometry.lod,
             boundaries=indexed_boundaries,
+            semantics=geometry.semantics,
         )
 
         return indexed_geometry, vertices_map
@@ -152,17 +154,22 @@ class CityJSONWriter:
                         )
                         indexed_geometries.append(indexed_geometry)
 
+                if obj.attributes is not None:
+                    attributes = dict_key_to_camel_case(obj.attributes)
+                else:
+                    attributes = {}
+
                 result = {
                     "type": "CityJSONFeature",
                     "CityObjects": {
                         obj.id: {
                             "type": obj.type,
-                            "attributes": obj.attributes,
+                            "attributes": attributes,
                             "geometry": [
                                 {
-                                    "type": indexed_geometry["type"],
-                                    "lod": indexed_geometry["lod"],
-                                    "boundaries": indexed_geometry["boundaries"],
+                                    "type": indexed_geometry.type,
+                                    "lod": indexed_geometry.lod,
+                                    "boundaries": indexed_geometry.boundaries,
                                 }
                                 for indexed_geometry in indexed_geometries
                             ],
@@ -197,9 +204,9 @@ class CityJSONWriter:
                             "attributes": obj.attributes,
                             "geometry": [
                                 {
-                                    "type": indexed_geometry["type"],
-                                    "lod": indexed_geometry["lod"],
-                                    "boundaries": indexed_geometry["boundaries"],
+                                    "type": indexed_geometry.type,
+                                    "lod": indexed_geometry.lod,
+                                    "boundaries": indexed_geometry.boundaries,
                                 }
                                 for indexed_geometry in indexed_geometries
                             ],

@@ -3,23 +3,13 @@ from typing import Any
 
 
 @dataclass
-class CityGMLGeometry:
-    """A CityGML Geometry."""
-
-    type: str
-    lod: str | int  # TODO: Fix
-    boundaries: list[Any]
-    semantics: dict | None = None
-
-
-@dataclass
 class IRGeometry:
     """A CityGML Geometry."""
 
     type: str
-    lod: str | int  # TODO: Fix
+    lod: str
     boundaries: list[Any]
-    semantics: dict | None = None
+    semantics: dict[str, Any] | None = None
 
 
 @dataclass
@@ -27,7 +17,7 @@ class IRCityObject:
     """A CityGML CityObject."""
 
     type: str
-    id: str
+    id: str | None  # TODO: Make id required
     geometry: list[IRGeometry]
     attributes: dict[str, Any] | None = None
     # children: list[Self] | None = None

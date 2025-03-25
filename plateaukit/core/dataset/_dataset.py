@@ -13,7 +13,7 @@ from plateaukit.core.dataset._area import (
     get_area,
 )
 from plateaukit.core.dataset._to_cityjson import to_cityjson
-from plateaukit.core.dataset._to_geojson import to_geojson
+from plateaukit.core.dataset._to_geojson import dem_to_geojson, to_geojson
 
 try:
     from pyogrio import read_dataframe
@@ -192,12 +192,21 @@ class Dataset:
         self,
         outfile: str | PathLike,
         *,
-        types: list[str] = ["bldg"],
         altitude: bool = True,
-        include_type: bool = False,
-        seq=False,
+        types: list[str] = ["bldg"],
+        object_types=None,  # TODO: Handle this
+        include_object_type: bool = True,
+        ground: bool = False,
+        seq: bool = False,
         split: int = 1,
-        **kwargs,
+        selection: list[str] | None = None,
+        target_epsg: int | None = None,
+        progress_messages: dict | None = None,
+        # types: list[str] = ["bldg"],
+        # altitude: bool = True,
+        # include_type: bool = False,
+        # seq=False,
+        # split: int = 1,
     ):
         """Export GeoJSON from PLATEAU datasets.
 
@@ -211,12 +220,50 @@ class Dataset:
         return to_geojson(
             self,
             outfile,
-            types=types,
             altitude=altitude,
-            include_type=include_type,
+            types=types,
+            object_types=object_types,
+            include_object_type=include_object_type,
+            ground=ground,
             seq=seq,
             split=split,
-            **kwargs,
+            selection=selection,
+            target_epsg=target_epsg,
+            progress_messages=progress_messages,
+            # altitude=altitude,
+            # include_type=include_type,
+            # seq=seq,
+            # split=split,
+        )
+
+    def dem_to_geojson(
+        self,
+        outfile: str | PathLike,
+        *,
+        seq: bool = False,
+        split: int = 1,
+        selection: list[str] | None = None,
+        target_epsg: int | None = 4326,
+        target_reduction: float | None = None,
+        progress_messages: dict | None = None,
+    ):
+        """Export GeoJSON from PLATEAU dataset DEMs.
+
+        Args:
+            outfile: Output file path.
+            split: Split the output into specified number of files.
+            **kwargs: Keyword arguments for the generator.
+        """
+
+        return dem_to_geojson(
+            self,
+            outfile,
+            seq=seq,
+            split=split,
+            selection=selection,
+            target_epsg=target_epsg,
+            target_reduction=target_reduction,
+            progress_messages=progress_messages,
         )
 
     def to_cityjson(
@@ -232,6 +279,7 @@ class Dataset:
         split: int = 1,
         selection: list[str] | None = None,
         target_epsg: int | None = None,
+        progress_messages: dict | None = None,
         **kwargs,
     ):
         """Export CityJSON from PLATEAU datasets.
@@ -256,6 +304,7 @@ class Dataset:
             split=split,
             selection=selection,
             target_epsg=target_epsg,
+            progress_messages=progress_messages,
             **kwargs,
         )
 

@@ -118,7 +118,7 @@ class CityGMLReader:
         # lod,
         codelist_infiles=None,
         zipfile=None,
-        target_epsg=3857,  # TODO: Fix this
+        target_epsg=4326,  # NOTE: Default to WGS84
         selection: list[str] | None = None,
     ):
         if zipfile is not None:

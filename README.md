@@ -12,7 +12,18 @@
 **PlateauLab** は、<a href="https://jupyter.org" target="_blank">JupyterLab / Jupyter Notebook</a>上でPLATEAU都市モデルを扱うコーディング環境を実現するためのPythonライブラリです。 現在はPlateauKitの一部として提供しています。
 
 - **ドキュメント Documentation:** <https://ozekik.github.io/plateaukit/>
-- **ブラウザで試す (試験版) Try in Your Browser (Experimental):** <https://ozekik.github.io/plateaukit/jupyterlite/notebooks/?path=demo.ipynb>
+<!-- - **ブラウザで試す (試験版) Try in Your Browser (Experimental):** <https://ozekik.github.io/plateaukit/jupyterlite/notebooks/?path=demo.ipynb> -->
+
+## 目次 Table of Contents
+
+- [機能 Features](#機能-features)
+- [インストール Installation](#インストール-installation)
+- [活用事例・紹介 Use Cases & Mentions](#活用事例紹介-use-cases--mentions)
+- [ロードマップ Roadmap](#ロードマップ-roadmap)
+- [その他のツール・ライブラリ Alternatives](#その他のツールライブラリ-alternatives)
+- [発表資料 Presentations](#発表資料-presentations)
+- [クレジット Credits](#クレジット-credits)
+- [ライセンス License](#ライセンス-license)
 
 ## 機能 Features
 
@@ -21,15 +32,31 @@
     - Java製の外部ライブラリ (citygml4j, citygml-tools) 非依存
     - 並列処理に対応 (変換速度の向上)
     - 圧縮ファイルのまま変換可能 (省容量)
-- [x] JupyterLab / Jupyer Notebookでの3D都市モデル表示 (LOD1)
+- [x] JupyterLab / Jupyer Notebookでの3D都市モデル表示 (LOD1/2)
 
 <div><video controls src="https://github.com/ozekik/plateaukit/assets/32771324/ea02df34-82f9-462a-b2e7-3f71dd3201ea" muted="false"></video></div>
 
 ## インストール Installation
 
 ```sh
-pip install plateaukit
+pip install 'plateaukit[all]'
 ```
+
+- 詳細は[PlateauKitのインストール](https://ozekik.github.io/plateaukit/install/)を参照
+
+## 活用事例・紹介 Use Cases & Mentions
+
+PlateauKit + PlateauLab を開発の一部などでお使いいただいている事例やご紹介いただいている事例です。
+事例の追加・修正は[Issues](https://github.com/ozekik/plateaukit/issues)または[Pull Requests](https://github.com/ozekik/plateaukit/pulls)からお知らせください。
+
+- **PythonでPLATEAUのデータを扱ってみる (ぴっかりん ([@raokiey](https://github.com/raokiey)) 氏)** PyCon mini Shizuoka 2024 continue
+    - [スライド](https://speakerdeck.com/ra0kley/pythondeplateaunodetawoxi-tutemiru) / [GitHub](https://github.com/raokiey/pycon_mini_shizuoka_2024_continue)
+- **PythonでPLATEAUのデータを手軽に扱ってみる (ぴっかりん ([@raokiey](https://github.com/raokiey)) 氏)** FOSS4G 2024 Japan コアデイ
+    - [動画](https://www.youtube.com/watch?v=G2_UC_LH4DY) / [スライド](https://speakerdeck.com/ra0kley/foss4g-2024-japan-koadei-ban-fa-biao-25-pythondeplateaunodetawoshou-qing-nixi-tutemiru) / [GitHub](https://github.com/raokiey/foss4g_2024_japan_general_presentation_25)
+- **AIまちづくりファシリテーター (チーム シャキシャキ)** 🏆**グランプリ**, PLATEAU Hack Challenge 2024 in Tokyo
+    - [紹介ページ](https://protopedia.net/prototype/6072)
+- **PLATEAUを利用した名古屋市の犯罪マップと類似領域検索 (向 直人氏)** 🏆**国土交通データプラットフォーム特別賞**, アーバンデータチャレンジ2023 with 土木学会インフラデータチャレンジ2023
+    - [紹介ページ](https://www.mlit-data.jp/#/ShowcaseDetail?id=Showcase18)
 
 ## ロードマップ Roadmap
 
@@ -37,11 +64,11 @@ pip install plateaukit
 - [x] 最小限のテストの整備
 - [x] [ipydeck](https://github.com/ozekik/ipydeck)対応
 - [x] JupyterLiteサポート
-- [ ] LOD2サポート (WIP)
+- [x] LOD2サポート
+- [ ] 標高データのサポート・可視化
 - [ ] 軽量版データセットの提供
-- [ ] 標高データの可視化
 - [ ] テストの拡充
-- [ ] CityJSON変換の高速化
+- [ ] 変換の高速化
 
 ## その他のツール・ライブラリ Alternatives
 
@@ -50,7 +77,7 @@ pip install plateaukit
 ### Python
 
 - [plateaupy](https://github.com/AcculusSasao/plateaupy) (Open3D/Blender)
-  - [rhenerose/plateaupy](https://github.com/rhenerose/plateaupy)
+    - [rhenerose/plateaupy](https://github.com/rhenerose/plateaupy)
 - [plateau-geo-tools](https://github.com/raokiey/plateau-geo-tools) (GeoJSON)
 
 ### その他
@@ -58,6 +85,13 @@ pip install plateaukit
 - Blender: [Plateau-Blender-Importer](https://github.com/nneri-hin/Plateau-Blender-Importer)
 - Unreal Engine: [PLATEAU SDK for Unreal](https://github.com/Project-PLATEAU/PLATEAU-SDK-for-Unreal)
 - Unity: [PLATEAU SDK for Unity](https://github.com/Project-PLATEAU/PLATEAU-SDK-for-Unity)
+
+## 発表資料 Presentations
+
+- **PlateauKit + PlateauLabによる都市空間プログラミング** まちづくりDX全国会議 presented by 国土交通省都市局
+    - [スライド](https://www.mlit.go.jp/plateau/file/events/doc/20240528_dxkaigi_Ozeki-shi.pdf) / [イベントレポート](https://www.mlit.go.jp/plateau/journal/j061/)
+- **PlateauKit + PlateauLab** PLATEAU AWARD 2023
+    - [スライド](https://speakerdeck.com/toshiseisaku/no-dot-4-plateaukit-plus-plateaulab) / [PLATEAU AWARD 2023公式](https://www.mlit.go.jp/plateau-next/2023/award/)
 
 ## クレジット Credits
 

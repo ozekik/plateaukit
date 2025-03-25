@@ -64,15 +64,17 @@ nav:
           - 都市モデルとレイヤーを重ねる: tutorial/maps-overlay.ipynb
           - 🚧 チャットAI (LLM) との連携: tutorial/llm.md
       - コマンドラインでの利用:
-          - PLATEAUデータの追加と削除: cli/setup.md
-          - PLATEAUデータの情報を取得: cli/info.md
-          - PLATEAUデータの変換: cli/convert.md
+          - 都市モデルを追加する・削除する: cli/setup.md
+          - データを事前ビルドする: cli/prebuild.md
+          - 都市モデルの情報を取得する: cli/info.md
+          - 都市モデルを変換する: cli/convert.md
           - CLI リファレンス: cli/reference.md
       - ライブラリとして利用:
           # - PLATEAUデータの追加と削除: library/setup.ipynb
-          - PLATEAUデータの読み込みと利用: library/dataset.ipynb
-          - 範囲の選択と抽出: library/area.ipynb
-          - データ処理: library/data-processing.ipynb
+          # - 都市モデルを読み込む: library/dataset.ipynb
+          - 範囲を選択する・抽出する: library/area.ipynb
+          - 都市モデルを表示する: library/preview.ipynb
+          - データを処理する: library/data-processing.ipynb
       # - Get Started:
       # - Usage:
       - 開発に参加する / バグ報告・機能要望: contributing.md

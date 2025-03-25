@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "plateaukit"
-version = "0.16.0"
+version = "0.18.0"
 description = "Python library and utility for 3D city models by MLIT Project PLATEAU"
 authors = ["Kentaro Ozeki <32771324+ozekik@users.noreply.github.com>"]
 readme = "README.md"
@@ -13,22 +13,22 @@ packages = [{ include = "plateaukit" }]
 python = "^3.10"
 click = "^8.1.3"
 geojson = "^3.1.0"
-loguru = "^0.6.0"
+loguru = ">=0.6.0,<0.8"
 pyproj = "^3.4.1"
 lxml = "^5.0.0"
 # aiomultiprocess = "^0.9.0"
-geopandas = "^0.14.0"
+geopandas = "^1.0.0"
 prettytable = "^3.6.0"
 requests = "^2.28.2"
 pydantic = ">=1,<3"
-bidict = "^0.22.1"
-pyogrio = { version = "^0.7.2", markers = "sys_platform != 'emscripten'" }
+bidict = ">=0.22.1,<0.24"
+pyogrio = { version = ">=0.7.2,<1", markers = "sys_platform != 'emscripten'" }
 quantized-mesh-encoder = { version = "^0.4.3", optional = true }
-numpy = "^1.26.0"
+numpy = ">=1.26.0,<3"
 platformdirs = "^4.0.0"
 # pydeck = {extras = ["jupyter"], version = "^0.8.0"}
 rich = { extras = ["jupyter"], version = "^13.7.0" }
-pydeck = "^0.8.0"
+pydeck = ">=0.8.0,<0.10"
 normalize-japanese-addresses = "^0.0.9"
 fs = "^2.4.16"
 flatgeobuf = "^0.3.0"
@@ -36,13 +36,15 @@ ipydeck = "^0.4.3"
 ipywidgets = "^8.1.2"
 ipython = ">=7.34.0,<9"
 pyodide-http = { version = "^0.2.1", markers = "sys_platform == 'emscripten'" }
-pyarrow = { version = ">=15.0.5", markers = "sys_platform != 'emscripten'" }
+pyarrow = { version = ">=17.0.0", markers = "sys_platform != 'emscripten'" }
 langchain = { version = "~0.2.12", optional = true }
 langchain_experimental = { version = "~0.0.64", optional = true }
+cityview = ">=0.1.0,<1"
+fast-simplification = { version = "^0.1.7", optional = true }
 
 [tool.poetry.extras]
 all = ["pyogrio"]
-quantized_mesh = ["quantized-mesh-encoder"]
+quantized_mesh = ["quantized-mesh-encoder", "fast-simplification"]
 citygml = ["pyogrio"]
 llm = ["langchain", "langchain_experimental"]
 
@@ -52,27 +54,21 @@ plateaukit = "plateaukit.cli:cli"
 [tool.poetry.group.test.dependencies]
 pytest = "^8.0.2"
 coverage = { extras = ["toml"], version = "^7.4.3" }
-pytest-cov = "^4.1.0"
+pytest-cov = "^6.0.0"
 
 [tool.poetry.group.dev.dependencies]
 pyglet = "^2.0.1"
-scipy = "^1.10.0"
+# scipy = "^1.10.0"
 matplotlib = "^3.6.3"
 ipykernel = "^6.25.2"
-# ipywidgets = "<8"
-folium = "^0.15.0"
+folium = ">=0.15.0,<1"
 mapclassify = "^2.6.1"
-cmap = "^0.1.3"
+# cmap = "^0.5.0"
 seaborn = "^0.13.2"
 bokeh = "^3.3.4"
 plotly = "^5.19.0"
 altair = "^5.2.0"
 types-lxml = "^2024.4.14"
-# pandasai = "^2.2.7"
-# langchain = "^0.2.6"
-# langchain-experimental = "^0.0.62"
-# langchain-openai = "^0.1.13"
-# tabulate = "^0.9.0"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.5.2"
@@ -81,7 +77,7 @@ mkdocstrings-python = "^1.2.1"
 mkdocs-exclude = "^1.0.2"
 markdown-exec = { extras = ["ansi"], version = "^1.6.0" }
 mkdocs-redirects = "^1.2.1"
-mkdocs-jupyter = "^0.24.7"
+mkdocs-jupyter = "^0.25.0"
 mkdocs-click = "^0.8.1"
 pymdown-extensions = "^10.7"
 

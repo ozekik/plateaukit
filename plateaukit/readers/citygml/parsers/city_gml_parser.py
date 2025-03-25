@@ -7,8 +7,8 @@ from typing import BinaryIO
 import pyproj
 from lxml import etree
 
-from plateaukit.readers.citygml import CityGML
 from plateaukit.readers.citygml.constants import default_nsmap
+from plateaukit.readers.citygml.ir_models import IRDocument
 from plateaukit.readers.citygml.parsers.city_object_parser import (
     PLATEAUCityObjectParser,
 )
@@ -186,4 +186,4 @@ class PLATEAUCityGMLParser(CityGMLParser):
 
         infile.seek(0)
 
-        return CityGML(city_objects=objects)
+        return IRDocument(metadata=None, city_objects=objects)

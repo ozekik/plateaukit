@@ -26,7 +26,7 @@ def features_from_gml_single(
     types: list[str] | None = None,
     target_epsg: int = 4326,  # WGS
     altitude: bool = False,
-    lod: list[int] = ["0"],
+    lod: list[str] = ["0"],
     codelist_file_map: dict[str, BinaryIO] | None = None,
     attributes: list[str] = ["measuredHeight"],
     allow_geometry_collection: bool = False,
@@ -55,18 +55,18 @@ def features_from_gml_single(
         geom = None
 
         if "0" in lod:
-            geom = next(filter(lambda x: x["lod"] == "0", obj.geometry), None)
+            geom = next(filter(lambda x: x.lod == "0", obj.geometry), None)
         if "1" in lod:
-            geom = next(filter(lambda x: x["lod"] == "1", obj.geometry), None)
+            geom = next(filter(lambda x: x.lod == "1", obj.geometry), None)
             # raise NotImplementedError("LOD 1")
         if "2" in lod:
-            geom = next(filter(lambda x: x["lod"] == "2", obj.geometry), None)
+            geom = next(filter(lambda x: x.lod == "2", obj.geometry), None)
 
         if geom is None:
             continue
 
         # WIP: exterior only; TODO: Fix this
-        base_polygons = [surface[0] for surface in geom["boundaries"]]
+        base_polygons = [surface[0] for surface in geom.boundaries]
 
         if altitude:
             base_polygons = [
@@ -108,7 +108,7 @@ def geojson_from_gml_single(
     types: list[str] | None = None,
     target_epsg: int = 4326,  # WGS
     altitude: bool = False,
-    lod: list[int] = ["0"],
+    lod: list[str] = ["0"],
     codelist_file_map: dict[str, BinaryIO] | None = None,
     attributes: list[str] = ["measuredHeight"],
     allow_geometry_collection: bool = False,
