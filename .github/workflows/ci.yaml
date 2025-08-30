@@ -3,7 +3,7 @@ name: build
 on:
   push:
     # branches: [$default-branch]
-    branches: ["master"]
+    branches: ["*"]
     tags: ["*"]
   pull_request:
     # branches: [$default-branch]
