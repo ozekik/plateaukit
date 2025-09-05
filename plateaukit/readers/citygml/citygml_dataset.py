@@ -2,7 +2,7 @@ import io
 import re
 import zipfile
 from os import PathLike
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 from bidict import bidict
 from fs import open_fs
@@ -72,7 +72,8 @@ class CityGMLDataset:
         with zipfile.ZipFile(self.file_path) as f:
             namelist = f.namelist()
             files = list(filter(lambda x: pat.match(x), namelist))
-            files = [str(Path("/", target)) for target in files]
+            # NOTE: zipfs requires POSIX path
+            files = [str(PurePosixPath("/", target)) for target in files]
 
         return files
 
@@ -88,6 +89,7 @@ class CityGMLDataset:
         props = []
 
         for file in files:
+            # TODO: Possibly should be PurePosixPath when in zip
             base_path = Path(file).parent
 
             with zip_fs.open(file, "rb") as f:
@@ -138,6 +140,7 @@ class CityGMLDataset:
                                 el_key = child.find("./uro:key", infile_nsmap)
                                 key = el_key.text
                                 codelist_path = el_key.attrib.get("codeSpace", None)
+                                # TODO: Possibly should be PurePosixPath when in zip
                                 codelist_path = str(
                                     Path(base_path, codelist_path).resolve()
                                 )
@@ -176,7 +179,10 @@ class CityGMLDataset:
         with zipfile.ZipFile(file_path) as f:
             namelist = f.namelist()
             codelist_infiles = list(filter(lambda x: pat.match(x), namelist))
-            codelist_infiles = [str(Path("/", target)) for target in codelist_infiles]
+            # NOTE: zipfs requires POSIX path
+            codelist_infiles = [
+                str(PurePosixPath("/", target)) for target in codelist_infiles
+            ]
 
         zip_fs = open_fs(f"zip://{file_path}")
 

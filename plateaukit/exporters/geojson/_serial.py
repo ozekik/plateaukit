@@ -35,6 +35,7 @@ def geojson_from_gml_serial_with_quit(
         zip_fs = None
 
     if codelist_infiles and infiles:
+        # TODO: Possibly should be PurePosixPath when in zip
         base_path = Path(infiles[0]).parent  # TODO: Fix this
         codelist_file_map = dict()
 

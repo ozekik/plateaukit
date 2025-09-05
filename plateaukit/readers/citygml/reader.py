@@ -3,7 +3,7 @@ import math
 import os.path
 import re
 from dataclasses import dataclass
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from zipfile import ZipFile, is_zipfile
 
 from fs import open_fs
@@ -95,7 +95,7 @@ class CityGMLReader:
                     codelist_infiles = list(filter(lambda x: pat.match(x), namelist))
                     # NOTE: zipfs requires POSIX path
                     codelist_infiles = [
-                        str(Path("/", target)) for target in codelist_infiles
+                        str(PurePosixPath("/", target)) for target in codelist_infiles
                     ]
             else:
                 # TODO: Test support for non-zip codelists
@@ -137,7 +137,7 @@ class CityGMLReader:
                     codelist_infiles = list(filter(lambda x: pat.match(x), namelist))
                     # NOTE: zipfs requires POSIX path
                     codelist_infiles = [
-                        str(Path("/", target)) for target in codelist_infiles
+                        str(PurePosixPath("/", target)) for target in codelist_infiles
                     ]
             else:
                 # TODO: Test support for non-zip codelists
@@ -147,6 +147,7 @@ class CityGMLReader:
         # Load codelists
         codelist_file_map = {}
         if infiles:
+            # TODO: Possibly should be PurePosixPath when in zip
             base_path = Path(infiles[0]).parent  # TODO: Fix this
             codelist_file_map = self._make_codelist_file_map(
                 codelist_infiles, base_path, zip_fs=zip_fs
