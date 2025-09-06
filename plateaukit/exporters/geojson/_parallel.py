@@ -3,7 +3,7 @@ import math
 import re
 from multiprocessing import Manager
 from os import PathLike
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from zipfile import ZipFile, is_zipfile
 
 from rich.progress import Progress
@@ -117,7 +117,7 @@ def geojson_from_citygml(
                 codelist_infiles = list(filter(lambda x: pat.match(x), namelist))
                 # NOTE: zipfs requires POSIX path
                 codelist_infiles = [
-                    str(Path("/", target)) for target in codelist_infiles
+                    str(PurePosixPath("/", target)) for target in codelist_infiles
                 ]
         else:
             # TODO: Test support for non-zip codelists
