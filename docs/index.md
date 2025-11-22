@@ -36,6 +36,8 @@ pip install 'plateaukit[all]'
 PlateauKit + PlateauLab を開発の一部などでお使いいただいている事例やご紹介いただいている事例です。
 事例の追加・修正は[Issues](https://github.com/ozekik/plateaukit/issues)または[Pull Requests](https://github.com/ozekik/plateaukit/pulls)からお知らせください。
 
+- Ma, J., Zhao, C. Ogawa, Y., & Sekimoto, Y. (2025). **Predicting Building Height from Footprint and Urban Planning information for Digital Twin Generation**. _The International Archives of the Photogrammetry, Remote Sensing and Spatial Information Sciences_, 48: 107-112.
+    - [論文](https://doi.org/10.5194/isprs-archives-XLVIII-4-W15-2025-107-2025)
 - **PythonでPLATEAUのデータを扱ってみる (ぴっかりん ([@raokiey](https://github.com/raokiey)) 氏)** PyCon mini Shizuoka 2024 continue
     - [スライド](https://speakerdeck.com/ra0kley/pythondeplateaunodetawoxi-tutemiru) / [GitHub](https://github.com/raokiey/pycon_mini_shizuoka_2024_continue)
 - **PythonでPLATEAUのデータを手軽に扱ってみる (ぴっかりん ([@raokiey](https://github.com/raokiey)) 氏)** FOSS4G 2024 Japan コアデイ
