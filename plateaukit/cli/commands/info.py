@@ -42,6 +42,8 @@ def info_cmd(dataset_id):
         data_type_display_names = constants.data_type_display_names_v2
     elif spec_version == "3":
         data_type_display_names = constants.data_type_display_names_v3
+    elif spec_version == "4":
+        data_type_display_names = constants.data_type_display_names_v4
     else:
         raise RuntimeError(f"Unknown spec version: {spec_version}")
 
