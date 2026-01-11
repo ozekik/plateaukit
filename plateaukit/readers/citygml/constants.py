@@ -1,5 +1,84 @@
 from plateaukit.constants import default_nsmap
 
+# NOTE: https://www.mlit.go.jp/plateau/file/libraries/doc/plateau_doc_0002_ver04.pdf#page=66
+data_type_display_names_v4 = {
+    "bldg": {
+        "ja": "建築物",
+    },
+    "tran": {
+        "ja": "交通（道路）",
+    },
+    "rwy": {
+        "ja": "交通（鉄道）",
+    },
+    "trk": {
+        "ja": "交通（徒歩道）",
+    },
+    "squr": {
+        "ja": "交通（広場）",
+    },
+    "wwy": {
+        "ja": "交通（航路）",
+    },
+    "luse": {
+        "ja": "土地利用",
+    },
+    "fld": {
+        "ja": "洪水浸水想定区域",
+    },
+    "tnm": {
+        "ja": "津波浸水想定",
+    },
+    "htd": {
+        "ja": "高潮浸水想定区域",
+    },
+    "ifld": {
+        "ja": "内水浸水想定区域",
+    },
+    "lsld": {
+        "ja": "土砂災害警戒区域",
+    },
+    "urf": {
+        "ja": "都市計画決定情報",
+    },
+    "brid": {
+        "ja": "橋梁",
+    },
+    "tun": {
+        "ja": "トンネル",
+    },
+    "cons": {
+        "ja": "その他の構造物",
+    },
+    "frn": {
+        "ja": "都市設備",
+    },
+    "ubld": {
+        "ja": "地下街",
+    },
+    "veg": {
+        "ja": "植生",
+    },
+    "dem": {
+        "ja": "地形",
+    },
+    "wtr": {
+        "ja": "水部",
+    },
+    "area": {
+        "ja": "区域",
+    },
+    "gen": {
+        "ja": "汎用都市オブジェクト",
+    },
+    "app": {
+        "ja": "アピアランス",
+    },
+    "ext": {
+        "ja": "拡張製品仕様書で拡張した地物",
+    },
+}
+
 # NOTE: https://www.mlit.go.jp/plateau/file/libraries/doc/plateau_doc_0002_ver03.pdf#page=60
 data_type_display_names_v3 = {
     "bldg": {
