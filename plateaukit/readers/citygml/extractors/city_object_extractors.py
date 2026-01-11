@@ -49,6 +49,10 @@ def get_building_id(xml: CityObjectXML) -> str | None:
 def get_measured_height(xml: CityObjectXML) -> float | None:
     result = xml.find("./bldg:measuredHeight", xml.nsmap)
     value = result.text if result is not None else None
+    # SPEC: 値が不明な場合は-9999とする
+    # https://www.mlit.go.jp/plateaudocument/toc4/toc4_01/toc4_01_05/toc4_01_05_07/
+    if value == "-9999":
+        return None
     value = float(value) if value is not None else None
     return value
 
