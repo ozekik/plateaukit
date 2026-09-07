@@ -27,7 +27,7 @@ quantized-mesh-encoder = { version = "^0.5.0", optional = true }
 numpy = ">=1.26.0,<3"
 platformdirs = "^4.0.0"
 # pydeck = {extras = ["jupyter"], version = "^0.8.0"}
-rich = { extras = ["jupyter"], version = "^14.2.0" }
+rich = { extras = ["jupyter"], version = ">=14.2.0,<16" }
 pydeck = ">=0.8.0,<0.10"
 normalize-japanese-addresses = "^0.0.9"
 flatgeobuf = "^0.3.0"
@@ -39,7 +39,7 @@ pyarrow = { version = ">=17.0.0", markers = "sys_platform != 'emscripten'" }
 langchain = { version = "~0.3.21", optional = true }
 langchain_experimental = { version = "~0.3.4", optional = true }
 cityview = ">=0.1.0,<1"
-fast-simplification = { version = "^0.1.7", optional = true }
+fast-simplification = { version = "^0.2.0", optional = true }
 fsspec = "^2026.7.0"
 
 [tool.poetry.extras]
@@ -60,13 +60,13 @@ pytest-cov = "^7.0.0"
 pyglet = "^2.0.1"
 # scipy = "^1.10.0"
 matplotlib = "^3.6.3"
-ipykernel = "^6.25.2"
+ipykernel = "^7.3.0"
 folium = ">=0.15.0,<1"
 mapclassify = "^2.6.1"
 # cmap = "^0.5.0"
 seaborn = "^0.13.2"
 bokeh = "^3.3.4"
-plotly = "^5.19.0"
+plotly = "^7.0"
 altair = "^6.0.0"
 types-lxml = "^2026.1.1"
 
@@ -77,9 +77,9 @@ mkdocstrings-python = "^2.0.1"
 mkdocs-exclude = "^1.0.2"
 markdown-exec = { extras = ["ansi"], version = "^1.6.0" }
 mkdocs-redirects = "^1.2.1"
-mkdocs-jupyter = "^0.25.0"
+mkdocs-jupyter = "^0.26.3"
 mkdocs-click = "^0.9.0"
-pymdown-extensions = "^10.7"
+pymdown-extensions = "^11.0"
 
 [build-system]
 requires = ["poetry-core"]
