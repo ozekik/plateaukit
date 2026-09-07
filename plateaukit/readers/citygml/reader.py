@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from zipfile import ZipFile, is_zipfile
 
-from fs import open_fs
+import fsspec
 
 from plateaukit import utils
 from plateaukit.readers.citygml import PLATEAUCityGMLParser
@@ -122,7 +122,7 @@ class CityGMLReader:
         selection: list[str] | None = None,
     ):
         if zipfile is not None:
-            zip_fs = open_fs(f"zip://{zipfile}")
+            zip_fs = fsspec.filesystem("zip", fo=str(zipfile))
         else:
             zip_fs = None
 
@@ -144,39 +144,40 @@ class CityGMLReader:
                 raise NotImplementedError()
                 # codelist_infiles += [str(Path(file_path, "codelists", "*.xml"))]
 
-        # Load codelists
-        codelist_file_map = {}
-        if infiles:
-            # TODO: Possibly should be PurePosixPath when in zip
-            base_path = Path(infiles[0]).parent  # TODO: Fix this
-            codelist_file_map = self._make_codelist_file_map(
-                codelist_infiles, base_path, zip_fs=zip_fs
+        try:
+            # Load codelists
+            codelist_file_map = {}
+            if infiles:
+                # TODO: Possibly should be PurePosixPath when in zip
+                base_path = Path(infiles[0]).parent  # TODO: Fix this
+                codelist_file_map = self._make_codelist_file_map(
+                    codelist_infiles, base_path, zip_fs=zip_fs
+                )
+
+            parser = PLATEAUCityGMLParser(
+                target_epsg=target_epsg, codelist_file_map=codelist_file_map
             )
 
-        parser = PLATEAUCityGMLParser(
-            target_epsg=target_epsg, codelist_file_map=codelist_file_map
-        )
+            _open = zip_fs.open if zip_fs else open
 
-        _open = zip_fs.open if zip_fs else open
+            city_objects = []
+            for i, infile in enumerate(infiles):
+                with _open(infile, "rb") as f:
+                    co_iter = parser.iterparse(f, selection=selection)
 
-        city_objects = []
-        for i, infile in enumerate(infiles):
-            with _open(infile, "rb") as f:
-                co_iter = parser.iterparse(f, selection=selection)
+                    for city_obj in co_iter:
+                        # if object_types is not None and city_obj.type not in object_types:
+                        #     continue
+                        if (
+                            self.concurrent_status.quit
+                            and self.concurrent_status.quit.is_set()
+                        ):
+                            exit()
 
-                for city_obj in co_iter:
-                    # if object_types is not None and city_obj.type not in object_types:
-                    #     continue
-                    if (
-                        self.concurrent_status.quit
-                        and self.concurrent_status.quit.is_set()
-                    ):
-                        exit()
-
-                    city_objects.append(city_obj)
-
-        if zip_fs:
-            zip_fs.close()
+                        city_objects.append(city_obj)
+        finally:
+            if zip_fs:
+                zip_fs.close()
 
         return IRDocument(
             metadata=IRMetadata(epsg=target_epsg),  # TODO: Fix

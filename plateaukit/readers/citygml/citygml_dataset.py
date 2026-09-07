@@ -4,8 +4,8 @@ import zipfile
 from os import PathLike
 from pathlib import Path, PurePosixPath
 
+import fsspec
 from bidict import bidict
-from fs import open_fs
 from lxml import etree
 
 from plateaukit.config import Config
@@ -84,88 +84,92 @@ class CityGMLDataset:
 
         codelists = self.codelists()
 
-        zip_fs = open_fs(f"zip://{self.file_path}")
+        zip_fs = fsspec.filesystem("zip", fo=str(self.file_path))
 
-        props = []
+        try:
+            props = []
 
-        for file in files:
-            # TODO: Possibly should be PurePosixPath when in zip
-            base_path = Path(file).parent
+            for file in files:
+                # TODO: Possibly should be PurePosixPath when in zip
+                base_path = Path(file).parent
 
-            with zip_fs.open(file, "rb") as f:
-                # Get namespace map
-                itertree = etree.iterparse(f, events=("end",))
-                _, root = next(itertree)
-                f.seek(0)
-                infile_nsmap = bidict(root.nsmap)
+                with zip_fs.open(file, "rb") as f:
+                    # Get namespace map
+                    itertree = etree.iterparse(f, events=("end",))
+                    _, root = next(itertree)
+                    f.seek(0)
+                    infile_nsmap = bidict(root.nsmap)
 
-                tag = f"{{{infile_nsmap['core']}}}cityObjectMember"
-                itertree = etree.iterparse(f, events=("end",), tag=tag)
-                _, root = next(itertree)
+                    tag = f"{{{infile_nsmap['core']}}}cityObjectMember"
+                    itertree = etree.iterparse(f, events=("end",), tag=tag)
+                    _, root = next(itertree)
 
-                for _ev, co_root in itertree:
-                    it = co_root.iterchildren()
-                    city_obj = next(it)
+                    for _ev, co_root in itertree:
+                        it = co_root.iterchildren()
+                        city_obj = next(it)
 
-                    for el in city_obj:
-                        _qname = etree.QName(el)
-                        ns = _qname.namespace
-                        localname = _qname.localname
-                        ns_prefix = infile_nsmap.inverse.get(ns, None)
-                        if ns_prefix:
-                            qname = f"{ns_prefix}:{localname}"
-                        else:
-                            qname = _qname.text
-
-                        prop = {
-                            "tag": qname,
-                        }
-
-                        if (
-                            "gen" in infile_nsmap
-                            and el.tag == f"{{{infile_nsmap['gen']}}}stringAttribute"
-                        ):
-                            name = el.attrib["name"]
-                            prop["name"] = name
-
-                        elif (
-                            "uro" in infile_nsmap
-                            and el.tag
-                            == f"{{{infile_nsmap['uro']}}}keyValuePairAttribute"
-                        ):
-                            for child in el.iterfind(
-                                "./uro:KeyValuePairAttribute", infile_nsmap
-                            ):
-                                # print("child", child)
-                                el_key = child.find("./uro:key", infile_nsmap)
-                                key = el_key.text
-                                codelist_path = el_key.attrib.get("codeSpace", None)
-                                # TODO: Possibly should be PurePosixPath when in zip
-                                codelist_path = str(
-                                    Path(base_path, codelist_path).resolve()
-                                )
-                                # print("codelist_path", codelist_path)
-                                codelist = codelists.get(codelist_path, None)
-                                # print("codelist", codelist)
-                                if codelist:
-                                    key_name = codelist[key]
-                                    prop["name"] = key_name
-
-                        if "name" not in prop:
-                            if qname in constants.tag_display_names:
-                                prop["name"] = constants.tag_display_names[qname].get(
-                                    "ja", None
-                                )
+                        for el in city_obj:
+                            _qname = etree.QName(el)
+                            ns = _qname.namespace
+                            localname = _qname.localname
+                            ns_prefix = infile_nsmap.inverse.get(ns, None)
+                            if ns_prefix:
+                                qname = f"{ns_prefix}:{localname}"
                             else:
-                                prop["name"] = localname
+                                qname = _qname.text
 
-                        if prop not in props:
-                            props.append(prop)
-                            yield prop
-                            # logger.debug(f"{prop}")
+                            prop = {
+                                "tag": qname,
+                            }
 
-                    # co_root.clear()  # NOTE: Bad performance impact
-                    root.clear()  # NOTE: Unnecessary?
+                            if (
+                                "gen" in infile_nsmap
+                                and el.tag
+                                == f"{{{infile_nsmap['gen']}}}stringAttribute"
+                            ):
+                                name = el.attrib["name"]
+                                prop["name"] = name
+
+                            elif (
+                                "uro" in infile_nsmap
+                                and el.tag
+                                == f"{{{infile_nsmap['uro']}}}keyValuePairAttribute"
+                            ):
+                                for child in el.iterfind(
+                                    "./uro:KeyValuePairAttribute", infile_nsmap
+                                ):
+                                    # print("child", child)
+                                    el_key = child.find("./uro:key", infile_nsmap)
+                                    key = el_key.text
+                                    codelist_path = el_key.attrib.get("codeSpace", None)
+                                    # TODO: Possibly should be PurePosixPath when in zip
+                                    codelist_path = str(
+                                        Path(base_path, codelist_path).resolve()
+                                    )
+                                    # print("codelist_path", codelist_path)
+                                    codelist = codelists.get(codelist_path, None)
+                                    # print("codelist", codelist)
+                                    if codelist:
+                                        key_name = codelist[key]
+                                        prop["name"] = key_name
+
+                            if "name" not in prop:
+                                if qname in constants.tag_display_names:
+                                    prop["name"] = constants.tag_display_names[
+                                        qname
+                                    ].get("ja", None)
+                                else:
+                                    prop["name"] = localname
+
+                            if prop not in props:
+                                props.append(prop)
+                                yield prop
+                                # logger.debug(f"{prop}")
+
+                        # co_root.clear()  # NOTE: Bad performance impact
+                        root.clear()  # NOTE: Unnecessary?
+        finally:
+            zip_fs.close()
 
     def codelists(self):
         """Get codelists from the dataset."""
@@ -184,17 +188,16 @@ class CityGMLDataset:
                 str(PurePosixPath("/", target)) for target in codelist_infiles
             ]
 
-        zip_fs = open_fs(f"zip://{file_path}")
+        zip_fs = fsspec.filesystem("zip", fo=str(file_path))
 
         codelist_file_map = dict()
 
-        for codelist_infile in codelist_infiles:
-            if zipfile is not None:
+        try:
+            for codelist_infile in codelist_infiles:
                 with zip_fs.open(codelist_infile, "rb") as f:
                     codelist_file_map[codelist_infile] = io.BytesIO(f.read())
-            else:
-                with open(codelist_infile, "rb") as f:
-                    codelist_file_map[codelist_infile] = io.BytesIO(f.read())
+        finally:
+            zip_fs.close()
 
         codelists = {}
 

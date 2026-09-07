@@ -30,7 +30,6 @@ platformdirs = "^4.0.0"
 rich = { extras = ["jupyter"], version = "^14.2.0" }
 pydeck = ">=0.8.0,<0.10"
 normalize-japanese-addresses = "^0.0.9"
-fs = "^2.4.16"
 flatgeobuf = "^0.3.0"
 ipydeck = "^0.4.3"
 ipywidgets = "^8.1.2"
@@ -41,6 +40,7 @@ langchain = { version = "~0.3.21", optional = true }
 langchain_experimental = { version = "~0.3.4", optional = true }
 cityview = ">=0.1.0,<1"
 fast-simplification = { version = "^0.1.7", optional = true }
+fsspec = "^2026.7.0"
 
 [tool.poetry.extras]
 all = ["pyogrio"]

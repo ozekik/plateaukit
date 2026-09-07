@@ -2,8 +2,8 @@ import io
 import os.path
 from pathlib import Path
 
+import fsspec
 import geojson
-from fs import open_fs
 from geojson import FeatureCollection
 
 from plateaukit.logger import logger
@@ -30,7 +30,7 @@ def geojson_from_gml_serial_with_quit(
     codelist_file_map = None
 
     if zipfile is not None:
-        zip_fs = open_fs(f"zip://{zipfile}")
+        zip_fs = fsspec.filesystem("zip", fo=str(zipfile))
     else:
         zip_fs = None
 
@@ -41,7 +41,7 @@ def geojson_from_gml_serial_with_quit(
 
         for codelist_infile in codelist_infiles:
             if zip_fs is not None:
-                with zip_fs.openbin(codelist_infile, "r") as f:
+                with zip_fs.open(codelist_infile, "rb") as f:
                     relative_path = os.path.relpath(codelist_infile, base_path)
                     codelist_file_map[relative_path] = io.BytesIO(f.read())
             else:
@@ -63,7 +63,7 @@ def geojson_from_gml_serial_with_quit(
 
                 logger.debug(f"infile: {infile}")
 
-                _open = zip_fs.openbin if zip_fs else open
+                _open = zip_fs.open if zip_fs else open
 
                 with _open(infile, "rb") as inbuf:
                     infile_features = features_from_gml_single(
@@ -91,7 +91,7 @@ def geojson_from_gml_serial_with_quit(
 
             logger.debug(f"infile: {infile}")
 
-            _open = zip_fs.openbin if zip_fs else open
+            _open = zip_fs.open if zip_fs else open
 
             with _open(infile, "rb") as f:
                 infile_features = list(
