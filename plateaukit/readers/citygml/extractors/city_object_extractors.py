@@ -3,6 +3,24 @@ from lxml import etree
 from plateaukit.readers.citygml.parsers.xml_models.city_object import CityObjectXML
 
 
+def _parse_float(value: str) -> float | None:
+    # SPEC: 値が不明な場合は-9999とする
+    # https://www.mlit.go.jp/plateaudocument/toc4/toc4_01/toc4_01_05/toc4_01_05_07/
+    if value == "-9999":
+        return None
+    else:
+        return float(value)
+
+
+def _parse_int(value: str) -> int | None:
+    # SPEC: 値が不明な場合は-9999とする。非負整数型の値が不明な場合は9999とする
+    # https://www.mlit.go.jp/plateaudocument/toc4/toc4_01/toc4_01_05/toc4_01_05_06/
+    if value == "-9999" or value == "9999":
+        return None
+    else:
+        return int(value)
+
+
 def _get_string_attribute(xml: CityObjectXML, name) -> str | None:
     # NOTE: XML namespace may lack the "gen" prefix
     path = f"./gen:stringAttribute[@name='{name}']/gen:value"
@@ -51,32 +69,28 @@ def get_building_id(xml: CityObjectXML) -> str | None:
 def get_measured_height(xml: CityObjectXML) -> float | None:
     result = xml.find("./bldg:measuredHeight", xml.nsmap)
     value = result.text if result is not None else None
-    # SPEC: 値が不明な場合は-9999とする
-    # https://www.mlit.go.jp/plateaudocument/toc4/toc4_01/toc4_01_05/toc4_01_05_07/
-    if value == "-9999":
-        return None
-    value = float(value) if value is not None else None
+    value = _parse_float(value) if value is not None else None
     return value
 
 
 def get_year_of_construction(xml: CityObjectXML) -> int | None:
     result = xml.find("./bldg:yearOfConstruction", xml.nsmap)
     value = result.text if result is not None else None
-    value = int(value) if value is not None else None
+    value = _parse_int(value) if value is not None else None
     return value
 
 
 def get_storeys_above_ground(xml: CityObjectXML) -> int | None:
     result = xml.find("./bldg:storeysAboveGround", xml.nsmap)
     value = result.text if result is not None else None
-    value = int(value) if value is not None else None
+    value = _parse_int(value) if value is not None else None
     return value
 
 
 def get_storeys_below_ground(xml: CityObjectXML) -> int | None:
     result = xml.find("./bldg:storeysBelowGround", xml.nsmap)
     value = result.text if result is not None else None
-    value = int(value) if value is not None else None
+    value = _parse_int(value) if value is not None else None
     return value
 
 
@@ -102,11 +116,11 @@ def get_river_flooding_risks(xml: CityObjectXML):
 
         depth = result.find("./uro:depth", xml.nsmap)
         depth_text = depth.text if depth is not None else None
-        depth = float(depth_text) if depth_text is not None else None
+        depth = _parse_float(depth_text) if depth_text is not None else None
 
         duration = result.find("./uro:duration", xml.nsmap)
         duration_text = duration.text if duration is not None else None
-        duration = float(duration_text) if duration_text is not None else None
+        duration = _parse_float(duration_text) if duration_text is not None else None
 
         admin_type = xml._get_codespace_attribute("./uro:adminType", parent=result)
 
@@ -137,7 +151,7 @@ def get_river_flooding_depth(xml: CityObjectXML) -> float | None:
             xml.nsmap,
         )
     value = result.text if result is not None else None
-    value = float(value) if value is not None else None
+    value = _parse_float(value) if value is not None else None
     return value
 
 
@@ -154,7 +168,7 @@ def get_river_flooding_duration(xml: CityObjectXML) -> float | None:
             xml.nsmap,
         )
     value = result.text if result is not None else None
-    value = float(value) if value is not None else None
+    value = _parse_float(value) if value is not None else None
     return value
 
 
